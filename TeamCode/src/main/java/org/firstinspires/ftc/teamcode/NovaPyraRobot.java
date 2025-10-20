@@ -28,7 +28,7 @@ public class NovaPyraRobot extends Robot {
     public final Odometry odometry;
     public final Exploration exploration;
     private final OpModeSelection selectedOpMode;
-    private ControllerTriggers controllerMappings;
+    private final ControllerTriggers controllerMappings;
 
     public NovaPyraRobot(HardwareMap hardwareMap, Gamepad gamepad1, Gamepad gamepad2, Telemetry telemetry, OpModeSelection opModeSelection) {
         // OpMode selection
