@@ -40,6 +40,7 @@ public class Exploration extends OpMode {
 
     @Override
     public void loop() {
+        robot.trackCycleTime(getRuntime());
         robot.run();
     }
 

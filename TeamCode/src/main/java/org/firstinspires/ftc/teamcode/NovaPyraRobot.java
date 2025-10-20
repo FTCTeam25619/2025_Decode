@@ -6,7 +6,7 @@ import com.seattlesolvers.solverslib.command.Robot;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.constants.Constants.OpModes.OpModeSelection;
+import org.firstinspires.ftc.teamcode.constants.Constants;
 import org.firstinspires.ftc.teamcode.constants.OpModes.OpModeSelection;
 import org.firstinspires.ftc.teamcode.subsystems.Exploration;
 import org.firstinspires.ftc.teamcode.subsystems.Odometry;
@@ -49,5 +49,9 @@ public class NovaPyraRobot extends Robot {
             case EXPLORATION:
                 break;
         }
+    }
+
+    public void trackCycleTime(double newClockReading) {
+        odometry.updateRevHubCycleFrequency(newClockReading);
     }
 }
