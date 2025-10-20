@@ -4,6 +4,9 @@ public final class Constants {
 
     public static final class DebugModes {
         public static final boolean ENABLE_FTC_DASHBOARD = true;
+        public static final class ControlInterface {
+            public static final boolean TUNING_CONTROLS = false;
+        }
         public static final class Telemetry {
             public static final boolean DEBUG_ODOMETRY = true;
 
