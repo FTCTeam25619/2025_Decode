@@ -11,6 +11,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
 import org.firstinspires.ftc.teamcode.constants.Constants;
 import org.firstinspires.ftc.teamcode.constants.Devices;
+import org.firstinspires.ftc.teamcode.constants.OdometryConstants;
 
 import java.util.Locale;
 
@@ -30,11 +31,9 @@ public class Odometry extends SubsystemBase {
     }
 
     private void setupOdometry() {
-        this.odometry.setOffsets(72, 136, DistanceUnit.MM);
-        this.odometry.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
-        this.odometry.setEncoderDirections(
-                GoBildaPinpointDriver.EncoderDirection.REVERSED,
-                GoBildaPinpointDriver.EncoderDirection.FORWARD);
+        this.odometry.setOffsets(OdometryConstants.xOffsetMM, OdometryConstants.yOffsetMM, DistanceUnit.MM);
+        this.odometry.setEncoderResolution(OdometryConstants.podType);
+        this.odometry.setEncoderDirections(OdometryConstants.xDirection, OdometryConstants.yDirection);
         this.odometry.resetPosAndIMU();
 
         if (Constants.DebugModes.Telemetry.DEBUG_ODOMETRY) {
