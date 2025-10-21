@@ -6,6 +6,9 @@ import com.seattlesolvers.solverslib.command.Robot;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.constants.Constants;
 import org.firstinspires.ftc.teamcode.constants.OpModes.OpModeSelection;
 import org.firstinspires.ftc.teamcode.lib.triggers.ControllerTriggers;
@@ -60,6 +63,7 @@ public class NovaPyraRobot extends Robot {
                 break;
             case EXPLORATION:
                 controllerMappings.setupGamepadButtonMappings();
+                odometry.setRobotPose(new Pose2D(DistanceUnit.MM, 0.0, 0.0, AngleUnit.DEGREES, 0.0));
                 break;
         }
     }
