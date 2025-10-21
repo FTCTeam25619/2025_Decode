@@ -21,6 +21,7 @@ public class Odometry extends SubsystemBase {
 
     private boolean trackingCycleTime = false;
     private double priorRevHubClockReading;
+    private double cyclePeriod;
     private double cycleFrequency;
 
     public Odometry(HardwareMap hardwareMap, Telemetry telemetry) {
@@ -70,8 +71,8 @@ public class Odometry extends SubsystemBase {
 
     public void updateRevHubCycleFrequency(double newClockReading) {
         trackingCycleTime = true;
-        double loopTime = newClockReading - priorRevHubClockReading;
-        cycleFrequency = 1/loopTime;
+        cyclePeriod = newClockReading - priorRevHubClockReading;
+        cycleFrequency = 1/cyclePeriod;
         priorRevHubClockReading = newClockReading;
     }
 
@@ -111,11 +112,14 @@ public class Odometry extends SubsystemBase {
             telemetry.addData("Status", this.odometry.getDeviceStatus().toString());
 
             // prints/gets the current refresh rate of the Pinpoint
-            telemetry.addData("Pinpoint Frequency", this.odometry.getFrequency());
+            double pinpointFrequency = this.odometry.getFrequency();
+            telemetry.addData("Pinpoint Refresh Period (ms)", 1000.0/pinpointFrequency);
+            telemetry.addData("Pinpoint Frequency", pinpointFrequency);
 
             if (trackingCycleTime) {
                 // prints the control system refresh rate
                 telemetry.addData("REV Hub Frequency: ", cycleFrequency);
+                telemetry.addData("REV Hub Cycle Time (ms): ", cyclePeriod * 1000.0);
             }
         }
 
