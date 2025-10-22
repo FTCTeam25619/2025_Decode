@@ -1,24 +1,29 @@
 package org.firstinspires.ftc.teamcode.triggers;
 
+import com.pedropathing.control.Controller;
+import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.button.GamepadButton;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.NovaPyraRobot;
 import org.firstinspires.ftc.teamcode.constants.ConfigConstants;
+import org.firstinspires.ftc.teamcode.lib.triggers.ControllerTriggers;
 import org.firstinspires.ftc.teamcode.lib.triggers.LeftStickY;
 import org.firstinspires.ftc.teamcode.lib.triggers.RightStickY;
 import org.firstinspires.ftc.teamcode.lib.triggers.TriggerAxis;
 import org.firstinspires.ftc.teamcode.lib.triggers.TriggerButton;
 
-public class CompetitionTriggers {
-    public final double DEFAULT_AXIS_THRESHOLD = 0.6;
-
+public class CompetitionTriggers implements ControllerTriggers {
+    private final NovaPyraRobot robot;
     private final GamepadEx controller1;
     private final GamepadEx controller2;
 
-    public CompetitionTriggers(GamepadEx controller1, GamepadEx controller2) {
-        this.controller1 = controller1;
-        this.controller2 = controller2;
+    public CompetitionTriggers(NovaPyraRobot robot) {
+        this.robot = robot;
+        this.controller1 = robot.controller1;
+        this.controller2 = robot.controller2;
     }
 
     public void setupGamepadButtonMappings() {
@@ -46,6 +51,9 @@ public class CompetitionTriggers {
         GamepadButton c1Start = new GamepadButton(controller1, GamepadKeys.Button.START);
 
         // Map controller 1 buttons to commands
+
+        // Reset odometry heading to 0 degrees
+        c1Start.whenPressed(new InstantCommand(() -> robot.odometry.setOdometryHeading(0.0, AngleUnit.DEGREES)));
     }
 
     private void setupController2ButtonMappings() {
