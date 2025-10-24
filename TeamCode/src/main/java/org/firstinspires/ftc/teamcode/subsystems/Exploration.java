@@ -11,14 +11,15 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.constants.Devices;
 
 public class Exploration extends SubsystemBase {
-    private Motor motor1;
-    private AnalogInput absoluteEncoder;
-    Telemetry telemetry;
+    private final Motor motor1;
+    private final AnalogInput absoluteEncoder;
+    private final Telemetry telemetry;
 
     public Exploration(HardwareMap hardwareMap, Telemetry telemetry) {
         motor1 = new Motor(hardwareMap, Devices.Exploration.motor1);
-        this.telemetry = telemetry;
         absoluteEncoder = hardwareMap.get(AnalogInput.class, Devices.Exploration.rotarySensor);
+
+        this.telemetry = telemetry;
     }
 
     public void moveMotor(double power) {
