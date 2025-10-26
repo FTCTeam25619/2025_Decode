@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.triggers;
 
-import com.pedropathing.control.Controller;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.button.GamepadButton;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
@@ -8,12 +7,12 @@ import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.NovaPyraRobot;
-import org.firstinspires.ftc.teamcode.constants.ConfigConstants;
 import org.firstinspires.ftc.teamcode.lib.triggers.ControllerTriggers;
 import org.firstinspires.ftc.teamcode.lib.triggers.LeftStickY;
 import org.firstinspires.ftc.teamcode.lib.triggers.RightStickY;
 import org.firstinspires.ftc.teamcode.lib.triggers.TriggerAxis;
 import org.firstinspires.ftc.teamcode.lib.triggers.TriggerButton;
+import org.firstinspires.ftc.teamcode.subsystems.Shooter;
 
 public class CompetitionTriggers implements ControllerTriggers {
     private final NovaPyraRobot robot;
@@ -51,6 +50,14 @@ public class CompetitionTriggers implements ControllerTriggers {
         GamepadButton c1Start = new GamepadButton(controller1, GamepadKeys.Button.START);
 
         // Map controller 1 buttons to commands
+        c1RightTrigger.whenActive(new InstantCommand(() -> {
+            robot.shooter.setState(Shooter.ShooterState.Shooting);
+        }));
+        c1RightTrigger.whenInactive(new InstantCommand(() -> {
+            robot.shooter.setState(Shooter.ShooterState.Stopped);
+        }));
+        c1DPadUp.whenPressed(new InstantCommand(() -> robot.shooter.changeMotorPower(0.05)));
+        c1DPadDown.whenPressed(new InstantCommand(() -> robot.shooter.changeMotorPower(-0.05)));
 
         // Reset odometry heading to 0 degrees
         c1Start.whenPressed(new InstantCommand(() -> robot.odometry.setOdometryHeading(0.0, AngleUnit.DEGREES)));
