@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.triggers;
 
 import com.seattlesolvers.solverslib.command.InstantCommand;
+import com.seattlesolvers.solverslib.command.RepeatCommand;
 import com.seattlesolvers.solverslib.command.button.GamepadButton;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
@@ -13,6 +14,7 @@ import org.firstinspires.ftc.teamcode.lib.triggers.RightStickY;
 import org.firstinspires.ftc.teamcode.lib.triggers.TriggerAxis;
 import org.firstinspires.ftc.teamcode.lib.triggers.TriggerButton;
 import org.firstinspires.ftc.teamcode.subsystems.Shooter;
+import org.firstinspires.ftc.teamcode.subsystems.ShooterFeed;
 
 public class CompetitionTriggers implements ControllerTriggers {
     private final NovaPyraRobot robot;
@@ -50,6 +52,16 @@ public class CompetitionTriggers implements ControllerTriggers {
         GamepadButton c1Start = new GamepadButton(controller1, GamepadKeys.Button.START);
 
         // Map controller 1 buttons to commands
+        c1LeftTrigger.whileActiveContinuous(new RepeatCommand(new InstantCommand(() -> {
+            robot.shooterFeed.setState(ShooterFeed.FeedState.Feeding);
+        })));
+        c1LeftTrigger.and(c1LeftBumper).whileActiveContinuous(new RepeatCommand(new InstantCommand(() -> {
+            robot.shooterFeed.setState(ShooterFeed.FeedState.Dejam);
+        })));
+        c1LeftTrigger.whenInactive(new InstantCommand(() -> robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped)));
+        c1DPadRight.whenPressed(new InstantCommand(() -> robot.shooterFeed.changeFeedPower(0.05)));
+        c1DPadLeft.whenPressed(new InstantCommand(() -> robot.shooterFeed.changeFeedPower(-0.05)));
+
         c1RightTrigger.whenActive(new InstantCommand(() -> {
             robot.shooter.setState(Shooter.ShooterState.Shooting);
         }));
