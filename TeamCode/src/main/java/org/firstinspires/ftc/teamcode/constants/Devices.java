@@ -6,6 +6,16 @@ public class Devices {
         public static final String rotarySensor = "rotarysensor";
     }
 
+    public static final class ShooterFeed {
+        public static final String feedCRServoLeft = "crservo_feed_left";
+        public static final String feedCRServoRight = "crservo_feed_right";
+    }
+
+    public static final class Shooter {
+        public static final String leftMotor = "shooter_left";
+        public static final String rightMotor = "shooter_right";
+    }
+
     public static final class Odometry {
         public static final String pinpointOdometry = "pinpoint_odometry";
     }
