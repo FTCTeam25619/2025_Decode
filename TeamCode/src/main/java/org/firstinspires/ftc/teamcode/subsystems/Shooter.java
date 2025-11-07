@@ -1,8 +1,9 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
-import com.seattlesolvers.solverslib.controller.PIDController;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
 import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
 import com.seattlesolvers.solverslib.util.MathUtils;
@@ -20,32 +21,42 @@ public class Shooter extends SubsystemBase {
 
     public enum ShooterState {
         Stopped,
+        ManualSpin,
         Shooting;
     }
 
     private ShooterState subsystemState = ShooterState.Stopped;
 
-    private double flywheelTargetRPM = 0.0;
-    private double priorTargetRPM = 0.0;
-    private double  newVelocity = 0.0;
+    private double flywheelTargetRPM = 1000.0;
     private double motorPower = 0.0;
-
-    private final PIDController flywheelVelocityPID;
 
     public Shooter(HardwareMap hardwareMap, Telemetry telemetry) {
         motorLeft = new MotorEx(hardwareMap, Devices.Shooter.leftMotor, Motor.GoBILDA.BARE);
         motorRight = new MotorEx(hardwareMap, Devices.Shooter.rightMotor, Motor.GoBILDA.BARE);
-
-        flywheelVelocityPID = new PIDController(
-                ShooterConstants.VelocityPID.kP,
-                ShooterConstants.VelocityPID.kI,
-                ShooterConstants.VelocityPID.kD,
-                ShooterConstants.VelocityPID.kS,
-                ShooterConstants.VelocityPID.kV
+        motorLeft.setInverted(false);
+        motorRight.setInverted(true);
+        motorLeft.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
+        motorRight.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
+        motorLeft.motorEx.setVelocityPIDFCoefficients(
+            ShooterConstants.VelocityPID.kP,
+            ShooterConstants.VelocityPID.kI,
+            ShooterConstants.VelocityPID.kD,
+            ShooterConstants.VelocityPID.kF
         );
-        flywheelVelocityPID.reset();
+        motorRight.motorEx.setVelocityPIDFCoefficients(
+            ShooterConstants.VelocityPID.kP,
+            ShooterConstants.VelocityPID.kI,
+            ShooterConstants.VelocityPID.kD,
+            ShooterConstants.VelocityPID.kF
+        );
+
+        PIDFCoefficients veloPIDCoeff = motorLeft.motorEx.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
 
         this.telemetry = telemetry;
+        telemetry.addData("Velo PID P", veloPIDCoeff.p);
+        telemetry.addData("Velo PID I", veloPIDCoeff.i);
+        telemetry.addData("Velo PID D", veloPIDCoeff.d);
+        telemetry.addData("Velo PID F", veloPIDCoeff.f);
     }
 
     @Override
@@ -55,25 +66,32 @@ public class Shooter extends SubsystemBase {
         switch(subsystemState) {
             case Stopped:
                 motorPower = 0.0;
-                flywheelVelocityPID.reset();
+                this.runMotors(motorPower);
+                break;
+            case ManualSpin:
+                this.runMotors(motorPower);
                 break;
             case Shooting:
-                if (flywheelTargetRPM != priorTargetRPM) {
-                    flywheelVelocityPID.setSetPoint(this.flywheelTargetRPM);
-                }
-                newVelocity = flywheelVelocityPID.calculate(this.getFlywheelRPM());
+                this.setMotorVelocity(this.flywheelTargetRPM);
                 break;
         }
 
-        this.runMotors(motorPower);
 
         this.telemetry.addData("Shooter: State", this.subsystemState.toString());
         this.telemetry.addData("Shooter: Target RPM", this.flywheelTargetRPM);
         this.telemetry.addData("Shooter: At Speed", this.atRPM());
         this.telemetry.addData("Shooter: Motor RPM", this.getFlywheelRPM());
         this.telemetry.addData("Shooter: Power", this.motorPower);
-        this.telemetry.addData("Shooter: Calc Velocity", this.newVelocity);
+        this.telemetry.addData("Shooter: R Motor RPM", this.motorRight.getVelocity() *
+                Constants.ConversionFactors.SECONDS_PER_MINUTE /
+                this.motorRight.getCPR());
+        this.telemetry.addData("Shooter: L Motor Power", this.motorLeft.motorEx.getPower());
     }
+
+    // No motor belted -- 6100 RPM both
+    // R motor belted -- 5800 L, 3500 R
+    // L motor belted -- 3500 L, 5850 R
+    // both belted -- 3850 L, 3850 R
 
     public void setMotorPower(double power) {
         this.motorPower = MathUtils.clamp(power, -1.0, 1.0);
@@ -84,7 +102,12 @@ public class Shooter extends SubsystemBase {
     }
 
     public void setTargetRPM(double rpm) {
-        this.flywheelTargetRPM = MathUtils.clamp(rpm, 0.0, 5800.0);
+        this.flywheelTargetRPM = MathUtils.clamp(rpm,
+                ShooterConstants.minFlywheelRPM, ShooterConstants.maxFlywheelRPM);
+    }
+
+    public void changeTargetRPM(double rpmChange) {
+        this.setTargetRPM(this.flywheelTargetRPM + rpmChange);
     }
 
     public double getFlywheelRPM() {
@@ -103,6 +126,12 @@ public class Shooter extends SubsystemBase {
 
     private void runMotors(double power) {
         motorLeft.set(power);
-        motorRight.set(-power);
+        motorRight.set(power);
+    }
+
+    private void setMotorVelocity(double rpm) {
+        double velocity = rpm * motorLeft.getCPR() / Constants.ConversionFactors.SECONDS_PER_MINUTE;
+        motorLeft.motorEx.setVelocity(velocity);
+        motorRight.motorEx.setVelocity(velocity);
     }
 }

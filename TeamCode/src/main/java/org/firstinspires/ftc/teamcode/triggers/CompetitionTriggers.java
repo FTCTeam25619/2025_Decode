@@ -68,8 +68,8 @@ public class CompetitionTriggers implements ControllerTriggers {
         c1RightTrigger.whenInactive(new InstantCommand(() -> {
             robot.shooter.setState(Shooter.ShooterState.Stopped);
         }));
-        c1DPadUp.whenPressed(new InstantCommand(() -> robot.shooter.changeMotorPower(0.05)));
-        c1DPadDown.whenPressed(new InstantCommand(() -> robot.shooter.changeMotorPower(-0.05)));
+        c1DPadUp.whenPressed(new InstantCommand(() -> robot.shooter.changeTargetRPM(500)));
+        c1DPadDown.whenPressed(new InstantCommand(() -> robot.shooter.changeTargetRPM(-500)));
 
         // Reset odometry heading to 0 degrees
         c1Start.whenPressed(new InstantCommand(() -> robot.odometry.setOdometryHeading(0.0, AngleUnit.DEGREES)));
