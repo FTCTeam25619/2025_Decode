@@ -1,22 +1,51 @@
 package org.firstinspires.ftc.teamcode.constants;
 
 public class Devices {
-    public static final class Exploration {
-        public static final String motor1 = "motor1";
-        public static final String rotarySensor = "rotarysensor";
+    public static final class Drivetrain {
+        public static final String driveMotorFrontLeft = "drive_motor_front_left";
+        public static final String driveMotorFrontRight = "drive_motor_front_right";
+        public static final String driveMotorBackLeft = "drive_motor_back_left";
+        public static final String driveMotorBackRight = "drive_motor_back_right";
+    }
+
+    public static final class Lift {
+        public static final String liftMotor = "lift_motor";
+    }
+
+    public static final class Indicators {
+        public static final String indicatorLight1 = "indicator_light_1";
+        public static final String indicatorLight2 = "indicator_light_2";
+        public static final String indicatorLight3 = "indicator_light_3";
+    }
+
+    public static final class Vision {
+        public static final String limelightCamera = "limelight_camera";
+    }
+
+    public static final class Intake {
+        public static final String intakeMotor = "intake_motor";
+    }
+
+    public static final class Hood {
+        public static final String hoodServo = "servo_hood";
+        public static final String hoodEncoder = "hood_encoder";
     }
 
     public static final class ShooterFeed {
         public static final String feedCRServoLeft = "crservo_feed_left";
         public static final String feedCRServoRight = "crservo_feed_right";
+        public static final String feedEncoderLeft = "feed_left_encoder";
+        public static final String feedEncoderRight = "feed_right_encoder";
+        public static final String feedSensorLow = "feed_sensor_low";
+        public static final String feedSensorHigh = "feed_sensor_high";
     }
 
     public static final class Shooter {
-        public static final String leftMotor = "shooter_left";
-        public static final String rightMotor = "shooter_right";
+        public static final String leftMotor = "shooter_motor_left";
+        public static final String rightMotor = "shooter_motor_right";
     }
 
     public static final class Odometry {
-        public static final String pinpointOdometry = "pinpoint_odometry";
+        public static final String pinpointOdometry = "pinpoint_odometry_cpu";
     }
 }
