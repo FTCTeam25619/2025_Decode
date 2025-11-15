@@ -59,8 +59,8 @@ public class CompetitionTriggers implements ControllerTriggers {
             robot.shooterFeed.setState(ShooterFeed.FeedState.Dejam);
         })));
         c1LeftTrigger.whenInactive(new InstantCommand(() -> robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped)));
-        c1DPadRight.whenPressed(new InstantCommand(() -> robot.shooterFeed.changeFeedPower(0.05)));
-        c1DPadLeft.whenPressed(new InstantCommand(() -> robot.shooterFeed.changeFeedPower(-0.05)));
+        c1DPadRight.whenPressed(new InstantCommand(() -> robot.shooterFeed.changeFeedPower(0.01)));
+        c1DPadLeft.whenPressed(new InstantCommand(() -> robot.shooterFeed.changeFeedPower(-0.01)));
 
         c1RightTrigger.whenActive(new InstantCommand(() -> {
             robot.shooter.setState(Shooter.ShooterState.Shooting);
@@ -68,8 +68,8 @@ public class CompetitionTriggers implements ControllerTriggers {
         c1RightTrigger.whenInactive(new InstantCommand(() -> {
             robot.shooter.setState(Shooter.ShooterState.Stopped);
         }));
-        c1DPadUp.whenPressed(new InstantCommand(() -> robot.shooter.changeMotorPower(0.05)));
-        c1DPadDown.whenPressed(new InstantCommand(() -> robot.shooter.changeMotorPower(-0.05)));
+        c1DPadUp.whenPressed(new InstantCommand(() -> robot.shooter.changeTargetRPM(100)));
+        c1DPadDown.whenPressed(new InstantCommand(() -> robot.shooter.changeTargetRPM(-100)));
 
         // Reset odometry heading to 0 degrees
         c1Start.whenPressed(new InstantCommand(() -> robot.odometry.setOdometryHeading(0.0, AngleUnit.DEGREES)));
