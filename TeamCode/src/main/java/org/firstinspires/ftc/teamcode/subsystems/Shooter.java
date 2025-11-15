@@ -27,7 +27,7 @@ public class Shooter extends SubsystemBase {
 
     private ShooterState subsystemState = ShooterState.Stopped;
 
-    private double flywheelTargetRPM = 1000.0;
+    private double flywheelTargetRPM = 2500.0;
     private double motorPower = 0.0;
 
     public Shooter(HardwareMap hardwareMap, Telemetry telemetry) {
@@ -78,14 +78,12 @@ public class Shooter extends SubsystemBase {
 
 
         this.telemetry.addData("Shooter: State", this.subsystemState.toString());
+        this.telemetry.addData("Shooter: Power", this.motorPower);
         this.telemetry.addData("Shooter: Target RPM", this.flywheelTargetRPM);
         this.telemetry.addData("Shooter: At Speed", this.atRPM());
         this.telemetry.addData("Shooter: Motor RPM", this.getFlywheelRPM());
-        this.telemetry.addData("Shooter: Power", this.motorPower);
-        this.telemetry.addData("Shooter: R Motor RPM", this.motorRight.getVelocity() *
-                Constants.ConversionFactors.SECONDS_PER_MINUTE /
-                this.motorRight.getCPR());
         this.telemetry.addData("Shooter: L Motor Power", this.motorLeft.motorEx.getPower());
+        this.telemetry.addData("Shooter: R Motor Power", this.motorRight.motorEx.getPower());
     }
 
     // No motor belted -- 6100 RPM both
@@ -111,7 +109,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public double getFlywheelRPM() {
-        return this.motorLeft.getVelocity() *
+        return this.motorLeft.getVelocity() * ShooterConstants.gearRatio *
                 Constants.ConversionFactors.SECONDS_PER_MINUTE /
                 this.motorLeft.getCPR();
     }
@@ -130,8 +128,9 @@ public class Shooter extends SubsystemBase {
     }
 
     private void setMotorVelocity(double rpm) {
-        double velocity = rpm * motorLeft.getCPR() / Constants.ConversionFactors.SECONDS_PER_MINUTE;
-        motorLeft.motorEx.setVelocity(velocity);
-        motorRight.motorEx.setVelocity(velocity);
+        double velocityCPS = rpm * motorLeft.getCPR() /
+                (Constants.ConversionFactors.SECONDS_PER_MINUTE * ShooterConstants.gearRatio);
+        motorLeft.motorEx.setVelocity(velocityCPS);
+        motorRight.motorEx.setVelocity(velocityCPS);
     }
 }
