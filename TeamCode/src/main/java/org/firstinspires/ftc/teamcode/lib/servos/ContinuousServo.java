@@ -3,8 +3,7 @@ package org.firstinspires.ftc.teamcode.lib.servos;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-
-import org.firstinspires.ftc.teamcode.lib.util.MathUtils;
+import com.seattlesolvers.solverslib.util.MathUtils;
 
 public class ContinuousServo {
     private final CRServo servo;
