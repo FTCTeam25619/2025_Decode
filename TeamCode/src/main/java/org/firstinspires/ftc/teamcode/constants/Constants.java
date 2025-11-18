@@ -3,7 +3,8 @@ package org.firstinspires.ftc.teamcode.constants;
 public final class Constants {
 
     public static final class DebugModes {
-        public static final boolean ENABLE_FTC_DASHBOARD = true;
+        public static final boolean ENABLE_FTC_DASHBOARD = false;
+        public static final boolean ENABLE_PANELS_DASHBOARD = true;
         public static final class ControlInterface {
             public static final boolean TUNING_CONTROLS = false;
         }

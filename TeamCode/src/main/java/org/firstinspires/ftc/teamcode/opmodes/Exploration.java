@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode.opmodes;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.bylazar.telemetry.JoinedTelemetry;
+import com.bylazar.telemetry.PanelsTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -20,6 +22,9 @@ public class Exploration extends OpMode {
         if (Constants.DebugModes.ENABLE_FTC_DASHBOARD) {
             FtcDashboard dashboard = FtcDashboard.getInstance();
             telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
+        }
+        if (Constants.DebugModes.ENABLE_PANELS_DASHBOARD) {
+            telemetry = new JoinedTelemetry(PanelsTelemetry.INSTANCE.getFtcTelemetry(), telemetry);
         }
 
         robot = new NovaPyraRobot(hardwareMap, gamepad1, gamepad2, telemetry, OpModeSelection.EXPLORATION);
