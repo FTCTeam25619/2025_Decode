@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.pedropathing.follower.Follower;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.command.Robot;
@@ -11,6 +12,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.constants.Constants;
 import org.firstinspires.ftc.teamcode.constants.OpModes.OpModeSelection;
+import org.firstinspires.ftc.teamcode.constants.PedroConstants;
 import org.firstinspires.ftc.teamcode.lib.triggers.ControllerTriggers;
 import org.firstinspires.ftc.teamcode.subsystems.FeedStop;
 import org.firstinspires.ftc.teamcode.subsystems.Hood;
@@ -42,6 +44,7 @@ public class NovaPyraRobot extends Robot {
     public final Intake intake;
     public final Sensors sensors;
     public final IndicatorLights indicatorLights;
+    public final Follower pedroFollower;
     private final OpModeSelection selectedOpMode;
     private final ControllerTriggers controllerMappings;
 
@@ -65,6 +68,7 @@ public class NovaPyraRobot extends Robot {
         intake = new Intake(hardwareMap, NovaPyraRobot.telemetry);
         sensors = new Sensors(hardwareMap, NovaPyraRobot.telemetry);
         indicatorLights = new IndicatorLights(hardwareMap, NovaPyraRobot.telemetry);
+        pedroFollower = PedroConstants.createFollower(hardwareMap);
 
         // ControllerMappings
         if (Constants.DebugModes.ControlInterface.TUNING_CONTROLS) {
