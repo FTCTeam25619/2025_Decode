@@ -5,19 +5,19 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.bylazar.telemetry.JoinedTelemetry;
 import com.bylazar.telemetry.PanelsTelemetry;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.seattlesolvers.solverslib.command.CommandOpMode;
 
 import org.firstinspires.ftc.teamcode.constants.Constants;
 import org.firstinspires.ftc.teamcode.constants.OpModes.OpModeSelection;
 import org.firstinspires.ftc.teamcode.NovaPyraRobot;
 
 @TeleOp
-public class Exploration extends OpMode {
+public class Exploration extends CommandOpMode {
     private NovaPyraRobot robot;
 
     @Override
-    public void init() {
+    public void initialize() {
         // Create FTC Dashboard if setup for shop debugging
         if (Constants.DebugModes.ENABLE_FTC_DASHBOARD) {
             FtcDashboard dashboard = FtcDashboard.getInstance();
@@ -33,25 +33,34 @@ public class Exploration extends OpMode {
     }
 
     @Override
-    public void init_loop() {
-        // Anything that needs to happen before play button
-    }
-
-    @Override
-    public void start() {
+    public void initialize_loop() {
         telemetry.addData("Robot Status", "Running Exploration");
         robot.initOpMode();
+
+        robot.pedroFollower.startTeleopDrive();
     }
 
     @Override
-    public void loop() {
+    public void run() {
         robot.trackCycleTime(getRuntime());
         robot.run();
+
+        robot.pedroFollower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, false);
+        robot.pedroFollower.update();
+
+        telemetry.addData("X", robot.pedroFollower.getPose().getX());
+        telemetry.addData("Y", robot.pedroFollower.getPose().getY());
+        telemetry.addData("Heading", robot.pedroFollower.getPose().getHeading());
+        telemetry.update();
     }
 
     @Override
-    public void stop() {
+    public void end() {
         telemetry.addData("Robot Status", "Stopped Exploration");
+    }
+
+    @Override
+    public void reset() {
         robot.reset();
     }
 }
