@@ -26,7 +26,7 @@ public class Intake extends SubsystemBase {
 
     public Intake(HardwareMap hardwareMap, Telemetry telemetry) {
         intakeMotor = new MotorEx(hardwareMap, Devices.Intake.intakeMotor, Motor.GoBILDA.RPM_1150);
-        intakeMotor.setInverted(false);
+        intakeMotor.setInverted(true);
         intakeMotor.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
 
         this.telemetry = telemetry;
