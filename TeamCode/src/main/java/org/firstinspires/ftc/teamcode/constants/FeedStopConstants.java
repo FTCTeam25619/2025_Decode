@@ -6,9 +6,36 @@ import com.bylazar.configurables.annotations.Configurable;
 @Config
 @Configurable
 public class FeedStopConstants {
-    public static double engagedDegrees = 250.0;
-    public static double disengagedDegrees = 5.0;
-    public static volatile double testPositionDegrees = 100.0;
-    public static double minLimitDegrees = 0.0;
-    public static double maxLimitDegrees = 270.0;
+    @Config
+    @Configurable
+    public static class DeviceConfig {
+        // The angle in degrees of the Hood when the servo is set to 0.0
+        public static double feedStopServoAngleMin = 0.0;
+        // The angle in degrees of the Hood when the servo is set to 1.0
+        public static double feedStopServoAngleMax = 300.0;
+    }
+
+    @Config
+    @Configurable
+    public static class Limits {
+        // The angle in degrees where the Hood reaches its minimum hard stop
+        public static double feedStopHardStopMin = 25.0;
+        // The angle in degrees where the Hood reaches its maximum hard stop
+        public static double feedStopHardStopMax = 295.0;
+    }
+
+    @Config
+    @Configurable
+    public static class Control {
+        public static double incrementSize = 5.0;
+    }
+
+    @Config
+    @Configurable
+    public static class Positions {
+        public static double engagedDegrees = 30.0;
+        public static double disengagedDegrees = 290.0;
+        public static double testPositionDegrees =
+                (Limits.feedStopHardStopMin + Limits.feedStopHardStopMax) / 2.0;
+    }
 }
