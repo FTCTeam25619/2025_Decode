@@ -6,9 +6,13 @@ import com.pedropathing.follower.FollowerConstants;
 import com.pedropathing.ftc.FollowerBuilder;
 import com.pedropathing.ftc.drivetrains.Mecanum;
 import com.pedropathing.ftc.drivetrains.MecanumConstants;
+import com.pedropathing.ftc.localization.constants.PinpointConstants;
 import com.pedropathing.paths.PathConstraints;
+
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 public class PedroConstants {
     public static MecanumConstants mecanumConstants = new MecanumConstants()
@@ -21,10 +25,21 @@ public class PedroConstants {
             .rightFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
             .rightRearMotorDirection(DcMotorSimple.Direction.REVERSE);
 
-    public static Drivetrain drivetrain;
-    public static FollowerConstants followerConstants = new FollowerConstants();
+    public static PinpointConstants localizerConstants = new PinpointConstants()
+            .forwardPodY(OdometryConstants.forwardPodYMM)
+            .strafePodX(OdometryConstants.strafePodXMM)
+            .distanceUnit(DistanceUnit.MM)
+            .hardwareMapName(Devices.Odometry.pinpointOdometry)
+            .encoderResolution(OdometryConstants.podType)
+            .forwardEncoderDirection(OdometryConstants.yDirection)
+            .strafeEncoderDirection(OdometryConstants.xDirection);
 
-    public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1, 1);
+    public static Drivetrain drivetrain;
+    public static FollowerConstants followerConstants = new FollowerConstants()
+            .mass(4.92);
+
+    public static PathConstraints pathConstraints = new PathConstraints(
+            0.99, 100, 1, 1);
 
     public static Drivetrain createDrivetrain(HardwareMap hardwareMap) {
         if (drivetrain == null) {
@@ -37,6 +52,7 @@ public class PedroConstants {
         return new FollowerBuilder(followerConstants, hardwareMap)
                 .pathConstraints(pathConstraints)
                 .setDrivetrain(createDrivetrain(hardwareMap))
+                .pinpointLocalizer(localizerConstants)
                 .build();
     }
 }
