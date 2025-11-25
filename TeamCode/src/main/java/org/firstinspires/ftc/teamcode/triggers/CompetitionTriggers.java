@@ -13,6 +13,7 @@ import org.firstinspires.ftc.teamcode.lib.triggers.LeftStickY;
 import org.firstinspires.ftc.teamcode.lib.triggers.RightStickY;
 import org.firstinspires.ftc.teamcode.lib.triggers.TriggerAxis;
 import org.firstinspires.ftc.teamcode.lib.triggers.TriggerButton;
+import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.ShooterFeed;
 
@@ -53,12 +54,17 @@ public class CompetitionTriggers implements ControllerTriggers {
 
         // Map controller 1 buttons to commands
         c1LeftTrigger.whileActiveContinuous(new RepeatCommand(new InstantCommand(() -> {
-            robot.shooterFeed.setState(ShooterFeed.FeedState.Feeding);
+//            robot.shooterFeed.setState(ShooterFeed.FeedState.Feeding);
+            robot.intake.setState(Intake.IntakeState.Intake);
         })));
         c1LeftTrigger.and(c1LeftBumper).whileActiveContinuous(new RepeatCommand(new InstantCommand(() -> {
-            robot.shooterFeed.setState(ShooterFeed.FeedState.Dejam);
+//            robot.shooterFeed.setState(ShooterFeed.FeedState.Dejam);
+            robot.intake.setState(Intake.IntakeState.Dejam);
         })));
-        c1LeftTrigger.whenInactive(new InstantCommand(() -> robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped)));
+        c1LeftTrigger.whenInactive(new InstantCommand(() -> {
+//            robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
+            robot.intake.setState(Intake.IntakeState.Stopped);
+        }));
         c1DPadRight.whenPressed(new InstantCommand(() -> robot.shooterFeed.changeFeedPower(0.01)));
         c1DPadLeft.whenPressed(new InstantCommand(() -> robot.shooterFeed.changeFeedPower(-0.01)));
 
