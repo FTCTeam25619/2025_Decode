@@ -40,6 +40,10 @@ public class Devices {
         public static final String feedSensorHigh = "feed_sensor_high";
     }
 
+    public static final class FeedStop {
+        public static final String feedStopServo = "servo_feed_stop";
+    }
+
     public static final class Shooter {
         public static final String leftMotor = "shooter_motor_left";
         public static final String rightMotor = "shooter_motor_right";
