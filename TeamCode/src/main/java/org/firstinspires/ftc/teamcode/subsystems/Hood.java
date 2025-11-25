@@ -35,4 +35,8 @@ public class Hood extends SubsystemBase {
                 HoodConstants.Limits.hoodHardStopMin,
                 HoodConstants.Limits.hoodHardStopMax);
     }
+
+    public void moveBy(double degrees) {
+        setAngle(currentAngle + degrees);
+    }
 }
