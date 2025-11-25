@@ -8,11 +8,13 @@ import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.NovaPyraRobot;
+import org.firstinspires.ftc.teamcode.constants.HoodConstants;
 import org.firstinspires.ftc.teamcode.lib.triggers.ControllerTriggers;
 import org.firstinspires.ftc.teamcode.lib.triggers.LeftStickY;
 import org.firstinspires.ftc.teamcode.lib.triggers.RightStickY;
 import org.firstinspires.ftc.teamcode.lib.triggers.TriggerAxis;
 import org.firstinspires.ftc.teamcode.lib.triggers.TriggerButton;
+import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.ShooterFeed;
 
@@ -53,12 +55,17 @@ public class CompetitionTriggers implements ControllerTriggers {
 
         // Map controller 1 buttons to commands
         c1LeftTrigger.whileActiveContinuous(new RepeatCommand(new InstantCommand(() -> {
-            robot.shooterFeed.setState(ShooterFeed.FeedState.Feeding);
+//            robot.shooterFeed.setState(ShooterFeed.FeedState.Feeding);
+            robot.intake.setState(Intake.IntakeState.Intake);
         })));
         c1LeftTrigger.and(c1LeftBumper).whileActiveContinuous(new RepeatCommand(new InstantCommand(() -> {
-            robot.shooterFeed.setState(ShooterFeed.FeedState.Dejam);
+//            robot.shooterFeed.setState(ShooterFeed.FeedState.Dejam);
+            robot.intake.setState(Intake.IntakeState.Dejam);
         })));
-        c1LeftTrigger.whenInactive(new InstantCommand(() -> robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped)));
+        c1LeftTrigger.whenInactive(new InstantCommand(() -> {
+//            robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
+            robot.intake.setState(Intake.IntakeState.Stopped);
+        }));
         c1DPadRight.whenPressed(new InstantCommand(() -> robot.shooterFeed.changeFeedPower(0.01)));
         c1DPadLeft.whenPressed(new InstantCommand(() -> robot.shooterFeed.changeFeedPower(-0.01)));
 
@@ -70,6 +77,9 @@ public class CompetitionTriggers implements ControllerTriggers {
         }));
         c1DPadUp.whenPressed(new InstantCommand(() -> robot.shooter.changeTargetRPM(100)));
         c1DPadDown.whenPressed(new InstantCommand(() -> robot.shooter.changeTargetRPM(-100)));
+
+        c1A.whenPressed(new InstantCommand(() -> robot.hood.moveBy(HoodConstants.Control.incrementSize)));
+        c1B.whenPressed(new InstantCommand(() -> robot.hood.moveBy(-HoodConstants.Control.incrementSize)));
 
         // Reset odometry heading to 0 degrees
         c1Start.whenPressed(new InstantCommand(() -> robot.odometry.setOdometryHeading(0.0, AngleUnit.DEGREES)));
