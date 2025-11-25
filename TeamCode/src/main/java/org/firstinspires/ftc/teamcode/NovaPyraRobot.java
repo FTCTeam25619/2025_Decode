@@ -13,6 +13,7 @@ import org.firstinspires.ftc.teamcode.constants.Constants;
 import org.firstinspires.ftc.teamcode.constants.OpModes.OpModeSelection;
 import org.firstinspires.ftc.teamcode.lib.triggers.ControllerTriggers;
 import org.firstinspires.ftc.teamcode.subsystems.Hood;
+import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Odometry;
 import org.firstinspires.ftc.teamcode.subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.ShooterFeed;
@@ -34,6 +35,7 @@ public class NovaPyraRobot extends Robot {
     public final ShooterFeed shooterFeed;
     public final Shooter shooter;
     public final Hood hood;
+    public final Intake intake;
     private final OpModeSelection selectedOpMode;
     private final ControllerTriggers controllerMappings;
 
@@ -53,6 +55,7 @@ public class NovaPyraRobot extends Robot {
         shooterFeed = new ShooterFeed(hardwareMap,NovaPyraRobot.telemetry);
         shooter = new Shooter(hardwareMap, NovaPyraRobot.telemetry);
         hood = new Hood(hardwareMap, NovaPyraRobot.telemetry);
+        intake = new Intake(hardwareMap, NovaPyraRobot.telemetry);
 
         // ControllerMappings
         if (Constants.DebugModes.ControlInterface.TUNING_CONTROLS) {
