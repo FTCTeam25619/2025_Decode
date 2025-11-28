@@ -17,5 +17,15 @@ public class ConfigConstants {
     @Configurable
     public static class TestPositions {
     }
+
+    @Config
+    @Configurable
+    public static class Colors {
+        public static volatile float PURPLE_HUE_MIN = 225.0f;
+        public static volatile float PURPLE_HUE_MAX = 240.0f;
+        public static volatile float GREEN_HUE_MIN = 150.0f;
+        public static volatile float GREEN_HUE_MAX = 165.0f;
+        public static volatile double MATCHING_DISTANCE_CM = 2.0;
+    }
 }
 
