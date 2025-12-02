@@ -10,14 +10,15 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.NovaPyraRobot;
 import org.firstinspires.ftc.teamcode.constants.FeedStopConstants;
 import org.firstinspires.ftc.teamcode.constants.HoodConstants;
+import org.firstinspires.ftc.teamcode.constants.IndicatorLightsConstants;
 import org.firstinspires.ftc.teamcode.lib.triggers.ControllerTriggers;
 import org.firstinspires.ftc.teamcode.lib.triggers.LeftStickY;
 import org.firstinspires.ftc.teamcode.lib.triggers.RightStickY;
 import org.firstinspires.ftc.teamcode.lib.triggers.TriggerAxis;
 import org.firstinspires.ftc.teamcode.lib.triggers.TriggerButton;
+import org.firstinspires.ftc.teamcode.subsystems.IndicatorLights;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Shooter;
-import org.firstinspires.ftc.teamcode.subsystems.ShooterFeed;
 
 public class CompetitionTriggers implements ControllerTriggers {
     private final NovaPyraRobot robot;
@@ -31,8 +32,72 @@ public class CompetitionTriggers implements ControllerTriggers {
     }
 
     public void setupGamepadButtonMappings() {
+        setupNonControllerTriggers();
         setupController1ButtonMappings();
         setupController2ButtonMappings();
+    }
+
+    public void setupNonControllerTriggers() {
+        this.robot.sensors.intakeSeesGreen.whenActive(new InstantCommand(() -> {
+            this.robot.indicatorLights.setLightColor(
+                    IndicatorLights.Indicators.Light1,
+                    IndicatorLightsConstants.IndicatorColors.GREEN);
+        }));
+        this.robot.sensors.intakeSeesGreen.whenInactive(new InstantCommand(() -> {
+            this.robot.indicatorLights.setLightColor(
+                    IndicatorLights.Indicators.Light1,
+                    IndicatorLightsConstants.IndicatorColors.OFF);
+        }));
+        this.robot.sensors.intakeSeesPurple.whenActive(new InstantCommand(() -> {
+            this.robot.indicatorLights.setLightColor(
+                    IndicatorLights.Indicators.Light1,
+                    IndicatorLightsConstants.IndicatorColors.PURPLE);
+        }));
+        this.robot.sensors.intakeSeesPurple.whenInactive(new InstantCommand(() -> {
+            this.robot.indicatorLights.setLightColor(
+                    IndicatorLights.Indicators.Light1,
+                    IndicatorLightsConstants.IndicatorColors.OFF);
+        }));
+        this.robot.sensors.feedLowSeesGreen.whenActive(new InstantCommand(() -> {
+            this.robot.indicatorLights.setLightColor(
+                    IndicatorLights.Indicators.Light2,
+                    IndicatorLightsConstants.IndicatorColors.GREEN);
+        }));
+        this.robot.sensors.feedLowSeesGreen.whenInactive(new InstantCommand(() -> {
+            this.robot.indicatorLights.setLightColor(
+                    IndicatorLights.Indicators.Light2,
+                    IndicatorLightsConstants.IndicatorColors.OFF);
+        }));
+        this.robot.sensors.feedLowSeesPurple.whenActive(new InstantCommand(() -> {
+            this.robot.indicatorLights.setLightColor(
+                    IndicatorLights.Indicators.Light2,
+                    IndicatorLightsConstants.IndicatorColors.PURPLE);
+        }));
+        this.robot.sensors.feedLowSeesPurple.whenInactive(new InstantCommand(() -> {
+            this.robot.indicatorLights.setLightColor(
+                    IndicatorLights.Indicators.Light2,
+                    IndicatorLightsConstants.IndicatorColors.OFF);
+        }));
+
+        this.robot.sensors.feedHighSeesGreen.whenActive(new InstantCommand(() -> {
+            this.robot.indicatorLights.setLightColor(
+                    IndicatorLights.Indicators.Light3,
+                    IndicatorLightsConstants.IndicatorColors.GREEN);
+        }));
+        this.robot.sensors.feedHighSeesGreen.whenInactive(new InstantCommand(() -> {
+            this.robot.indicatorLights.setLightColor(
+                    IndicatorLights.Indicators.Light3,
+                    IndicatorLightsConstants.IndicatorColors.OFF);
+        }));
+        this.robot.sensors.feedHighSeesPurple.whenActive(new InstantCommand(() -> {
+            this.robot.indicatorLights.setLightColor(
+                    IndicatorLights.Indicators.Light3,
+                    IndicatorLightsConstants.IndicatorColors.PURPLE);
+        }));this.robot.sensors.feedHighSeesPurple.whenInactive(new InstantCommand(() -> {
+            this.robot.indicatorLights.setLightColor(
+                    IndicatorLights.Indicators.Light3,
+                    IndicatorLightsConstants.IndicatorColors.OFF);
+        }));
     }
 
     private void setupController1ButtonMappings() {

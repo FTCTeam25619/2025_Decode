@@ -10,7 +10,10 @@ public final class Constants {
         }
         public static final class Telemetry {
             public static final boolean DEBUG_ODOMETRY = true;
-
+            public static final boolean DEBUG_SENSORS = true;
+            // Editor complains about simplifying this, but we intentionally want the
+            // value to be dependent on whether ENABLE_PANELS_DASHBOARD is true.
+            public static final boolean DEBUG_LIGHTS = ENABLE_PANELS_DASHBOARD && true;
         }
     }
 

@@ -18,6 +18,12 @@ public class Devices {
         public static final String indicatorLight3 = "indicator_light_3";
     }
 
+    public static final class Sensors {
+        public static final String intakeColorSensor = "intake_color_sensor";
+        public static final String feedColorSensorLow = "feed_color_sensor_low";
+        public static final String feedColorSensorHigh = "feed_color_sensor_high";
+    }
+
     public static final class Vision {
         public static final String limelightCamera = "limelight_camera";
     }
@@ -36,8 +42,6 @@ public class Devices {
         public static final String feedCRServoRight = "crservo_feed_right";
         public static final String feedEncoderLeft = "feed_left_encoder";
         public static final String feedEncoderRight = "feed_right_encoder";
-        public static final String feedSensorLow = "feed_sensor_low";
-        public static final String feedSensorHigh = "feed_sensor_high";
     }
 
     public static final class FeedStop {
