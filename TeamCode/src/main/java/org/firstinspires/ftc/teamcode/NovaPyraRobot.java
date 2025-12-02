@@ -12,6 +12,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.constants.Constants;
 import org.firstinspires.ftc.teamcode.constants.OpModes.OpModeSelection;
 import org.firstinspires.ftc.teamcode.lib.triggers.ControllerTriggers;
+import org.firstinspires.ftc.teamcode.subsystems.FeedStop;
 import org.firstinspires.ftc.teamcode.subsystems.Hood;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Odometry;
@@ -34,6 +35,7 @@ public class NovaPyraRobot extends Robot {
     public final Odometry odometry;
     public final ShooterFeed shooterFeed;
     public final Shooter shooter;
+    public final FeedStop feedStop;
     public final Hood hood;
     public final Intake intake;
     private final OpModeSelection selectedOpMode;
@@ -54,6 +56,7 @@ public class NovaPyraRobot extends Robot {
         odometry = new Odometry(hardwareMap, NovaPyraRobot.telemetry);
         shooterFeed = new ShooterFeed(hardwareMap,NovaPyraRobot.telemetry);
         shooter = new Shooter(hardwareMap, NovaPyraRobot.telemetry);
+        feedStop = new FeedStop(hardwareMap, NovaPyraRobot.telemetry);
         hood = new Hood(hardwareMap, NovaPyraRobot.telemetry);
         intake = new Intake(hardwareMap, NovaPyraRobot.telemetry);
 
