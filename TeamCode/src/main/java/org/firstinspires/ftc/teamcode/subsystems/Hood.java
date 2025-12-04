@@ -36,6 +36,11 @@ public class Hood extends SubsystemBase {
                 HoodConstants.Limits.hoodHardStopMax);
     }
 
+    public boolean atTargetAngle() {
+        // TODO: Replace this with actual thresholding of readings from servo feedback when available
+        return true;
+    }
+
     public void moveBy(double degrees) {
         setAngle(currentAngle + degrees);
     }
