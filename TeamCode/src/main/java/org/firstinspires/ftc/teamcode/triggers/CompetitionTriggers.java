@@ -8,9 +8,10 @@ import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.NovaPyraRobot;
-import org.firstinspires.ftc.teamcode.constants.FeedStopConstants;
-import org.firstinspires.ftc.teamcode.constants.HoodConstants;
 import org.firstinspires.ftc.teamcode.constants.IndicatorLightsConstants;
+import org.firstinspires.ftc.teamcode.lib.orchestration.PresetShot;
+import org.firstinspires.ftc.teamcode.lib.orchestration.ShotController;
+import org.firstinspires.ftc.teamcode.lib.orchestration.ShotCycleState;
 import org.firstinspires.ftc.teamcode.lib.triggers.ControllerTriggers;
 import org.firstinspires.ftc.teamcode.lib.triggers.LeftStickY;
 import org.firstinspires.ftc.teamcode.lib.triggers.RightStickY;
@@ -18,7 +19,6 @@ import org.firstinspires.ftc.teamcode.lib.triggers.TriggerAxis;
 import org.firstinspires.ftc.teamcode.lib.triggers.TriggerButton;
 import org.firstinspires.ftc.teamcode.subsystems.IndicatorLights;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
-import org.firstinspires.ftc.teamcode.subsystems.Shooter;
 
 public class CompetitionTriggers implements ControllerTriggers {
     private final NovaPyraRobot robot;
@@ -93,11 +93,14 @@ public class CompetitionTriggers implements ControllerTriggers {
             this.robot.indicatorLights.setLightColor(
                     IndicatorLights.Indicators.Light3,
                     IndicatorLightsConstants.IndicatorColors.PURPLE);
-        }));this.robot.sensors.feedHighSeesPurple.whenInactive(new InstantCommand(() -> {
+        }));
+        this.robot.sensors.feedHighSeesPurple.whenInactive(new InstantCommand(() -> {
             this.robot.indicatorLights.setLightColor(
                     IndicatorLights.Indicators.Light3,
                     IndicatorLightsConstants.IndicatorColors.OFF);
         }));
+
+        this.robot.shotController.setupStateTransitionTriggers();
     }
 
     private void setupController1ButtonMappings() {
@@ -120,36 +123,53 @@ public class CompetitionTriggers implements ControllerTriggers {
         GamepadButton c1Start = new GamepadButton(controller1, GamepadKeys.Button.START);
 
         // Map controller 1 buttons to commands
-        c1LeftTrigger.whileActiveContinuous(new RepeatCommand(new InstantCommand(() -> {
-//            robot.shooterFeed.setState(ShooterFeed.FeedState.Feeding);
-            robot.intake.setState(Intake.IntakeState.Intake);
-        })));
+        c1LeftTrigger.whileActiveContinuous(new InstantCommand(() -> {
+            robot.shotController.setState(ShotCycleState.INTAKE);
+        }));
         c1LeftTrigger.and(c1LeftBumper).whileActiveContinuous(new RepeatCommand(new InstantCommand(() -> {
-//            robot.shooterFeed.setState(ShooterFeed.FeedState.Dejam);
             robot.intake.setState(Intake.IntakeState.Dejam);
         })));
         c1LeftTrigger.whenInactive(new InstantCommand(() -> {
-//            robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
-            robot.intake.setState(Intake.IntakeState.Stopped);
+            // TODO: Check how this should work
+            robot.shotController.setState(ShotCycleState.STAGED);
         }));
         c1DPadRight.whenPressed(new InstantCommand(() -> robot.shooterFeed.changeFeedPower(0.01)));
         c1DPadLeft.whenPressed(new InstantCommand(() -> robot.shooterFeed.changeFeedPower(-0.01)));
 
-        c1RightTrigger.whenActive(new InstantCommand(() -> {
-            robot.shooter.setState(Shooter.ShooterState.Shooting);
+        c1RightTrigger.and(c1RightBumper.negate()).whenActive(new InstantCommand(() -> {
+            robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
+//            robot.shooter.setState(Shooter.ShooterState.Shooting);
+        }));
+        c1RightBumper.and(c1RightTrigger).whenActive(new InstantCommand(() -> {
+            robot.shotController.setState(ShotCycleState.SHOOTING);
         }));
         c1RightTrigger.whenInactive(new InstantCommand(() -> {
-            robot.shooter.setState(Shooter.ShooterState.Stopped);
+            // TODO: What should happen here?
+            robot.shotController.setState(ShotCycleState.IDLE);
+//            robot.shooter.setState(Shooter.ShooterState.Stopped);
         }));
         c1DPadUp.whenPressed(new InstantCommand(() -> robot.shooter.changeTargetRPM(100)));
         c1DPadDown.whenPressed(new InstantCommand(() -> robot.shooter.changeTargetRPM(-100)));
 
-        c1A.whenPressed(new InstantCommand(() -> robot.hood.moveBy(HoodConstants.Control.incrementSize)));
-        c1B.whenPressed(new InstantCommand(() -> robot.hood.moveBy(-HoodConstants.Control.incrementSize)));
+//        c1A.whenPressed(new InstantCommand(() -> robot.hood.moveBy(HoodConstants.Control.incrementSize)));
+//        c1B.whenPressed(new InstantCommand(() -> robot.hood.moveBy(-HoodConstants.Control.incrementSize)));
 
-        c1RightBumper.whenPressed(new InstantCommand(robot.feedStop::setTestPosition));
-        c1X.whenPressed(new InstantCommand(robot.feedStop::disengage));
-        c1Y.whenPressed(new InstantCommand(robot.feedStop::engage));
+//        c1RightBumper.whenPressed(new InstantCommand(robot.feedStop::setTestPosition));
+//        c1X.whenPressed(new InstantCommand(robot.feedStop::disengage));
+//        c1Y.whenPressed(new InstantCommand(robot.feedStop::engage));
+
+        c1A.whenPressed(new InstantCommand(() -> {
+            robot.shotController.setupPresetShot(PresetShot.AtGoal);
+        }));
+        c1X.whenPressed(new InstantCommand(() -> {
+            robot.shotController.setupPresetShot(PresetShot.NearZoneMid);
+        }));
+        c1B.whenPressed(new InstantCommand(() -> {
+            robot.shotController.setupPresetShot(PresetShot.NearZoneEnd);
+        }));
+        c1Y.whenPressed(new InstantCommand(() -> {
+            robot.shotController.setupPresetShot(PresetShot.FarWall);
+        }));
 
         // Reset odometry heading to 0 degrees
         c1Start.whenPressed(new InstantCommand(() -> robot.odometry.setOdometryHeading(0.0, AngleUnit.DEGREES)));
