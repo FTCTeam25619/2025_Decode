@@ -8,9 +8,13 @@ import com.bylazar.telemetry.PanelsTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 
+import org.firstinspires.ftc.teamcode.constants.ConfigConstants;
 import org.firstinspires.ftc.teamcode.constants.Constants;
+import org.firstinspires.ftc.teamcode.constants.DriveConstants;
 import org.firstinspires.ftc.teamcode.constants.OpModes.OpModeSelection;
 import org.firstinspires.ftc.teamcode.NovaPyraRobot;
+import org.firstinspires.ftc.teamcode.constants.PedroConstants;
+import org.firstinspires.ftc.teamcode.lib.util.NovaPyraUtils;
 
 @TeleOp
 public class Exploration extends CommandOpMode {
@@ -45,7 +49,22 @@ public class Exploration extends CommandOpMode {
         robot.trackCycleTime(getRuntime());
         robot.run();
 
-        robot.pedroFollower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, false);
+        double[] driveAxes = NovaPyraUtils.deadbandAndSmooth(
+                -gamepad1.left_stick_y,
+                -gamepad1.left_stick_x,
+                DriveConstants.Joysticks.driveSmoothFactor,
+                DriveConstants.Joysticks.driveDeadband,
+                DriveConstants.Joysticks.driveInverseDeadband
+        );
+
+        double rotateAxis = NovaPyraUtils.deadbandAndSmoothValue(
+                -gamepad1.right_stick_x,
+                DriveConstants.Joysticks.rotateSmoothFactor,
+                DriveConstants.Joysticks.rotateDeadband,
+                DriveConstants.Joysticks.rotateInverseDeadband
+        );
+
+        robot.pedroFollower.setTeleOpDrive(driveAxes[0], driveAxes[1], rotateAxis, false);
         robot.pedroFollower.update();
 
         telemetry.addData("X", robot.pedroFollower.getPose().getX());
