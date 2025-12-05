@@ -29,7 +29,7 @@ public class ShotController {
 
     private double targetFlywheelRPM = ShooterConstants.Targets.idleRPM;
     private double targetHoodAngle = HoodConstants.Limits.hoodHardStopMax;
-    private boolean presetShotMode = false;
+    private boolean presetShotMode = true;
 
     private final InterpLUT shooterRPMInterpolator;
     private final InterpLUT hoodAngleInterpolator;
@@ -85,6 +85,9 @@ public class ShotController {
                 }
                 break;
             case READY_TO_SHOOT:
+                if (this.readyToShoot() && !presetShotMode) {
+                    this.currentState = ShotCycleState.SHOOTING;
+                }
                 break;
             case SHOOTING:
                 break;
@@ -125,8 +128,8 @@ public class ShotController {
             this.robot.feedStop.engage();
             this.robot.shooter.setTargetRPM(this.getTargetFlywheelRPM());
             this.robot.hood.setAngle(this.getTargetHoodAngle());
+            this.robot.intake.setState(Intake.IntakeState.Stopped);
             // Same as prior state STAGED
-            this.robot.intake.setState(Intake.IntakeState.Intake);
             this.robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
         }));
         stateTransitionTrigger(ShotCycleState.READY_TO_SHOOT).whenActive(new InstantCommand(() -> {
@@ -140,12 +143,14 @@ public class ShotController {
         }));
         stateTransitionTrigger(ShotCycleState.SHOOTING).whenActive(new InstantCommand(() -> {
             // Transitioning to SHOOTING state
+            // TODO: Extract this to a new InterpLUT and add to PresetShot values
+            this.robot.shooterFeed.setFeedPower(0.2);
             this.robot.shooterFeed.setState(ShooterFeed.FeedState.Feeding);
+            this.robot.intake.setState(Intake.IntakeState.Intake);
             // Same as prior state READY_TO_SHOOT
             this.robot.feedStop.disengage();
             this.robot.shooter.setTargetRPM(this.getTargetFlywheelRPM());
             this.robot.hood.setAngle(this.getTargetHoodAngle());
-            this.robot.intake.setState(Intake.IntakeState.Intake);
         }));
     }
 
