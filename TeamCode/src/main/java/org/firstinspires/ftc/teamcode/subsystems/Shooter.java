@@ -25,9 +25,9 @@ public class Shooter extends SubsystemBase {
         Shooting;
     }
 
-    private ShooterState subsystemState = ShooterState.Stopped;
+    private ShooterState subsystemState = ShooterState.Shooting;
 
-    private double flywheelTargetRPM = 2500.0;
+    private double flywheelTargetRPM = ShooterConstants.Targets.idleRPM;
     private double motorPower = 0.0;
 
     public Shooter(HardwareMap hardwareMap, Telemetry telemetry) {
