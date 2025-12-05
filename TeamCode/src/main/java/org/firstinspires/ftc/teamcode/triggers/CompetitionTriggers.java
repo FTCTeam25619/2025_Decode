@@ -123,7 +123,7 @@ public class CompetitionTriggers implements ControllerTriggers {
         GamepadButton c1Start = new GamepadButton(controller1, GamepadKeys.Button.START);
 
         // Map controller 1 buttons to commands
-        c1LeftTrigger.whileActiveContinuous(new InstantCommand(() -> {
+        c1LeftTrigger.whenActive(new InstantCommand(() -> {
             robot.shotController.setState(ShotCycleState.INTAKE);
         }));
         c1LeftTrigger.and(c1LeftBumper).whileActiveContinuous(new RepeatCommand(new InstantCommand(() -> {
@@ -140,7 +140,7 @@ public class CompetitionTriggers implements ControllerTriggers {
             robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
 //            robot.shooter.setState(Shooter.ShooterState.Shooting);
         }));
-        c1RightBumper.and(c1RightTrigger).whenActive(new InstantCommand(() -> {
+        c1RightBumper.whenActive(new InstantCommand(() -> {
             robot.shotController.setState(ShotCycleState.SHOOTING);
         }));
         c1RightTrigger.whenInactive(new InstantCommand(() -> {
