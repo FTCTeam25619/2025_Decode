@@ -9,6 +9,7 @@ import org.firstinspires.ftc.teamcode.NovaPyraRobot;
 import org.firstinspires.ftc.teamcode.constants.HoodConstants;
 import org.firstinspires.ftc.teamcode.constants.OdometryConstants;
 import org.firstinspires.ftc.teamcode.constants.ShooterConstants;
+import org.firstinspires.ftc.teamcode.constants.ShooterFeedConstants;
 import org.firstinspires.ftc.teamcode.lib.triggers.SupplierTrigger;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.ShooterFeed;
@@ -29,10 +30,12 @@ public class ShotController {
 
     private double targetFlywheelRPM = ShooterConstants.Targets.idleRPM;
     private double targetHoodAngle = HoodConstants.Limits.hoodHardStopMax;
+    private double targetFeedPower = ShooterFeedConstants.Targets.defaultFeedPower;
     private boolean presetShotMode = true;
 
     private final InterpLUT shooterRPMInterpolator;
     private final InterpLUT hoodAngleInterpolator;
+    private final InterpLUT feedPowerInterpolator;
 
     public ShotController(NovaPyraRobot robot, Telemetry telemetry) {
         this.robot = robot;
@@ -40,6 +43,7 @@ public class ShotController {
 
         this.shooterRPMInterpolator = setupShooterRPMInterpolator();
         this.hoodAngleInterpolator = setupHoodAngleInterpolator();
+        this.feedPowerInterpolator = setupFeedPowerInterpolator();
     }
 
     public void setState(ShotCycleState newState) {
@@ -63,6 +67,7 @@ public class ShotController {
         telemetry.addData("ShotController: Transitioning?", this.stateTransition);
         telemetry.addData("ShotController: RPM", this.getTargetFlywheelRPM());
         telemetry.addData("ShotController: Angle", this.getTargetHoodAngle());
+        telemetry.addData("ShotController: Feed Power", this.getTargetFeedPower());
 
         this.priorState = this.currentState;
 
@@ -144,7 +149,7 @@ public class ShotController {
         stateTransitionTrigger(ShotCycleState.SHOOTING).whenActive(new InstantCommand(() -> {
             // Transitioning to SHOOTING state
             // TODO: Extract this to a new InterpLUT and add to PresetShot values
-            this.robot.shooterFeed.setFeedPower(0.2);
+            this.robot.shooterFeed.setFeedPower(this.getTargetFeedPower());
             this.robot.shooterFeed.setState(ShooterFeed.FeedState.Feeding);
             this.robot.intake.setState(Intake.IntakeState.Intake);
             // Same as prior state READY_TO_SHOOT
@@ -162,17 +167,23 @@ public class ShotController {
         this.targetHoodAngle = newTarget;
     }
 
+    public void setTargetFeedPower(double newTarget) {
+        this.targetFeedPower = newTarget;
+    }
+
     public void autoTargetShot() {
         this.presetShotMode = false;
         double distance = getDistanceToTarget();
         setTargetFlywheelRPM(shooterRPMInterpolator.get(distance));
         setTargetHoodAngle(hoodAngleInterpolator.get(distance));
+        setTargetFeedPower(feedPowerInterpolator.get(distance));
     }
 
     public void setupPresetShot(PresetShot shotSetting) {
         this.presetShotMode = true;
         setTargetFlywheelRPM(shotSetting.targetFlywheelRPM);
         setTargetHoodAngle(shotSetting.targetHoodAngle);
+        setTargetFeedPower(shotSetting.targetFeedPower);
     }
 
     public double getTargetFlywheelRPM() {
@@ -181,6 +192,10 @@ public class ShotController {
 
     public double getTargetHoodAngle() {
         return this.targetHoodAngle;
+    }
+
+    public double getTargetFeedPower() {
+        return this.targetFeedPower;
     }
 
     public boolean staged() {
@@ -246,6 +261,16 @@ public class ShotController {
         table.add(OdometryConstants.TargetDistances.nearZoneMidShot, HoodConstants.Targets.nearZoneMidShot);
         table.add(OdometryConstants.TargetDistances.nearZoneEndShot, HoodConstants.Targets.nearZoneEndShot);
         table.add(OdometryConstants.TargetDistances.farWallShot, HoodConstants.Targets.farWallShot);
+        table.createLUT();
+        return table;
+    }
+
+    private InterpLUT setupFeedPowerInterpolator() {
+        InterpLUT table = new InterpLUT();
+        table.add(OdometryConstants.TargetDistances.atGoalShot, ShooterFeedConstants.Targets.atGoalShot);
+        table.add(OdometryConstants.TargetDistances.nearZoneMidShot, ShooterFeedConstants.Targets.nearZoneMidShot);
+        table.add(OdometryConstants.TargetDistances.nearZoneEndShot, ShooterFeedConstants.Targets.nearZoneEndShot);
+        table.add(OdometryConstants.TargetDistances.farWallShot, ShooterFeedConstants.Targets.farWallShot);
         table.createLUT();
         return table;
     }
