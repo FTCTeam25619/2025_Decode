@@ -4,6 +4,7 @@ import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.button.Trigger;
 import com.seattlesolvers.solverslib.util.InterpLUT;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.NovaPyraRobot;
 import org.firstinspires.ftc.teamcode.constants.HoodConstants;
 import org.firstinspires.ftc.teamcode.constants.OdometryConstants;
@@ -24,6 +25,7 @@ public class ShotController {
     private boolean stateTransition;
 
     private final NovaPyraRobot robot;
+    private final Telemetry telemetry;
 
     private double targetFlywheelRPM = ShooterConstants.Targets.idleRPM;
     private double targetHoodAngle = HoodConstants.Limits.hoodHardStopMax;
@@ -32,8 +34,9 @@ public class ShotController {
     private final InterpLUT shooterRPMInterpolator;
     private final InterpLUT hoodAngleInterpolator;
 
-    public ShotController(NovaPyraRobot robot) {
+    public ShotController(NovaPyraRobot robot, Telemetry telemetry) {
         this.robot = robot;
+        this.telemetry = telemetry;
 
         this.shooterRPMInterpolator = setupShooterRPMInterpolator();
         this.hoodAngleInterpolator = setupHoodAngleInterpolator();
@@ -54,6 +57,12 @@ public class ShotController {
         } else if (this.stateTransition) {
             this.stateTransition = false;
         }
+
+        telemetry.addData("ShotController: Prior State", this.priorState.name());
+        telemetry.addData("ShotController: Current State", this.currentState.name());
+        telemetry.addData("ShotController: Transitioning?", this.stateTransition);
+        telemetry.addData("ShotController: RPM", this.getTargetFlywheelRPM());
+        telemetry.addData("ShotController: Angle", this.getTargetHoodAngle());
 
         this.priorState = this.currentState;
 

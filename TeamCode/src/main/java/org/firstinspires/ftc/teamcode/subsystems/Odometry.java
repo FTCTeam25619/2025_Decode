@@ -77,28 +77,28 @@ public class Odometry extends SubsystemBase {
     }
 
     private void addOdometryTelemetry() {
-        /*
-        gets the current Position (x & y in mm, and heading in degrees) of the robot, and prints it.
-         */
-        Pose2D pos = this.odometry.getPosition();
-        String data = String.format(Locale.US,
-                "{X (mm): %.3f, Y (mm): %.3f, H (deg): %.3f}",
-                pos.getX(DistanceUnit.MM),
-                pos.getY(DistanceUnit.MM),
-                pos.getHeading(AngleUnit.DEGREES));
-        telemetry.addData("Position", data);
-
-        /*
-        gets the current Velocity (x & y in mm/sec and heading in degrees/sec) and prints it.
-         */
-        String velocity = String.format(Locale.US,
-                "{XVel (mm/s): %.3f, YVel (mm/s): %.3f, HVel (deg/s): %.3f}",
-                this.odometry.getVelX(DistanceUnit.MM),
-                this.odometry.getVelY(DistanceUnit.MM),
-                this.odometry.getHeadingVelocity(UnnormalizedAngleUnit.DEGREES));
-        telemetry.addData("Velocity", velocity);
-
         if (Constants.DebugModes.Telemetry.DEBUG_ODOMETRY) {
+            /*
+            gets the current Position (x & y in mm, and heading in degrees) of the robot, and prints it.
+             */
+            Pose2D pos = this.odometry.getPosition();
+            String data = String.format(Locale.US,
+                    "{X (mm): %.3f, Y (mm): %.3f, H (deg): %.3f}",
+                    pos.getX(DistanceUnit.MM),
+                    pos.getY(DistanceUnit.MM),
+                    pos.getHeading(AngleUnit.DEGREES));
+            telemetry.addData("Position", data);
+
+            /*
+            gets the current Velocity (x & y in mm/sec and heading in degrees/sec) and prints it.
+             */
+            String velocity = String.format(Locale.US,
+                    "{XVel (mm/s): %.3f, YVel (mm/s): %.3f, HVel (deg/s): %.3f}",
+                    this.odometry.getVelX(DistanceUnit.MM),
+                    this.odometry.getVelY(DistanceUnit.MM),
+                    this.odometry.getHeadingVelocity(UnnormalizedAngleUnit.DEGREES));
+            telemetry.addData("Velocity", velocity);
+
             /*
             Gets the Pinpoint device status. Pinpoint can reflect a few states. But we'll primarily see
             READY: the device is working as normal
@@ -121,8 +121,8 @@ public class Odometry extends SubsystemBase {
                 telemetry.addData("REV Hub Frequency: ", cycleFrequency);
                 telemetry.addData("REV Hub Cycle Time (ms): ", cyclePeriod * 1000.0);
             }
-        }
 
-        telemetry.update();
+            telemetry.update();
+        }
     }
 }

@@ -69,7 +69,7 @@ public class NovaPyraRobot extends Robot {
         indicatorLights = new IndicatorLights(hardwareMap, NovaPyraRobot.telemetry);
 
         // Orchestrators
-        shotController = new ShotController(this);
+        shotController = new ShotController(this, NovaPyraRobot.telemetry);
 
         // ControllerMappings
         if (Constants.DebugModes.ControlInterface.TUNING_CONTROLS) {
