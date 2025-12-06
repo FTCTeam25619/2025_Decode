@@ -17,11 +17,8 @@ public class OdometryConstants {
      * Note: Positive direction of axes depends on the mounting position of the GoBilda PinPoint
      * odometry computer on the robot.
      */
-    public static double xOffsetMM = 224.5;
-    public static double yOffsetMM = 224.5;
-
-    public static double forwardPodYMM = 100.0;
-    public static double strafePodXMM = 201.0;
+    public static double forwardPodYMM = 79.91;
+    public static double strafePodXMM = 140.41;
 
     /*
      * Directions of each Odometry Pod (assuming GoBilda 4-bar pods)
@@ -29,5 +26,5 @@ public class OdometryConstants {
     public static final GoBildaPinpointDriver.EncoderDirection xDirection =
             GoBildaPinpointDriver.EncoderDirection.FORWARD;
     public static final GoBildaPinpointDriver.EncoderDirection yDirection =
-            GoBildaPinpointDriver.EncoderDirection.FORWARD;
+            GoBildaPinpointDriver.EncoderDirection.REVERSED;
 }

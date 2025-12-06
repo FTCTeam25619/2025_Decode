@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.constants;
 
 import com.pedropathing.Drivetrain;
+import com.pedropathing.control.PIDFCoefficients;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.follower.FollowerConstants;
 import com.pedropathing.ftc.FollowerBuilder;
@@ -23,7 +24,10 @@ public class PedroConstants {
             .leftFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
             .leftRearMotorDirection(DcMotorSimple.Direction.REVERSE)
             .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
-            .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD);
+            .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD)
+            .useBrakeModeInTeleOp(true)
+            .xVelocity(77.5)
+            .yVelocity(50.0);
 
     public static PinpointConstants localizerConstants = new PinpointConstants()
             .forwardPodY(OdometryConstants.forwardPodYMM)
@@ -36,7 +40,12 @@ public class PedroConstants {
 
     public static Drivetrain drivetrain;
     public static FollowerConstants followerConstants = new FollowerConstants()
-            .mass(4.92);
+            .mass(4.92)
+            .forwardZeroPowerAcceleration(-34.27)
+            .lateralZeroPowerAcceleration(-69.85)
+            .translationalPIDFCoefficients(new PIDFCoefficients(0.16, 0.0, 0.01, 0.0))
+            .headingPIDFCoefficients(new PIDFCoefficients(1.4, 0.0, 0.01, 0.01))
+            .centripetalScaling(0.0012);
 
     public static PathConstraints pathConstraints = new PathConstraints(
             0.99, 100, 1, 1);
