@@ -67,6 +67,7 @@ public class Exploration extends CommandOpMode {
         // FIXME: Move the rotation scaling factor of 2.0 to a better implementation
         robot.pedroFollower.setTeleOpDrive(driveAxes[0], driveAxes[1], rotateAxis/2.0, false);
         robot.pedroFollower.update();
+        robot.shotController.updateState();
 
         telemetry.addData("X", robot.pedroFollower.getPose().getX());
         telemetry.addData("Y", robot.pedroFollower.getPose().getY());

@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.constants;
 
+import com.acmerobotics.dashboard.config.Config;
+import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 
 public class OdometryConstants {
@@ -27,4 +29,15 @@ public class OdometryConstants {
             GoBildaPinpointDriver.EncoderDirection.FORWARD;
     public static final GoBildaPinpointDriver.EncoderDirection yDirection =
             GoBildaPinpointDriver.EncoderDirection.REVERSED;
+
+
+    @Config
+    @Configurable
+    public static class TargetDistances {
+        // TODO: Tune real values for these
+        public static double atGoalShot = 0.2;
+        public static double nearZoneMidShot = 1.0;
+        public static double nearZoneEndShot = 2.0;
+        public static double farWallShot = 3.5;
+    }
 }

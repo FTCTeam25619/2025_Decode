@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import android.hardware.Sensor;
+
 import com.bylazar.lights.LightsManager;
 import com.bylazar.lights.PanelsLights;
 import com.bylazar.lights.RGBIndicator;
@@ -146,6 +148,16 @@ public class Sensors extends SubsystemBase {
 
         displayTelemetry();
         if (Constants.DebugModes.Telemetry.DEBUG_SENSORS) { displayDebugTelemetry(); }
+    }
+
+    public boolean seeingSomeBall(SensorLocation location) {
+        return location.seeingBall() && (location.hueIsGreen() || location.hueIsPurple());
+    }
+
+    public boolean seeingSomeBall() {
+        return seeingSomeBall(SensorLocation.Intake) ||
+                seeingSomeBall(SensorLocation.FeedLow) ||
+                seeingSomeBall(SensorLocation.FeedHigh);
     }
 
     public boolean seesGreenBall(SensorLocation location) {

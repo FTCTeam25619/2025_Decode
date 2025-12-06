@@ -25,9 +25,9 @@ public class Shooter extends SubsystemBase {
         Shooting;
     }
 
-    private ShooterState subsystemState = ShooterState.Stopped;
+    private ShooterState subsystemState = ShooterState.Shooting;
 
-    private double flywheelTargetRPM = 2500.0;
+    private double flywheelTargetRPM = ShooterConstants.Targets.idleRPM;
     private double motorPower = 0.0;
 
     public Shooter(HardwareMap hardwareMap, Telemetry telemetry) {
@@ -53,10 +53,12 @@ public class Shooter extends SubsystemBase {
         PIDFCoefficients veloPIDCoeff = motorLeft.motorEx.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
 
         this.telemetry = telemetry;
-        telemetry.addData("Velo PID P", veloPIDCoeff.p);
-        telemetry.addData("Velo PID I", veloPIDCoeff.i);
-        telemetry.addData("Velo PID D", veloPIDCoeff.d);
-        telemetry.addData("Velo PID F", veloPIDCoeff.f);
+        if (Constants.DebugModes.Telemetry.DEBUG_SHOOTER) {
+            telemetry.addData("Velo PID P", veloPIDCoeff.p);
+            telemetry.addData("Velo PID I", veloPIDCoeff.i);
+            telemetry.addData("Velo PID D", veloPIDCoeff.d);
+            telemetry.addData("Velo PID F", veloPIDCoeff.f);
+        }
     }
 
     @Override
@@ -77,13 +79,15 @@ public class Shooter extends SubsystemBase {
         }
 
 
-        this.telemetry.addData("Shooter: State", this.subsystemState.toString());
-        this.telemetry.addData("Shooter: Power", this.motorPower);
         this.telemetry.addData("Shooter: Target RPM", this.flywheelTargetRPM);
         this.telemetry.addData("Shooter: At Speed", this.atRPM());
-        this.telemetry.addData("Shooter: Motor RPM", this.getFlywheelRPM());
-        this.telemetry.addData("Shooter: L Motor Power", this.motorLeft.motorEx.getPower());
-        this.telemetry.addData("Shooter: R Motor Power", this.motorRight.motorEx.getPower());
+        if (Constants.DebugModes.Telemetry.DEBUG_SHOOTER) {
+            this.telemetry.addData("Shooter: State", this.subsystemState.toString());
+            this.telemetry.addData("Shooter: Power", this.motorPower);
+            this.telemetry.addData("Shooter: Motor RPM", this.getFlywheelRPM());
+            this.telemetry.addData("Shooter: L Motor Power", this.motorLeft.motorEx.getPower());
+            this.telemetry.addData("Shooter: R Motor Power", this.motorRight.motorEx.getPower());
+        }
     }
 
     // No motor belted -- 6100 RPM both
