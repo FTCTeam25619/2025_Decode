@@ -38,67 +38,134 @@ public class CompetitionTriggers implements ControllerTriggers {
     }
 
     public void setupNonControllerTriggers() {
-        this.robot.sensors.intakeSeesGreen.whenActive(new InstantCommand(() -> {
+        this.robot.sensors.intakeSeesGreen
+                .and(robot.shotController.isShooting().negate())
+                .whenActive(new InstantCommand(() -> {
             this.robot.indicatorLights.setLightColor(
                     IndicatorLights.Indicators.Light1,
                     IndicatorLightsConstants.IndicatorColors.GREEN);
         }));
-        this.robot.sensors.intakeSeesGreen.whenInactive(new InstantCommand(() -> {
+        this.robot.sensors.intakeSeesGreen
+                .and(robot.shotController.isShooting().negate())
+                .whenActive(new InstantCommand(() -> {
             this.robot.indicatorLights.setLightColor(
                     IndicatorLights.Indicators.Light1,
                     IndicatorLightsConstants.IndicatorColors.OFF);
         }));
-        this.robot.sensors.intakeSeesPurple.whenActive(new InstantCommand(() -> {
+        this.robot.sensors.intakeSeesPurple
+                .and(robot.shotController.isShooting().negate())
+                .whenActive(new InstantCommand(() -> {
             this.robot.indicatorLights.setLightColor(
                     IndicatorLights.Indicators.Light1,
                     IndicatorLightsConstants.IndicatorColors.PURPLE);
         }));
-        this.robot.sensors.intakeSeesPurple.whenInactive(new InstantCommand(() -> {
+        this.robot.sensors.intakeSeesPurple
+                .and(robot.shotController.isShooting().negate())
+                .whenActive(new InstantCommand(() -> {
             this.robot.indicatorLights.setLightColor(
                     IndicatorLights.Indicators.Light1,
                     IndicatorLightsConstants.IndicatorColors.OFF);
         }));
-        this.robot.sensors.feedLowSeesGreen.whenActive(new InstantCommand(() -> {
+        this.robot.sensors.feedLowSeesGreen
+                .and(robot.shotController.isShooting().negate())
+                .whenActive(new InstantCommand(() -> {
             this.robot.indicatorLights.setLightColor(
                     IndicatorLights.Indicators.Light2,
                     IndicatorLightsConstants.IndicatorColors.GREEN);
         }));
-        this.robot.sensors.feedLowSeesGreen.whenInactive(new InstantCommand(() -> {
+        this.robot.sensors.feedLowSeesGreen
+                .and(robot.shotController.isShooting().negate())
+                .whenActive(new InstantCommand(() -> {
             this.robot.indicatorLights.setLightColor(
                     IndicatorLights.Indicators.Light2,
                     IndicatorLightsConstants.IndicatorColors.OFF);
         }));
-        this.robot.sensors.feedLowSeesPurple.whenActive(new InstantCommand(() -> {
+        this.robot.sensors.feedLowSeesPurple
+                .and(robot.shotController.isShooting().negate())
+                .whenActive(new InstantCommand(() -> {
             this.robot.indicatorLights.setLightColor(
                     IndicatorLights.Indicators.Light2,
                     IndicatorLightsConstants.IndicatorColors.PURPLE);
         }));
-        this.robot.sensors.feedLowSeesPurple.whenInactive(new InstantCommand(() -> {
+        this.robot.sensors.feedLowSeesPurple
+                .and(robot.shotController.isShooting().negate())
+                .whenActive(new InstantCommand(() -> {
             this.robot.indicatorLights.setLightColor(
                     IndicatorLights.Indicators.Light2,
                     IndicatorLightsConstants.IndicatorColors.OFF);
         }));
 
-        this.robot.sensors.feedHighSeesGreen.whenActive(new InstantCommand(() -> {
+        this.robot.sensors.feedHighSeesGreen
+                .and(robot.shotController.isShooting().negate())
+                .whenActive(new InstantCommand(() -> {
             this.robot.indicatorLights.setLightColor(
                     IndicatorLights.Indicators.Light3,
                     IndicatorLightsConstants.IndicatorColors.GREEN);
         }));
-        this.robot.sensors.feedHighSeesGreen.whenInactive(new InstantCommand(() -> {
+        this.robot.sensors.feedHighSeesGreen
+                .and(robot.shotController.isShooting().negate())
+                .whenActive(new InstantCommand(() -> {
             this.robot.indicatorLights.setLightColor(
                     IndicatorLights.Indicators.Light3,
                     IndicatorLightsConstants.IndicatorColors.OFF);
         }));
-        this.robot.sensors.feedHighSeesPurple.whenActive(new InstantCommand(() -> {
+        this.robot.sensors.feedHighSeesPurple
+                .and(robot.shotController.isShooting().negate())
+                .whenActive(new InstantCommand(() -> {
             this.robot.indicatorLights.setLightColor(
                     IndicatorLights.Indicators.Light3,
                     IndicatorLightsConstants.IndicatorColors.PURPLE);
         }));
-        this.robot.sensors.feedHighSeesPurple.whenInactive(new InstantCommand(() -> {
+        this.robot.sensors.feedHighSeesPurple
+                .and(robot.shotController.isShooting().negate())
+                .whenActive(new InstantCommand(() -> {
             this.robot.indicatorLights.setLightColor(
                     IndicatorLights.Indicators.Light3,
                     IndicatorLightsConstants.IndicatorColors.OFF);
         }));
+
+        this.robot.shotController.isShooting()
+                .and(this.robot.shotController.shooterAtRPM().negate())
+                .whenActive(new InstantCommand(() -> {
+                    this.robot.indicatorLights.setLightColor(
+                            IndicatorLights.Indicators.Light1,
+                            IndicatorLightsConstants.IndicatorColors.RED);
+                }));
+        this.robot.shotController.isShooting()
+                .and(this.robot.shotController.shooterAtRPM())
+                .whenActive(new InstantCommand(() -> {
+                    this.robot.indicatorLights.setLightColor(
+                            IndicatorLights.Indicators.Light1,
+                            IndicatorLightsConstants.IndicatorColors.GREEN);
+                }));
+        this.robot.shotController.isShooting()
+                .and(this.robot.shotController.hoodAtAngle().negate())
+                .whenActive(new InstantCommand(() -> {
+                    this.robot.indicatorLights.setLightColor(
+                            IndicatorLights.Indicators.Light2,
+                            IndicatorLightsConstants.IndicatorColors.RED);
+                }));
+        this.robot.shotController.isShooting()
+                .and(this.robot.shotController.hoodAtAngle())
+                .whenActive(new InstantCommand(() -> {
+                    this.robot.indicatorLights.setLightColor(
+                            IndicatorLights.Indicators.Light2,
+                            IndicatorLightsConstants.IndicatorColors.GREEN);
+                }));
+        this.robot.shotController.isShooting()
+                .and(this.robot.shotController.robotAtHeading().negate())
+                .whenActive(new InstantCommand(() -> {
+                    this.robot.indicatorLights.setLightColor(
+                            IndicatorLights.Indicators.Light3,
+                            IndicatorLightsConstants.IndicatorColors.RED);
+                }));
+        this.robot.shotController.isShooting()
+                .and(this.robot.shotController.robotAtHeading())
+                .whenActive(new InstantCommand(() -> {
+                    this.robot.indicatorLights.setLightColor(
+                            IndicatorLights.Indicators.Light3,
+                            IndicatorLightsConstants.IndicatorColors.GREEN);
+                }));
 
         this.robot.shotController.setupStateTransitionTriggers();
     }
