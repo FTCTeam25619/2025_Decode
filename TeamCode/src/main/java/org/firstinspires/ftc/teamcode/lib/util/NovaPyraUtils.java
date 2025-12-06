@@ -25,18 +25,19 @@ public class NovaPyraUtils {
 
     public static double deadbandAndSmoothValue(double value, double smoothFactor,
                                                 double deadband, double inverseDeadband) {
-        return deadband(smooth(value, smoothFactor), deadband, inverseDeadband);
+        return (smooth(deadband(value, deadband), smoothFactor, inverseDeadband));
     }
 
-    public static double deadband(double value, double deadband, double inverseDeadband) {
+    public static double deadband(double value, double deadband) {
         // If within deadband, return zero
-        if (Math.abs(value) <= deadband) { return 0.0; }
-        // Otherwise, return the inverse-deadbanded value
-        return (value > 0.0 ? 1.0 : -1.0) * inverseDeadband +
-                (1.0 - inverseDeadband) * value;
+        return (Math.abs(value) <= deadband ? 0.0 : value);
     }
 
-    public static double smooth(double value, double smoothingFactor) {
-        return (smoothingFactor * Math.pow(value, 3.0)) + ((1.0 - smoothingFactor) * value);
+    public static double smooth(double value, double smoothingFactor, double inverseDeadband) {
+        // Shortcut out if zero input
+        if (Math.abs(value) <= 0.001) {return 0.0; }
+
+        double smoothed = smoothingFactor * Math.pow(value, 3.0) + ((1.0 - smoothingFactor) * value);
+        return (smoothed > 0.0 ? 1.0 : -1.0 ) * inverseDeadband + (1.0 - inverseDeadband) * smoothed;
     }
 }
