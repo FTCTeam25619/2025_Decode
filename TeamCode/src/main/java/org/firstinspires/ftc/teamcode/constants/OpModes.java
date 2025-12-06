@@ -6,6 +6,11 @@ public class OpModes {
         AUTO;
     }
 
+    public enum Alliance {
+        RED,
+        BLUE;
+    }
+
     public enum OpModeSelection {
         PEDRO_SAMPLE_TELEOP(OpModeType.TELEOP),
         PEDRO_SAMPLE_AUTO(OpModeType.TELEOP),

@@ -11,6 +11,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.constants.Constants;
+import org.firstinspires.ftc.teamcode.constants.OpModes;
 import org.firstinspires.ftc.teamcode.constants.OpModes.OpModeSelection;
 import org.firstinspires.ftc.teamcode.lib.orchestration.ShotController;
 import org.firstinspires.ftc.teamcode.constants.PedroConstants;
@@ -48,11 +49,14 @@ public class NovaPyraRobot extends Robot {
     public final ShotController shotController;
     public final Follower pedroFollower;
     private final OpModeSelection selectedOpMode;
+    public final OpModes.Alliance alliance;
     private final ControllerTriggers controllerMappings;
 
-    public NovaPyraRobot(HardwareMap hardwareMap, Gamepad gamepad1, Gamepad gamepad2, Telemetry telemetry, OpModeSelection opModeSelection) {
+    public NovaPyraRobot(HardwareMap hardwareMap, Gamepad gamepad1, Gamepad gamepad2,
+                         Telemetry telemetry, OpModeSelection opModeSelection, OpModes.Alliance alliance) {
         // OpMode selection
         selectedOpMode = opModeSelection;
+        this.alliance = alliance;
 
         // Telemetry
         NovaPyraRobot.telemetry = telemetry;
