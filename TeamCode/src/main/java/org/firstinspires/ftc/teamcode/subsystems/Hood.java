@@ -37,7 +37,7 @@ public class Hood extends SubsystemBase {
     }
 
     public boolean atTargetAngle() {
-        // TODO: Replace this with actual thresholding of readings from servo feedback when available
+        // FIXME: Replace this with actual thresholding of readings from servo feedback when available
         return true;
     }
 

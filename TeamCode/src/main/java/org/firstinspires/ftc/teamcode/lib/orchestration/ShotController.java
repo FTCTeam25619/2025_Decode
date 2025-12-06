@@ -17,8 +17,13 @@ import org.firstinspires.ftc.teamcode.subsystems.ShooterFeed;
 import java.util.function.Predicate;
 
 public class ShotController {
-    private SupplierTrigger _shotStaged;
-    private SupplierTrigger _readyToShoot;
+    private SupplierTrigger _shotStagedTrigger;
+    private SupplierTrigger _readyToShootTrigger;
+    private SupplierTrigger _presetShotModeTrigger;
+    private SupplierTrigger _isShootingTrigger;
+    private SupplierTrigger _shooterAtRPMTrigger;
+    private SupplierTrigger _hoodAtAngleTrigger;
+    private SupplierTrigger _robotAtHeadingTrigger;
 
     private ShotCycleState currentState = ShotCycleState.IDLE;
     private ShotCycleState priorState = ShotCycleState.IDLE;
@@ -83,6 +88,9 @@ public class ShotController {
             case STAGED:
                 break;
             case PREPARE_SHOT:
+                if (!presetShotMode) {
+                    autoTargetShot();
+                }
                 this.robot.shooter.setTargetRPM(this.getTargetFlywheelRPM());
                 this.robot.hood.setAngle(this.getTargetHoodAngle());
                 if (this.readyToShoot()) {
@@ -202,26 +210,85 @@ public class ShotController {
         return this.robot.sensors.seeingSomeBall();
     }
 
+    private boolean atRPM() {
+        return this.robot.shooter.atRPM();
+    }
+
+    private boolean atTargetAngle() {
+        return this.robot.hood.atTargetAngle();
+    }
+
+    private boolean atTargetHeading() {
+        // FIXME: Add robot heading check via LL or IMU
+        return true;
+    }
+
     public boolean readyToShoot() {
-        return this.robot.shooter.atRPM() && this.robot.hood.atTargetAngle();
+        return this.atRPM() && this.atTargetAngle() && this.atTargetHeading();
     }
 
     public boolean transitionedTo(ShotCycleState newState) {
         return this.stateTransition && this.currentState == newState;
     }
 
-    public SupplierTrigger shotStagedTrigger() {
-        if (this._shotStaged == null) {
-            this._shotStaged = new SupplierTrigger(this::staged);
+    public Trigger shotStagedTrigger() {
+        if (this._shotStagedTrigger == null) {
+            this._shotStagedTrigger = new SupplierTrigger(this::staged);
         }
-        return this._shotStaged;
+        return this._shotStagedTrigger;
     }
 
-    public SupplierTrigger readyToShootTrigger() {
-        if (this._readyToShoot == null) {
-            this._readyToShoot = new SupplierTrigger(this::readyToShoot);
+    public Trigger readyToShootTrigger() {
+        if (this._readyToShootTrigger == null) {
+            this._readyToShootTrigger = new SupplierTrigger(this::readyToShoot);
         }
-        return this._readyToShoot;
+        return this._readyToShootTrigger;
+    }
+
+    public Trigger autoShootMode() {
+        if (this._presetShotModeTrigger == null) {
+            this._presetShotModeTrigger = new SupplierTrigger(() -> !this.presetShotMode);
+        }
+        return this._presetShotModeTrigger.negate();
+    }
+
+    public Trigger presetShotMode() {
+        if (this._presetShotModeTrigger == null) {
+            this._presetShotModeTrigger = new SupplierTrigger(() -> this.presetShotMode);
+        }
+        return this._presetShotModeTrigger;
+    }
+
+    public Trigger isShooting() {
+        if (this._isShootingTrigger == null) {
+            this._isShootingTrigger = new SupplierTrigger(
+                    () -> this.currentState == ShotCycleState.PREPARE_SHOT ||
+                            this.currentState == ShotCycleState.READY_TO_SHOOT ||
+                            this.currentState == ShotCycleState.SHOOTING
+            );
+        }
+        return this._isShootingTrigger;
+    }
+
+    public Trigger shooterAtRPM() {
+        if (this._shooterAtRPMTrigger == null) {
+            this._shooterAtRPMTrigger = new SupplierTrigger(this::atRPM);
+        }
+        return this._shooterAtRPMTrigger;
+    }
+
+    public Trigger hoodAtAngle() {
+        if (this._hoodAtAngleTrigger == null) {
+            this._hoodAtAngleTrigger = new SupplierTrigger(this::atTargetAngle);
+        }
+        return this._hoodAtAngleTrigger;
+    }
+
+    public Trigger robotAtHeading() {
+        if (this._robotAtHeadingTrigger == null) {
+            this._robotAtHeadingTrigger = new SupplierTrigger(this::atTargetHeading);
+        }
+        return this._robotAtHeadingTrigger;
     }
 
     public StateTransitionTrigger stateTransitionTrigger(ShotCycleState toState) {
