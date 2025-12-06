@@ -108,7 +108,6 @@ public class ShotController {
     }
 
     public void setupStateTransitionTriggers() {
-        // TODO: Check/test the actions on these
         stateTransitionTrigger(ShotCycleState.IDLE).whenActive(new InstantCommand(() -> {
             // Transitioning back to IDLE state
             // NOTE: This will not trigger at start because initial state is IDLE
@@ -147,21 +146,20 @@ public class ShotController {
         }));
         stateTransitionTrigger(ShotCycleState.READY_TO_SHOOT).whenActive(new InstantCommand(() -> {
             // Transitioning to READY_TO_SHOOT state
-            this.robot.feedStop.disengage();
             // Same as prior state PREPARE_SHOT
+            this.robot.feedStop.engage();
             this.robot.shooter.setTargetRPM(this.getTargetFlywheelRPM());
             this.robot.hood.setAngle(this.getTargetHoodAngle());
-            this.robot.intake.setState(Intake.IntakeState.Intake);
+            this.robot.intake.setState(Intake.IntakeState.Stopped);
             this.robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
         }));
         stateTransitionTrigger(ShotCycleState.SHOOTING).whenActive(new InstantCommand(() -> {
             // Transitioning to SHOOTING state
-            // TODO: Extract this to a new InterpLUT and add to PresetShot values
+            this.robot.feedStop.disengage();
             this.robot.shooterFeed.setFeedPower(this.getTargetFeedPower());
             this.robot.shooterFeed.setState(ShooterFeed.FeedState.Feeding);
             this.robot.intake.setState(Intake.IntakeState.Intake);
             // Same as prior state READY_TO_SHOOT
-            this.robot.feedStop.disengage();
             this.robot.shooter.setTargetRPM(this.getTargetFlywheelRPM());
             this.robot.hood.setAngle(this.getTargetHoodAngle());
         }));
