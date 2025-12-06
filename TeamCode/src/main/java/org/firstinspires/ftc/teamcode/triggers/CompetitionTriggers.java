@@ -130,23 +130,19 @@ public class CompetitionTriggers implements ControllerTriggers {
             robot.intake.setState(Intake.IntakeState.Dejam);
         })));
         c1LeftTrigger.whenInactive(new InstantCommand(() -> {
-            // TODO: Check how this should work
-            robot.shotController.setState(ShotCycleState.STAGED);
+            robot.shotController.setState(ShotCycleState.IDLE);
         }));
         c1DPadRight.whenPressed(new InstantCommand(() -> robot.shooterFeed.changeFeedPower(0.01)));
         c1DPadLeft.whenPressed(new InstantCommand(() -> robot.shooterFeed.changeFeedPower(-0.01)));
 
         c1RightTrigger.and(c1RightBumper.negate()).whenActive(new InstantCommand(() -> {
             robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
-//            robot.shooter.setState(Shooter.ShooterState.Shooting);
         }));
         c1RightBumper.whenActive(new InstantCommand(() -> {
             robot.shotController.setState(ShotCycleState.SHOOTING);
         }));
         c1RightTrigger.whenInactive(new InstantCommand(() -> {
-            // TODO: What should happen here?
             robot.shotController.setState(ShotCycleState.IDLE);
-//            robot.shooter.setState(Shooter.ShooterState.Stopped);
         }));
         c1DPadUp.whenPressed(new InstantCommand(() -> robot.shooter.changeTargetRPM(100)));
         c1DPadDown.whenPressed(new InstantCommand(() -> robot.shooter.changeTargetRPM(-100)));

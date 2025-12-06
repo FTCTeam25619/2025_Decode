@@ -74,11 +74,11 @@ public class ShotController {
         // State actions that need to happen each cycle
         switch (this.currentState) {
             case IDLE:
-                break;
-            case INTAKE:
                 if (this.staged()) {
                     this.currentState = ShotCycleState.STAGED;
                 }
+                break;
+            case INTAKE:
                 break;
             case STAGED:
                 break;
@@ -121,8 +121,8 @@ public class ShotController {
         }));
         stateTransitionTrigger(ShotCycleState.STAGED).whenActive(new InstantCommand(() -> {
             // Transitioning to STAGED state
+            this.robot.intake.setState(Intake.IntakeState.Stopped);
             // Same as prior state INTAKE
-            this.robot.intake.setState(Intake.IntakeState.Intake);
             this.robot.feedStop.engage();
             this.robot.shooter.setTargetRPM(ShooterConstants.Targets.idleRPM);
             this.robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
