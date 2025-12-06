@@ -208,6 +208,8 @@ public class CompetitionTriggers implements ControllerTriggers {
         c1RightBumper.whenActive(new InstantCommand(() -> {
             robot.shotController.setState(ShotCycleState.SHOOTING);
         }));
+        c1RightBumper.negate().and(robot.shotController.presetShotMode()).whenActive(
+                new InstantCommand(() -> robot.shotController.setState(ShotCycleState.IDLE)));
         c1RightTrigger.whenInactive(new InstantCommand(() -> {
             robot.shotController.setState(ShotCycleState.IDLE);
         }));
