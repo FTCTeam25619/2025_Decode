@@ -26,7 +26,7 @@ public class FeedStop extends SubsystemBase {
         }
     }
 
-    private FeedStopState subsystemState = FeedStopState.TestPosition;
+    private FeedStopState subsystemState = FeedStopState.Disengaged;
     private double positionDegrees = FeedStopConstants.Positions.testPositionDegrees;
 
     public FeedStop(HardwareMap hardwareMap, Telemetry telemetry) {

@@ -27,4 +27,16 @@ public class HoodConstants {
     public static class Control {
         public static double incrementSize = 10.0;
     }
+
+    @Config
+    @Configurable
+    public static class Targets {
+        public static double atGoalShot = Limits.hoodHardStopMin;
+        public static double nearZoneMidShot = Limits.hoodHardStopMin +
+                (Limits.hoodHardStopMin + Limits.hoodHardStopMax) / 4.0;
+        public static double nearZoneEndShot = Limits.hoodHardStopMin +
+                (Limits.hoodHardStopMin + Limits.hoodHardStopMax) / 2.0;
+
+        public static double farWallShot = Limits.hoodHardStopMax;
+    }
 }
