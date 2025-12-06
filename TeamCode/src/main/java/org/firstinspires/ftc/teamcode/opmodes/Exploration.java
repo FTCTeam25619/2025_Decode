@@ -64,7 +64,8 @@ public class Exploration extends CommandOpMode {
                 DriveConstants.Joysticks.rotateInverseDeadband
         );
 
-        robot.pedroFollower.setTeleOpDrive(driveAxes[0], driveAxes[1], rotateAxis, false);
+        // FIXME: Move the rotation scaling factor of 2.0 to a better implementation
+        robot.pedroFollower.setTeleOpDrive(driveAxes[0], driveAxes[1], rotateAxis/2.0, false);
         robot.pedroFollower.update();
 
         telemetry.addData("X", robot.pedroFollower.getPose().getX());
