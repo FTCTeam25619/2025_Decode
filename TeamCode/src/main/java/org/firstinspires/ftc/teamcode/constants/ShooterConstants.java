@@ -20,10 +20,10 @@ public class ShooterConstants {
     @Configurable
     public static class Targets {
         public static double idleRPM = 2800.0;
-        public static double atGoalShot = 1800.0;
+        public static double atGoalShot = 1850.0;
         public static double nearZoneMidShot = 2100.0;
         public static double nearZoneEndShot = 2400.0;
-        public static double farWallShot = 3200.0;
+        public static double farWallShot = 3000.0;
     }
 }
 
