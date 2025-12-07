@@ -12,6 +12,8 @@ public class VisionConstants {
         public static double locationYawDeg = 0.0;
     }
 
+    public static double headingAngleThresholdDeg = 1.0;
+
     public enum AprilTags {
         BlueGoal(20),
         RedGoal(24),

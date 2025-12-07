@@ -53,6 +53,10 @@ public class Odometry extends SubsystemBase {
         addOdometryTelemetry();
     }
 
+    public double getHeading() {
+        return this.odometry.getHeading(AngleUnit.DEGREES);
+    }
+
     public void setOdometryHeading(double heading, AngleUnit angleUnit) {
         this.odometry.setHeading(heading, angleUnit);
     }

@@ -16,4 +16,11 @@ public class DriveConstants {
         public static double rotateInverseDeadband = 0.05;
         public static double rotateScalingFactor = 1.6;
     }
+
+    @Config
+    @Configurable
+    public static class HeadingControl {
+        public static double kPHeadingCorrection = 0.035;
+        public static double correctionOutputClamp = 0.6;
+    }
 }

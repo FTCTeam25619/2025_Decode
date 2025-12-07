@@ -5,18 +5,22 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.command.Robot;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
+import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
+import com.seattlesolvers.solverslib.util.MathUtils;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.constants.Constants;
+import org.firstinspires.ftc.teamcode.constants.DriveConstants;
 import org.firstinspires.ftc.teamcode.constants.OpModes;
 import org.firstinspires.ftc.teamcode.constants.OpModes.OpModeSelection;
 import org.firstinspires.ftc.teamcode.constants.VisionConstants;
 import org.firstinspires.ftc.teamcode.lib.orchestration.ShotController;
 import org.firstinspires.ftc.teamcode.constants.PedroConstants;
 import org.firstinspires.ftc.teamcode.lib.triggers.ControllerTriggers;
+import org.firstinspires.ftc.teamcode.lib.util.NovaPyraUtils;
 import org.firstinspires.ftc.teamcode.subsystems.FeedStop;
 import org.firstinspires.ftc.teamcode.subsystems.Hood;
 import org.firstinspires.ftc.teamcode.subsystems.IndicatorLights;
@@ -128,7 +132,15 @@ public class NovaPyraRobot extends Robot {
                         DriveConstants.Joysticks.rotateDeadband,
                         DriveConstants.Joysticks.rotateInverseDeadband
                 );
+
+                if (controller1.getButton(GamepadKeys.Button.RIGHT_STICK_BUTTON) && vision.isSeeingTarget()) {
+                    rotateAxis = MathUtils.clamp(
+                            -DriveConstants.HeadingControl.kPHeadingCorrection * vision.angleToTarget(),
+                            -DriveConstants.HeadingControl.correctionOutputClamp,
+                            DriveConstants.HeadingControl.correctionOutputClamp);
+                } else {
                     rotateAxis /= DriveConstants.Joysticks.rotateScalingFactor;
+                }
                 pedroFollower.setTeleOpDrive(driveAxes[0], driveAxes[1], rotateAxis, false);
                 pedroFollower.update();
                 shotController.updateState();

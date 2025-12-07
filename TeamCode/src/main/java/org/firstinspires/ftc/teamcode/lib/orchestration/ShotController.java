@@ -217,8 +217,7 @@ public class ShotController {
     }
 
     private boolean atTargetHeading() {
-        // FIXME: Add robot heading check via LL or IMU
-        return true;
+        return this.robot.vision.atHeading();
     }
 
     public boolean readyToShoot() {
