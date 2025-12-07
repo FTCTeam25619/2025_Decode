@@ -5,20 +5,23 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.bylazar.telemetry.JoinedTelemetry;
 import com.bylazar.telemetry.PanelsTelemetry;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 
-import org.firstinspires.ftc.teamcode.constants.ConfigConstants;
 import org.firstinspires.ftc.teamcode.constants.Constants;
 import org.firstinspires.ftc.teamcode.constants.DriveConstants;
+import org.firstinspires.ftc.teamcode.constants.OpModes;
 import org.firstinspires.ftc.teamcode.constants.OpModes.OpModeSelection;
 import org.firstinspires.ftc.teamcode.NovaPyraRobot;
-import org.firstinspires.ftc.teamcode.constants.PedroConstants;
 import org.firstinspires.ftc.teamcode.lib.util.NovaPyraUtils;
 
-@TeleOp
 public class Exploration extends CommandOpMode {
     private NovaPyraRobot robot;
+    public OpModes.Alliance alliance;
+
+    public Exploration(OpModes.Alliance allianceSetting) {
+        super();
+        alliance = allianceSetting;
+    }
 
     @Override
     public void initialize() {
@@ -31,14 +34,15 @@ public class Exploration extends CommandOpMode {
             telemetry = new JoinedTelemetry(PanelsTelemetry.INSTANCE.getFtcTelemetry(), telemetry);
         }
 
-        robot = new NovaPyraRobot(hardwareMap, gamepad1, gamepad2, telemetry, OpModeSelection.EXPLORATION);
+        robot = new NovaPyraRobot(hardwareMap, gamepad1, gamepad2, telemetry,
+                OpModeSelection.EXPLORATION, alliance);
 
-        telemetry.addData("Robot Status", "Initializing Exploration");
+        telemetry.addData("Robot Status", "Initializing Exploration " + alliance.name());
     }
 
     @Override
     public void initialize_loop() {
-        telemetry.addData("Robot Status", "Running Exploration");
+        telemetry.addData("Robot Status", "Running Exploration " + alliance.name());
         robot.initOpMode();
 
         robot.pedroFollower.startTeleopDrive();
@@ -48,36 +52,12 @@ public class Exploration extends CommandOpMode {
     public void run() {
         robot.trackCycleTime(getRuntime());
         robot.run();
-
-        double[] driveAxes = NovaPyraUtils.deadbandAndSmooth(
-                -gamepad1.left_stick_y,
-                -gamepad1.left_stick_x,
-                DriveConstants.Joysticks.driveSmoothFactor,
-                DriveConstants.Joysticks.driveDeadband,
-                DriveConstants.Joysticks.driveInverseDeadband
-        );
-
-        double rotateAxis = NovaPyraUtils.deadbandAndSmoothValue(
-                -gamepad1.right_stick_x,
-                DriveConstants.Joysticks.rotateSmoothFactor,
-                DriveConstants.Joysticks.rotateDeadband,
-                DriveConstants.Joysticks.rotateInverseDeadband
-        );
-
-        // FIXME: Move the rotation scaling factor of 2.0 to a better implementation
-        robot.pedroFollower.setTeleOpDrive(driveAxes[0], driveAxes[1], rotateAxis/2.0, false);
-        robot.pedroFollower.update();
-        robot.shotController.updateState();
-
-        telemetry.addData("X", robot.pedroFollower.getPose().getX());
-        telemetry.addData("Y", robot.pedroFollower.getPose().getY());
-        telemetry.addData("Heading", robot.pedroFollower.getPose().getHeading());
-        telemetry.update();
     }
 
     @Override
     public void end() {
-        telemetry.addData("Robot Status", "Stopped Exploration");
+        telemetry.addData("Robot Status", "Stopped Exploration " + alliance.name());
+        robot.endOpMode();
     }
 
     @Override

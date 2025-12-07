@@ -5,16 +5,22 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.command.Robot;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
+import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
+import com.seattlesolvers.solverslib.util.MathUtils;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.constants.Constants;
+import org.firstinspires.ftc.teamcode.constants.DriveConstants;
+import org.firstinspires.ftc.teamcode.constants.OpModes;
 import org.firstinspires.ftc.teamcode.constants.OpModes.OpModeSelection;
+import org.firstinspires.ftc.teamcode.constants.VisionConstants;
 import org.firstinspires.ftc.teamcode.lib.orchestration.ShotController;
 import org.firstinspires.ftc.teamcode.constants.PedroConstants;
 import org.firstinspires.ftc.teamcode.lib.triggers.ControllerTriggers;
+import org.firstinspires.ftc.teamcode.lib.util.NovaPyraUtils;
 import org.firstinspires.ftc.teamcode.subsystems.FeedStop;
 import org.firstinspires.ftc.teamcode.subsystems.Hood;
 import org.firstinspires.ftc.teamcode.subsystems.IndicatorLights;
@@ -23,6 +29,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Odometry;
 import org.firstinspires.ftc.teamcode.subsystems.Sensors;
 import org.firstinspires.ftc.teamcode.subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.ShooterFeed;
+import org.firstinspires.ftc.teamcode.subsystems.Vision;
 import org.firstinspires.ftc.teamcode.triggers.CompetitionTriggers;
 import org.firstinspires.ftc.teamcode.triggers.TuningTriggers;
 
@@ -45,14 +52,18 @@ public class NovaPyraRobot extends Robot {
     public final Intake intake;
     public final Sensors sensors;
     public final IndicatorLights indicatorLights;
+    public final Vision vision;
     public final ShotController shotController;
     public final Follower pedroFollower;
     private final OpModeSelection selectedOpMode;
+    public final OpModes.Alliance alliance;
     private final ControllerTriggers controllerMappings;
 
-    public NovaPyraRobot(HardwareMap hardwareMap, Gamepad gamepad1, Gamepad gamepad2, Telemetry telemetry, OpModeSelection opModeSelection) {
+    public NovaPyraRobot(HardwareMap hardwareMap, Gamepad gamepad1, Gamepad gamepad2,
+                         Telemetry telemetry, OpModeSelection opModeSelection, OpModes.Alliance alliance) {
         // OpMode selection
         selectedOpMode = opModeSelection;
+        this.alliance = alliance;
 
         // Telemetry
         NovaPyraRobot.telemetry = telemetry;
@@ -70,6 +81,7 @@ public class NovaPyraRobot extends Robot {
         intake = new Intake(hardwareMap, NovaPyraRobot.telemetry);
         sensors = new Sensors(hardwareMap, NovaPyraRobot.telemetry);
         indicatorLights = new IndicatorLights(hardwareMap, NovaPyraRobot.telemetry);
+        vision = new Vision(hardwareMap, odometry, NovaPyraRobot.telemetry);
         pedroFollower = PedroConstants.createFollower(hardwareMap);
 
         // Orchestrators
@@ -90,7 +102,64 @@ public class NovaPyraRobot extends Robot {
                 break;
             case EXPLORATION:
                 controllerMappings.setupGamepadButtonMappings();
+                vision.startVision();
+                vision.setTargetingTag(alliance == OpModes.Alliance.BLUE ?
+                        VisionConstants.AprilTags.BlueGoal : VisionConstants.AprilTags.RedGoal);
                 odometry.setRobotPose(new Pose2D(DistanceUnit.MM, 0.0, 0.0, AngleUnit.DEGREES, 0.0));
+                break;
+        }
+    }
+
+    @Override
+    public void run() {
+        super.run();
+        switch (selectedOpMode) {
+            case PEDRO_SAMPLE_AUTO:
+            case PEDRO_SAMPLE_TELEOP:
+                break;
+            case EXPLORATION:
+                double[] driveAxes = NovaPyraUtils.deadbandAndSmooth(
+                        controller1.getLeftY(),
+                        -controller1.getLeftX(),
+                        DriveConstants.Joysticks.driveSmoothFactor,
+                        DriveConstants.Joysticks.driveDeadband,
+                        DriveConstants.Joysticks.driveInverseDeadband
+                );
+
+                double rotateAxis = NovaPyraUtils.deadbandAndSmoothValue(
+                        -controller1.getRightX(),
+                        DriveConstants.Joysticks.rotateSmoothFactor,
+                        DriveConstants.Joysticks.rotateDeadband,
+                        DriveConstants.Joysticks.rotateInverseDeadband
+                );
+
+                if (controller1.getButton(GamepadKeys.Button.RIGHT_STICK_BUTTON) && vision.isSeeingTarget()) {
+                    rotateAxis = MathUtils.clamp(
+                            -DriveConstants.HeadingControl.kPHeadingCorrection * vision.angleToTarget(),
+                            -DriveConstants.HeadingControl.correctionOutputClamp,
+                            DriveConstants.HeadingControl.correctionOutputClamp);
+                } else {
+                    rotateAxis /= DriveConstants.Joysticks.rotateScalingFactor;
+                }
+                pedroFollower.setTeleOpDrive(driveAxes[0], driveAxes[1], rotateAxis, false);
+                pedroFollower.update();
+                shotController.updateState();
+
+                telemetry.addData("X", pedroFollower.getPose().getX());
+                telemetry.addData("Y", pedroFollower.getPose().getY());
+                telemetry.addData("Heading", pedroFollower.getPose().getHeading());
+                telemetry.update();
+                break;
+        }
+    }
+
+    public void endOpMode() {
+        switch (selectedOpMode) {
+            case PEDRO_SAMPLE_AUTO:
+            case PEDRO_SAMPLE_TELEOP:
+                break;
+            case EXPLORATION:
+                vision.stopVision();
                 break;
         }
     }

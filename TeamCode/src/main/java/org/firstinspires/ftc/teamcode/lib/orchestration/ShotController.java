@@ -217,8 +217,7 @@ public class ShotController {
     }
 
     private boolean atTargetHeading() {
-        // FIXME: Add robot heading check via LL or IMU
-        return true;
+        return this.robot.vision.atHeading();
     }
 
     public boolean readyToShoot() {
@@ -257,13 +256,15 @@ public class ShotController {
         return this._presetShotModeTrigger;
     }
 
-    public Trigger isShooting() {
+    public boolean isShooting() {
+        return this.currentState == ShotCycleState.PREPARE_SHOT ||
+                this.currentState == ShotCycleState.READY_TO_SHOOT ||
+                this.currentState == ShotCycleState.SHOOTING;
+    }
+
+    public Trigger isShootingTrigger() {
         if (this._isShootingTrigger == null) {
-            this._isShootingTrigger = new SupplierTrigger(
-                    () -> this.currentState == ShotCycleState.PREPARE_SHOT ||
-                            this.currentState == ShotCycleState.READY_TO_SHOOT ||
-                            this.currentState == ShotCycleState.SHOOTING
-            );
+            this._isShootingTrigger = new SupplierTrigger(this::isShooting);
         }
         return this._isShootingTrigger;
     }
