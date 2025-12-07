@@ -14,5 +14,6 @@ public class DriveConstants {
         public static double rotateSmoothFactor = 1.0;
         public static double rotateDeadband = 0.1;
         public static double rotateInverseDeadband = 0.05;
+        public static double rotateScalingFactor = 1.6;
     }
 }

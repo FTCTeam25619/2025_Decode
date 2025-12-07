@@ -52,36 +52,12 @@ public class Exploration extends CommandOpMode {
     public void run() {
         robot.trackCycleTime(getRuntime());
         robot.run();
-
-        double[] driveAxes = NovaPyraUtils.deadbandAndSmooth(
-                -gamepad1.left_stick_y,
-                -gamepad1.left_stick_x,
-                DriveConstants.Joysticks.driveSmoothFactor,
-                DriveConstants.Joysticks.driveDeadband,
-                DriveConstants.Joysticks.driveInverseDeadband
-        );
-
-        double rotateAxis = NovaPyraUtils.deadbandAndSmoothValue(
-                -gamepad1.right_stick_x,
-                DriveConstants.Joysticks.rotateSmoothFactor,
-                DriveConstants.Joysticks.rotateDeadband,
-                DriveConstants.Joysticks.rotateInverseDeadband
-        );
-
-        // FIXME: Move the rotation scaling factor of 2.0 to a better implementation
-        robot.pedroFollower.setTeleOpDrive(driveAxes[0], driveAxes[1], rotateAxis/2.0, false);
-        robot.pedroFollower.update();
-        robot.shotController.updateState();
-
-        telemetry.addData("X", robot.pedroFollower.getPose().getX());
-        telemetry.addData("Y", robot.pedroFollower.getPose().getY());
-        telemetry.addData("Heading", robot.pedroFollower.getPose().getHeading());
-        telemetry.update();
     }
 
     @Override
     public void end() {
         telemetry.addData("Robot Status", "Stopped Exploration " + alliance.name());
+        robot.endOpMode();
     }
 
     @Override
