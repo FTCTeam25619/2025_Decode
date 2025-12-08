@@ -1,10 +1,10 @@
 package org.firstinspires.ftc.teamcode.lib;
 
-import org.firstinspires.ftc.teamcode.constants.ConfigConstants;
+import org.firstinspires.ftc.teamcode.constants.GamePieceColorConstants;
 
 public enum GamePieceColor {
-    PURPLE(ConfigConstants.Colors.PURPLE_HUE_MIN, ConfigConstants.Colors.PURPLE_HUE_MAX),
-    GREEN(ConfigConstants.Colors.GREEN_HUE_MIN, ConfigConstants.Colors.GREEN_HUE_MAX);
+    PURPLE(GamePieceColorConstants.Colors.PURPLE_HUE_MIN, GamePieceColorConstants.Colors.PURPLE_HUE_MAX),
+    GREEN(GamePieceColorConstants.Colors.GREEN_HUE_MIN, GamePieceColorConstants.Colors.GREEN_HUE_MAX);
 
     public final float hueMin;
     public final float hueMax;
