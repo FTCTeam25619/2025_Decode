@@ -90,11 +90,11 @@ public class Vision extends SubsystemBase {
         }
     }
 
-    public Double distanceToTarget() {
+    public double distanceToTarget() {
         return distanceToTagCM;
     }
 
-    public Double angleToTarget() {
+    public double angleToTarget() {
         return angleToTargetDeg;
     }
 }

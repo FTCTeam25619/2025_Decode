@@ -1,6 +1,10 @@
 package org.firstinspires.ftc.teamcode.constants;
 
+import com.bylazar.configurables.annotations.Configurable;
+
+@Configurable
 public class VisionConstants {
+    @Configurable
     public static class LimelightConfig {
         // These values are not used in code, but are set via the LimeLight configuration
         // tool. They are recorded here for ease of reconfiguration should something go wrong.
