@@ -20,7 +20,7 @@ public class OdometryConstants {
      * odometry computer on the robot.
      */
     public static double forwardPodYMM = 79.91;
-    public static double strafePodXMM = 140.41;
+    public static double strafePodXMM  = 140.41;
 
     /*
      * Directions of each Odometry Pod (assuming GoBilda 4-bar pods)
@@ -29,7 +29,6 @@ public class OdometryConstants {
             GoBildaPinpointDriver.EncoderDirection.FORWARD;
     public static final GoBildaPinpointDriver.EncoderDirection yDirection =
             GoBildaPinpointDriver.EncoderDirection.REVERSED;
-
 
     @Config
     @Configurable
@@ -40,4 +39,16 @@ public class OdometryConstants {
         public static double nearZoneEndShot = 2.0;
         public static double farWallShot = 3.5;
     }
+
+    @Config
+    @Configurable
+    public static class Target {
+        // Field coordinates of the GOAL in cm
+        // Origin (0,0) is bottom-left of the field
+        // Field is 12ft x 12ft → 365.76 cm per side
+
+        public static double x = 0.0;       // left edge
+        public static double y = 365.76;    // top edge (12 ft in cm)
+    }
 }
+

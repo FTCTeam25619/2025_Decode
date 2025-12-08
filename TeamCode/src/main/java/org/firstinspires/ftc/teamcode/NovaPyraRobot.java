@@ -17,8 +17,9 @@ import org.firstinspires.ftc.teamcode.constants.DriveConstants;
 import org.firstinspires.ftc.teamcode.constants.OpModes;
 import org.firstinspires.ftc.teamcode.constants.OpModes.OpModeSelection;
 import org.firstinspires.ftc.teamcode.constants.VisionConstants;
-import org.firstinspires.ftc.teamcode.lib.orchestration.ShotController;
 import org.firstinspires.ftc.teamcode.constants.PedroConstants;
+import org.firstinspires.ftc.teamcode.constants.OdometryConstants;
+import org.firstinspires.ftc.teamcode.lib.orchestration.ShotController;
 import org.firstinspires.ftc.teamcode.lib.triggers.ControllerTriggers;
 import org.firstinspires.ftc.teamcode.lib.util.NovaPyraUtils;
 import org.firstinspires.ftc.teamcode.subsystems.FeedStop;
@@ -74,7 +75,7 @@ public class NovaPyraRobot extends Robot {
 
         // Subsystems
         odometry = new Odometry(hardwareMap, NovaPyraRobot.telemetry);
-        shooterFeed = new ShooterFeed(hardwareMap,NovaPyraRobot.telemetry);
+        shooterFeed = new ShooterFeed(hardwareMap, NovaPyraRobot.telemetry);
         shooter = new Shooter(hardwareMap, NovaPyraRobot.telemetry);
         feedStop = new FeedStop(hardwareMap, NovaPyraRobot.telemetry);
         hood = new Hood(hardwareMap, NovaPyraRobot.telemetry);
@@ -133,14 +134,45 @@ public class NovaPyraRobot extends Robot {
                         DriveConstants.Joysticks.rotateInverseDeadband
                 );
 
-                if (controller1.getButton(GamepadKeys.Button.RIGHT_STICK_BUTTON) && vision.isSeeingTarget()) {
+                // AUTO-AIM LOGIC
+                if (shotController.isShooting()) {
+                    double headingErrorDeg;
+
+                    if (vision.isSeeingTarget()) {
+                        // Prefer Limelight if it has a target
+                        headingErrorDeg = vision.angleToTarget();
+                    } else {
+                        // Fallback to odometry-based heading to goal
+                        double goalX = OdometryConstants.Target.x;
+                        double goalY = OdometryConstants.Target.y;
+
+                        double desiredHeading = odometry.getHeadingTo(goalX, goalY);   // radians
+                        double currentHeading = odometry.getHeadingField();            // radians
+                        double errorRad = Math.atan2(
+                                Math.sin(desiredHeading - currentHeading),
+                                Math.cos(desiredHeading - currentHeading)
+                        );
+                        headingErrorDeg = Math.toDegrees(errorRad);
+                    }
+
+                    rotateAxis = MathUtils.clamp(
+                            -DriveConstants.HeadingControl.kPHeadingCorrection * headingErrorDeg,
+                            -DriveConstants.HeadingControl.correctionOutputClamp,
+                            DriveConstants.HeadingControl.correctionOutputClamp
+                    );
+
+                } else if (controller1.getButton(GamepadKeys.Button.RIGHT_STICK_BUTTON) && vision.isSeeingTarget()) {
+                    // Optional manual aim-assist mode
                     rotateAxis = MathUtils.clamp(
                             -DriveConstants.HeadingControl.kPHeadingCorrection * vision.angleToTarget(),
                             -DriveConstants.HeadingControl.correctionOutputClamp,
-                            DriveConstants.HeadingControl.correctionOutputClamp);
+                            DriveConstants.HeadingControl.correctionOutputClamp
+                    );
                 } else {
+                    // Normal manual rotation
                     rotateAxis /= DriveConstants.Joysticks.rotateScalingFactor;
                 }
+
                 pedroFollower.setTeleOpDrive(driveAxes[0], driveAxes[1], rotateAxis, false);
                 pedroFollower.update();
                 shotController.updateState();

@@ -70,100 +70,118 @@ public class ShotController {
         telemetry.addData("ShotController: Prior State", this.priorState.name());
         telemetry.addData("ShotController: Current State", this.currentState.name());
         telemetry.addData("ShotController: Transitioning?", this.stateTransition);
-        telemetry.addData("ShotController: RPM", this.getTargetFlywheelRPM());
-        telemetry.addData("ShotController: Angle", this.getTargetHoodAngle());
-        telemetry.addData("ShotController: Feed Power", this.getTargetFeedPower());
+        telemetry.addData("ShotController: RPM Target", this.getTargetFlywheelRPM());
+        telemetry.addData("ShotController: Hood Target", this.getTargetHoodAngle());
+        telemetry.addData("ShotController: Feed Power Target", this.getTargetFeedPower());
+        telemetry.addData("ShotController: Preset Mode?", this.presetShotMode);
 
         this.priorState = this.currentState;
 
         // State actions that need to happen each cycle
         switch (this.currentState) {
             case IDLE:
+                // From idle, if we detect a staged ball, move to STAGED automatically.
                 if (this.staged()) {
                     this.currentState = ShotCycleState.STAGED;
                 }
                 break;
+
             case INTAKE:
+                // Behavior handled mostly by state transition triggers + LT mapping.
                 break;
+
             case STAGED:
+                // Waiting for driver to start PREPARE_SHOT (via LB).
                 break;
+
             case PREPARE_SHOT:
-                if (!presetShotMode) {
-                    autoTargetShot();
-                }
-                this.robot.shooter.setTargetRPM(this.getTargetFlywheelRPM());
-                this.robot.hood.setAngle(this.getTargetHoodAngle());
+                runPrepareShotLogic();
                 if (this.readyToShoot()) {
                     this.currentState = ShotCycleState.READY_TO_SHOOT;
                 }
                 break;
+
             case READY_TO_SHOOT:
-                if (this.readyToShoot() && !presetShotMode) {
+                // Keep everything updated; if we drift off, fall back to PREPARE_SHOT
+                runPrepareShotLogic();
+                if (!this.readyToShoot()) {
+                    this.currentState = ShotCycleState.PREPARE_SHOT;
+                }
+                break;
+
+            case SHOOTING:
+                // While shooting, if we fall out of "ready" (RPM drop, hood/heading error), stop feeding and go into recovery.
+                if (!this.readyToShoot()) {
+                    this.currentState = ShotCycleState.RECOVERY;
+                }
+                break;
+
+            case RECOVERY:
+                // In recovery we keep shooter + hood at target, but feed is stopped.
+                // Once we are “ready” again, resume SHOOTING.
+                if (this.readyToShoot()) {
                     this.currentState = ShotCycleState.SHOOTING;
                 }
                 break;
-            case SHOOTING:
-                break;
+
         }
     }
 
-    public void setupStateTransitionTriggers() {
-        stateTransitionTrigger(ShotCycleState.IDLE).whenActive(new InstantCommand(() -> {
-            // Transitioning back to IDLE state
-            // NOTE: This will not trigger at start because initial state is IDLE
-            this.robot.intake.setState(Intake.IntakeState.Stopped);
-            this.robot.feedStop.disengage();
-            this.robot.shooter.setTargetRPM(ShooterConstants.Targets.idleRPM);
-            this.robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
-            this.robot.hood.setAngle(HoodConstants.Limits.hoodHardStopMax);
-        }));
-        stateTransitionTrigger(ShotCycleState.INTAKE).whenActive(new InstantCommand(() -> {
-            // Transitioning to INTAKE state
-            this.robot.intake.setState(Intake.IntakeState.Intake);
-            this.robot.feedStop.engage();
-            // Same as prior state IDLE
-            this.robot.shooter.setTargetRPM(ShooterConstants.Targets.idleRPM);
-            this.robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
-            this.robot.hood.setAngle(HoodConstants.Limits.hoodHardStopMax);
-        }));
-        stateTransitionTrigger(ShotCycleState.STAGED).whenActive(new InstantCommand(() -> {
-            // Transitioning to STAGED state
-            this.robot.intake.setState(Intake.IntakeState.Stopped);
-            // Same as prior state INTAKE
-            this.robot.feedStop.engage();
-            this.robot.shooter.setTargetRPM(ShooterConstants.Targets.idleRPM);
-            this.robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
-            this.robot.hood.setAngle(HoodConstants.Limits.hoodHardStopMax);
-        }));
-        stateTransitionTrigger(ShotCycleState.PREPARE_SHOT).whenActive(new InstantCommand(() -> {
-            // Transitioning to PREPARE_SHOT state
-            this.robot.feedStop.engage();
-            this.robot.shooter.setTargetRPM(this.getTargetFlywheelRPM());
-            this.robot.hood.setAngle(this.getTargetHoodAngle());
-            this.robot.intake.setState(Intake.IntakeState.Stopped);
-            // Same as prior state STAGED
-            this.robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
-        }));
-        stateTransitionTrigger(ShotCycleState.READY_TO_SHOOT).whenActive(new InstantCommand(() -> {
-            // Transitioning to READY_TO_SHOOT state
-            // Same as prior state PREPARE_SHOT
-            this.robot.feedStop.engage();
-            this.robot.shooter.setTargetRPM(this.getTargetFlywheelRPM());
-            this.robot.hood.setAngle(this.getTargetHoodAngle());
-            this.robot.intake.setState(Intake.IntakeState.Stopped);
-            this.robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
-        }));
-        stateTransitionTrigger(ShotCycleState.SHOOTING).whenActive(new InstantCommand(() -> {
-            // Transitioning to SHOOTING state
-            this.robot.feedStop.disengage();
-            this.robot.shooterFeed.setFeedPower(this.getTargetFeedPower());
-            this.robot.shooterFeed.setState(ShooterFeed.FeedState.Feeding);
-            this.robot.intake.setState(Intake.IntakeState.Intake);
-            // Same as prior state READY_TO_SHOOT
-            this.robot.shooter.setTargetRPM(this.getTargetFlywheelRPM());
-            this.robot.hood.setAngle(this.getTargetHoodAngle());
-        }));
+    /**
+     * Shared logic for PREPARE_SHOT and READY_TO_SHOOT.
+     * - Auto-target RPM/hood if we're not in preset mode.
+     * - Apply RPM/hood targets every loop so changes propagate quickly.
+     * - Heading alignment control happens in NovaPyraRobot.run using vision/odometry.
+     */
+    private void runPrepareShotLogic() {
+        if (!presetShotMode) {
+            autoTargetShot();
+        }
+
+        robot.shooter.setTargetRPM(this.getTargetFlywheelRPM());
+        robot.hood.setAngle(this.getTargetHoodAngle());
+        // Feed stays stopped until SHOOTING state.
     }
+
+    // --------------------------
+    // LUT Targeting
+    // --------------------------
+
+    public void autoTargetShot() {
+        this.presetShotMode = false;
+        double distance = getDistanceToTarget();
+        setTargetFlywheelRPM(shooterRPMInterpolator.get(distance));
+        setTargetHoodAngle(hoodAngleInterpolator.get(distance));
+        setTargetFeedPower(feedPowerInterpolator.get(distance));
+    }
+
+    /**
+     * Hybrid distance:
+     * - If Limelight sees tag, use LL distance (Vision.distanceToTarget()).
+     * - Otherwise, use odometry distance to a known goal point on the field.
+     */
+    private double getDistanceToTarget() {
+        if (robot.vision.isSeeingTarget()) {
+            // Limelight reports distance in cm.
+            return robot.vision.distanceToTarget();
+        }
+        // Fallback: geometric distance from odometry pose to goal point
+        return robot.odometry.getDistanceTo(
+                OdometryConstants.Target.x,
+                OdometryConstants.Target.y
+        );
+    }
+
+    public void setupPresetShot(PresetShot shotSetting) {
+        this.presetShotMode    = true;
+        this.targetFlywheelRPM = shotSetting.targetFlywheelRPM;
+        this.targetHoodAngle   = shotSetting.targetHoodAngle;
+        this.targetFeedPower   = shotSetting.targetFeedPower;
+    }
+
+    // --------------------------
+    // Targets getters/setters
+    // --------------------------
 
     public void setTargetFlywheelRPM(double newTarget) {
         this.targetFlywheelRPM = newTarget;
@@ -175,21 +193,6 @@ public class ShotController {
 
     public void setTargetFeedPower(double newTarget) {
         this.targetFeedPower = newTarget;
-    }
-
-    public void autoTargetShot() {
-        this.presetShotMode = false;
-        double distance = getDistanceToTarget();
-        setTargetFlywheelRPM(shooterRPMInterpolator.get(distance));
-        setTargetHoodAngle(hoodAngleInterpolator.get(distance));
-        setTargetFeedPower(feedPowerInterpolator.get(distance));
-    }
-
-    public void setupPresetShot(PresetShot shotSetting) {
-        this.presetShotMode = true;
-        setTargetFlywheelRPM(shotSetting.targetFlywheelRPM);
-        setTargetHoodAngle(shotSetting.targetHoodAngle);
-        setTargetFeedPower(shotSetting.targetFeedPower);
     }
 
     public double getTargetFlywheelRPM() {
@@ -204,6 +207,10 @@ public class ShotController {
         return this.targetFeedPower;
     }
 
+    // --------------------------
+    // Conditions and helpers
+    // --------------------------
+
     public boolean staged() {
         return this.robot.sensors.seeingSomeBall();
     }
@@ -217,6 +224,7 @@ public class ShotController {
     }
 
     private boolean atTargetHeading() {
+        // Implement hybrid LL/odometry logic inside Vision.atHeading()
         return this.robot.vision.atHeading();
     }
 
@@ -227,6 +235,94 @@ public class ShotController {
     public boolean transitionedTo(ShotCycleState newState) {
         return this.stateTransition && this.currentState == newState;
     }
+
+    // --------------------------
+    // Transition side-effects
+    // --------------------------
+
+    public void setupStateTransitionTriggers() {
+        stateTransitionTrigger(ShotCycleState.IDLE).whenActive(new InstantCommand(() -> {
+            // Transitioning back to IDLE state
+            // NOTE: This will not trigger at start because initial state is IDLE
+            this.robot.intake.setState(Intake.IntakeState.Stopped);
+            this.robot.feedStop.disengage();
+            this.robot.shooter.setTargetRPM(ShooterConstants.Targets.idleRPM);
+            this.robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
+            this.robot.hood.setAngle(HoodConstants.Limits.hoodHardStopMax);
+        }));
+
+        // INTAKE state: left trigger held
+        stateTransitionTrigger(ShotCycleState.INTAKE).whenActive(new InstantCommand(() -> {
+            // Transitioning to INTAKE state
+            this.robot.intake.setState(Intake.IntakeState.Intake);
+            this.robot.feedStop.engage();
+            // Same as prior state IDLE
+            this.robot.shooter.setTargetRPM(ShooterConstants.Targets.idleRPM);
+            this.robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
+            this.robot.hood.setAngle(HoodConstants.Limits.hoodHardStopMax);
+        }));
+
+        // STAGED: ball is staged but not yet preparing to shoot
+        stateTransitionTrigger(ShotCycleState.STAGED).whenActive(new InstantCommand(() -> {
+            // Transitioning to STAGED state
+            this.robot.intake.setState(Intake.IntakeState.Stopped);
+            // Same as prior state INTAKE
+            this.robot.feedStop.engage();
+            this.robot.shooter.setTargetRPM(ShooterConstants.Targets.idleRPM);
+            this.robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
+            this.robot.hood.setAngle(HoodConstants.Limits.hoodHardStopMax);
+        }));
+
+        // PREPARE_SHOT: spin up, aim hood, keep feedStop engaged
+        stateTransitionTrigger(ShotCycleState.PREPARE_SHOT).whenActive(new InstantCommand(() -> {
+            // Transitioning to PREPARE_SHOT state
+            this.robot.feedStop.engage();
+            this.robot.shooter.setTargetRPM(this.getTargetFlywheelRPM());
+            this.robot.hood.setAngle(this.getTargetHoodAngle());
+            this.robot.intake.setState(Intake.IntakeState.Stopped);
+            // Same as prior state STAGED
+            this.robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
+        }));
+
+        // READY_TO_SHOOT: same hardware as PREPARE_SHOT, just logically "ready"
+        stateTransitionTrigger(ShotCycleState.READY_TO_SHOOT).whenActive(new InstantCommand(() -> {
+            // Transitioning to READY_TO_SHOOT state
+            // Same as prior state PREPARE_SHOT
+            this.robot.feedStop.engage();
+            this.robot.shooter.setTargetRPM(this.getTargetFlywheelRPM());
+            this.robot.hood.setAngle(this.getTargetHoodAngle());
+            this.robot.intake.setState(Intake.IntakeState.Stopped);
+            this.robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
+        }));
+
+        // SHOOTING: open feedStop + run feed & intake while keeping shooter/hood targets
+        stateTransitionTrigger(ShotCycleState.SHOOTING).whenActive(new InstantCommand(() -> {
+            this.robot.feedStop.disengage();
+            this.robot.shooterFeed.setFeedPower(this.getTargetFeedPower());
+            this.robot.shooterFeed.setState(ShooterFeed.FeedState.Feeding);
+            this.robot.intake.setState(Intake.IntakeState.Intake);
+            this.robot.shooter.setTargetRPM(this.getTargetFlywheelRPM());
+            this.robot.hood.setAngle(this.getTargetHoodAngle());
+        }));
+        stateTransitionTrigger(ShotCycleState.RECOVERY).whenActive(new InstantCommand(() -> {
+            // Entering RECOVERY:
+            //  - Keep gate open (feedStop DISENGAGED)
+            //  - Stop feed wheel so we aren’t pushing balls
+            //  - Keep shooter + hood at their current targets
+
+            this.robot.feedStop.disengage();  // do NOT re-engage, avoids jamming
+            this.robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
+            this.robot.intake.setState(Intake.IntakeState.Stopped);
+
+            this.robot.shooter.setTargetRPM(this.getTargetFlywheelRPM());
+            this.robot.hood.setAngle(this.getTargetHoodAngle());
+        }));
+
+    }
+
+    // --------------------------
+    // Triggers
+    // --------------------------
 
     public Trigger shotStagedTrigger() {
         if (this._shotStagedTrigger == null) {
@@ -306,37 +402,36 @@ public class ShotController {
         public boolean get() { return this.getFn.test(checkState); }
     }
 
-    private double getDistanceToTarget() {
-        // TODO: Actually implement logic to read distance from LL/Odometry
-        return OdometryConstants.TargetDistances.nearZoneEndShot;
-    }
+    // --------------------------
+    // LUT setup
+    // --------------------------
 
     private InterpLUT setupShooterRPMInterpolator() {
         InterpLUT table = new InterpLUT();
-        table.add(OdometryConstants.TargetDistances.atGoalShot, ShooterConstants.Targets.atGoalShot);
+        table.add(OdometryConstants.TargetDistances.atGoalShot,      ShooterConstants.Targets.atGoalShot);
         table.add(OdometryConstants.TargetDistances.nearZoneMidShot, ShooterConstants.Targets.nearZoneMidShot);
         table.add(OdometryConstants.TargetDistances.nearZoneEndShot, ShooterConstants.Targets.nearZoneEndShot);
-        table.add(OdometryConstants.TargetDistances.farWallShot, ShooterConstants.Targets.farWallShot);
+        table.add(OdometryConstants.TargetDistances.farWallShot,     ShooterConstants.Targets.farWallShot);
         table.createLUT();
         return table;
     }
 
     private InterpLUT setupHoodAngleInterpolator() {
         InterpLUT table = new InterpLUT();
-        table.add(OdometryConstants.TargetDistances.atGoalShot, HoodConstants.Targets.atGoalShot);
+        table.add(OdometryConstants.TargetDistances.atGoalShot,      HoodConstants.Targets.atGoalShot);
         table.add(OdometryConstants.TargetDistances.nearZoneMidShot, HoodConstants.Targets.nearZoneMidShot);
         table.add(OdometryConstants.TargetDistances.nearZoneEndShot, HoodConstants.Targets.nearZoneEndShot);
-        table.add(OdometryConstants.TargetDistances.farWallShot, HoodConstants.Targets.farWallShot);
+        table.add(OdometryConstants.TargetDistances.farWallShot,     HoodConstants.Targets.farWallShot);
         table.createLUT();
         return table;
     }
 
     private InterpLUT setupFeedPowerInterpolator() {
         InterpLUT table = new InterpLUT();
-        table.add(OdometryConstants.TargetDistances.atGoalShot, ShooterFeedConstants.Targets.atGoalShot);
+        table.add(OdometryConstants.TargetDistances.atGoalShot,      ShooterFeedConstants.Targets.atGoalShot);
         table.add(OdometryConstants.TargetDistances.nearZoneMidShot, ShooterFeedConstants.Targets.nearZoneMidShot);
         table.add(OdometryConstants.TargetDistances.nearZoneEndShot, ShooterFeedConstants.Targets.nearZoneEndShot);
-        table.add(OdometryConstants.TargetDistances.farWallShot, ShooterFeedConstants.Targets.farWallShot);
+        table.add(OdometryConstants.TargetDistances.farWallShot,     ShooterFeedConstants.Targets.farWallShot);
         table.createLUT();
         return table;
     }
