@@ -1,8 +1,6 @@
 
 package org.firstinspires.ftc.teamcode.opmodes;
 
-import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.bylazar.telemetry.JoinedTelemetry;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
