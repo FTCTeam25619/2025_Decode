@@ -23,11 +23,7 @@ public class Exploration extends CommandOpMode {
 
     @Override
     public void initialize() {
-        // Create FTC Dashboard if setup for shop debugging
-        if (Constants.DebugModes.ENABLE_FTC_DASHBOARD) {
-            FtcDashboard dashboard = FtcDashboard.getInstance();
-            telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
-        }
+        // Setup Dashboard if setup for shop debugging
         if (Constants.DebugModes.ENABLE_PANELS_DASHBOARD) {
             telemetry = new JoinedTelemetry(PanelsTelemetry.INSTANCE.getFtcTelemetry(), telemetry);
         }
