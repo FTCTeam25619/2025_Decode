@@ -30,13 +30,13 @@ public class PedroConstants {
             .yVelocity(50.0);
 
     public static PinpointConstants localizerConstants = new PinpointConstants()
-            .forwardPodY(OdometryConstants.forwardPodYMM)
-            .strafePodX(OdometryConstants.strafePodXMM)
+            .forwardPodY(OdometryConstants.OdometryPods.forwardPodYMM)
+            .strafePodX(OdometryConstants.OdometryPods.strafePodXMM)
             .distanceUnit(DistanceUnit.MM)
             .hardwareMapName(Devices.Odometry.pinpointOdometry)
-            .encoderResolution(OdometryConstants.podType)
-            .forwardEncoderDirection(OdometryConstants.yDirection)
-            .strafeEncoderDirection(OdometryConstants.xDirection);
+            .encoderResolution(OdometryConstants.OdometryPods.podType)
+            .forwardEncoderDirection(OdometryConstants.OdometryPods.yDirection)
+            .strafeEncoderDirection(OdometryConstants.OdometryPods.xDirection);
 
     public static Drivetrain drivetrain;
     public static FollowerConstants followerConstants = new FollowerConstants()
