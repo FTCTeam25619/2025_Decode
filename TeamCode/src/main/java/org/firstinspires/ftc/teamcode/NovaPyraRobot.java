@@ -199,4 +199,84 @@ public class NovaPyraRobot extends Robot {
     public void trackCycleTime(double newClockReading) {
         odometry.updateRevHubCycleFrequency(newClockReading);
     }
+
+    // --- AUTO AIM HELPERS ---
+
+    /**
+     * One step of auto-aim:
+     *  - If Limelight sees the tag, use tx (angleToTarget) to rotate.
+     *  - Otherwise, use Pedro pose + field target to compute an odometry-based heading error.
+     *  - This ONLY sets teleOpDrive rotation; follower.update() is called elsewhere.
+     */
+    public void autoAimStep() {
+        double rotateAxis;
+
+        if (vision.isSeeingTarget()) {
+            // Limelight: angleToTarget() is in DEGREES
+            rotateAxis = MathUtils.clamp(
+                    -DriveConstants.HeadingControl.kPHeadingCorrection * vision.angleToTarget(),
+                    -DriveConstants.HeadingControl.correctionOutputClamp,
+                    DriveConstants.HeadingControl.correctionOutputClamp
+            );
+        } else {
+            // Fallback: odometry / Pedro pose aiming
+            // OdometryConstants.Target.x/y are in cm; Pedro uses inches → convert target to inches.
+            double goalXIn = OdometryConstants.Target.x / 2.54;
+            double goalYIn = OdometryConstants.Target.y / 2.54;
+
+            double robotXIn = pedroFollower.getPose().getX();
+            double robotYIn = pedroFollower.getPose().getY();
+
+            double dx = goalXIn - robotXIn;
+            double dy = goalYIn - robotYIn;
+
+            double desiredHeading = Math.atan2(dy, dx);           // radians
+            double currentHeading = pedroFollower.getPose().getHeading(); // radians
+
+            double errorRad = desiredHeading - currentHeading;
+            // normalize to [-pi, pi]
+            errorRad = Math.atan2(Math.sin(errorRad), Math.cos(errorRad));
+            double errorDeg = Math.toDegrees(errorRad);
+
+            rotateAxis = MathUtils.clamp(
+                    -DriveConstants.HeadingControl.kPHeadingCorrection * errorDeg,
+                    -DriveConstants.HeadingControl.correctionOutputClamp,
+                    DriveConstants.HeadingControl.correctionOutputClamp
+            );
+        }
+
+        // No translation while lining up – just rotate
+        pedroFollower.setTeleOpDrive(0.0, 0.0, rotateAxis, false);
+    }
+
+    /**
+     * Returns true when we're "close enough" to facing the target.
+     * Uses Limelight tolerance if target is visible; otherwise uses odometry-based error.
+     */
+    public boolean isAutoAimAligned() {
+        if (vision.isSeeingTarget()) {
+            return Math.abs(vision.angleToTarget()) <= VisionConstants.headingAngleThresholdDeg;
+        } else {
+            double goalXIn = OdometryConstants.Target.x / 2.54;
+            double goalYIn = OdometryConstants.Target.y / 2.54;
+
+            double robotXIn = pedroFollower.getPose().getX();
+            double robotYIn = pedroFollower.getPose().getY();
+
+            double dx = goalXIn - robotXIn;
+            double dy = goalYIn - robotYIn;
+
+            double desiredHeading = Math.atan2(dy, dx);
+            double currentHeading = pedroFollower.getPose().getHeading();
+
+            double errorRad = desiredHeading - currentHeading;
+            errorRad = Math.atan2(Math.sin(errorRad), Math.cos(errorRad));
+            double errorDeg = Math.toDegrees(errorRad);
+
+            // You can have a separate tolerance for odom if you want;
+            // for now reuse VisionConstants.headingAngleThresholdDeg.
+            return Math.abs(errorDeg) <= VisionConstants.headingAngleThresholdDeg;
+        }
+    }
+
 }
