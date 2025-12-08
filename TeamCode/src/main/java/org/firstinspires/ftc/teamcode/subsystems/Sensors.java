@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
-import android.hardware.Sensor;
-
 import com.bylazar.lights.LightsManager;
 import com.bylazar.lights.PanelsLights;
 import com.bylazar.lights.RGBIndicator;

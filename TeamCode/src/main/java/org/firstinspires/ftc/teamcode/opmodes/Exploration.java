@@ -8,11 +8,9 @@ import com.bylazar.telemetry.PanelsTelemetry;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 
 import org.firstinspires.ftc.teamcode.constants.Constants;
-import org.firstinspires.ftc.teamcode.constants.DriveConstants;
 import org.firstinspires.ftc.teamcode.constants.OpModes;
 import org.firstinspires.ftc.teamcode.constants.OpModes.OpModeSelection;
 import org.firstinspires.ftc.teamcode.NovaPyraRobot;
-import org.firstinspires.ftc.teamcode.lib.util.NovaPyraUtils;
 
 public class Exploration extends CommandOpMode {
     private NovaPyraRobot robot;

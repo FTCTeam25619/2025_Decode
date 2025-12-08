@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.constants;
 
 public final class Constants {
-
     public static final class DebugModes {
         public static final boolean ENABLE_FTC_DASHBOARD = false;
         public static final boolean ENABLE_PANELS_DASHBOARD = true;
