@@ -10,8 +10,11 @@ import com.pedropathing.paths.PathChain;
 @Configurable
 public class BlueFarFromGoalConstants {
     public Pose blueFarWallStart = new Pose(56.000, 8.000);
+    public Pose blueFarWallToShootCP = new Pose(56.265, 12.397);
     public Pose blueFarWallShoot = new Pose(56.742, 14.543);
+    public Pose blueFarShootToFarIntakeCP = new Pose(65.086, 36.954);
     public Pose blueFarWallRowIntake = new Pose(24.318, 36.954);
+    public Pose blueFarWallPark = new Pose(56.742, 27.000);
     public double blueFarWallStartHeading = 90.0;
     public double blueFarWallShootHeading = 110.0;
     public double blueFarWallRowIntakeHeading = 355.0;
@@ -31,7 +34,7 @@ public class BlueFarFromGoalConstants {
                 .addPath(
                         new BezierCurve(
                                 blueFarWallStart,
-                                new Pose(56.265, 12.397),
+                                blueFarWallToShootCP,
                                 blueFarWallShoot
                         )
                 )
@@ -49,7 +52,7 @@ public class BlueFarFromGoalConstants {
                 .addPath(
                         new BezierCurve(
                                 blueFarWallShoot,
-                                new Pose(65.086, 36.954),
+                                blueFarShootToFarIntakeCP,
                                 blueFarWallRowIntake
                         )
                 )
@@ -85,7 +88,7 @@ public class BlueFarFromGoalConstants {
                 .addPath(
                         new BezierLine(
                                 blueFarWallShoot,
-                                new Pose(56.742, 27.000)
+                                blueFarWallPark
                         )
                 )
                 .setLinearHeadingInterpolation(
