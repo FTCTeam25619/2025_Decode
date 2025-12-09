@@ -100,7 +100,8 @@ public class CompetitionTriggers implements ControllerTriggers {
         }));
 
         // Reset odometry heading to 0 degrees
-        c1Start.whenPressed(new InstantCommand(() -> robot.odometry.setOdometryHeading(0.0, AngleUnit.DEGREES)));
+        c1Start.whenPressed(new InstantCommand(() -> robot.odometry.setOdometryHeading(
+                robot.allianceDriveHeadingOffset(), AngleUnit.DEGREES)));
     }
 
     private void setupController2ButtonMappings() {
