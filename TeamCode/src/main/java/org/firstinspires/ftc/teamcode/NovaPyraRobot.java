@@ -1,28 +1,13 @@
 package org.firstinspires.ftc.teamcode;
 
-import android.os.SystemClock;
-
 import com.pedropathing.follower.Follower;
-import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.command.Robot;
-import com.seattlesolvers.solverslib.gamepad.GamepadEx;
-import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
-import com.seattlesolvers.solverslib.util.MathUtils;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
-import org.firstinspires.ftc.teamcode.constants.Constants;
-import org.firstinspires.ftc.teamcode.constants.DriveConstants;
-import org.firstinspires.ftc.teamcode.constants.OpModes;
-import org.firstinspires.ftc.teamcode.constants.OpModes.OpModeSelection;
-import org.firstinspires.ftc.teamcode.constants.VisionConstants;
+import org.firstinspires.ftc.teamcode.constants.Alliance;
 import org.firstinspires.ftc.teamcode.lib.orchestration.ShotController;
 import org.firstinspires.ftc.teamcode.constants.PedroConstants;
-import org.firstinspires.ftc.teamcode.lib.triggers.ControllerTriggers;
-import org.firstinspires.ftc.teamcode.lib.util.NovaPyraUtils;
 import org.firstinspires.ftc.teamcode.subsystems.FeedStop;
 import org.firstinspires.ftc.teamcode.subsystems.Hood;
 import org.firstinspires.ftc.teamcode.subsystems.IndicatorLights;
@@ -32,8 +17,6 @@ import org.firstinspires.ftc.teamcode.subsystems.Sensors;
 import org.firstinspires.ftc.teamcode.subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.ShooterFeed;
 import org.firstinspires.ftc.teamcode.subsystems.Vision;
-import org.firstinspires.ftc.teamcode.triggers.CompetitionTriggers;
-import org.firstinspires.ftc.teamcode.triggers.TuningTriggers;
 
 /* To connect to the Control Hub device via Wi-Fi:
    - Connect Wi-Fi to the FTC-25619 network
@@ -55,9 +38,9 @@ public class NovaPyraRobot extends Robot {
     public final Vision vision;
     public final ShotController shotController;
     public final Follower pedroFollower;
-    public final OpModes.Alliance alliance;
+    public final Alliance alliance;
 
-    public NovaPyraRobot(HardwareMap hardwareMap, Telemetry telemetry, OpModes.Alliance alliance) {
+    public NovaPyraRobot(HardwareMap hardwareMap, Telemetry telemetry, Alliance alliance) {
         // OpMode selection
         this.alliance = alliance;
 
@@ -80,15 +63,9 @@ public class NovaPyraRobot extends Robot {
         shotController = new ShotController(this, NovaPyraRobot.telemetry);
     }
 
-    public void initOpMode() {
-    }
-
     @Override
     public void run() {
         super.run();
-    }
-
-    public void endOpMode() {
     }
 
     public void trackCycleTime(double newClockReading) {
@@ -96,6 +73,6 @@ public class NovaPyraRobot extends Robot {
     }
 
     public double allianceDriveHeadingOffset() {
-        return this.alliance == OpModes.Alliance.RED ? 0.0 : 180.0;
+        return this.alliance == Alliance.RED ? 0.0 : 180.0;
     }
 }

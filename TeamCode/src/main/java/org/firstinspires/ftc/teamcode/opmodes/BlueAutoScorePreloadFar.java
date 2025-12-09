@@ -21,14 +21,12 @@ import com.seattlesolvers.solverslib.util.TelemetryData;
 
 import org.firstinspires.ftc.teamcode.NovaPyraRobot;
 import org.firstinspires.ftc.teamcode.autos.AutoPaths;
+import org.firstinspires.ftc.teamcode.constants.Alliance;
 import org.firstinspires.ftc.teamcode.constants.Constants;
-import org.firstinspires.ftc.teamcode.constants.OpModes;
 import org.firstinspires.ftc.teamcode.lib.orchestration.PresetShot;
 import org.firstinspires.ftc.teamcode.lib.orchestration.ShotCycleState;
 import org.firstinspires.ftc.teamcode.lib.triggers.SupplierTrigger;
 import org.firstinspires.ftc.teamcode.triggers.RobotTriggers;
-
-import kotlin.time.Instant;
 
 // TODO: Convert sample auto code to real path. See AutoPaths for a path copied from Pedro Visualizer.
 
@@ -40,7 +38,7 @@ public class BlueAutoScorePreloadFar extends CommandOpMode {
     private Follower follower;
     private AutoPaths paths;
     protected TelemetryData telemetryData;
-    private OpModes.Alliance alliance;
+    private Alliance alliance;
 
     // Poses
     private final Pose startPose = new Pose(56.000, 8.000, Math.toRadians(90.0));
@@ -153,7 +151,7 @@ public class BlueAutoScorePreloadFar extends CommandOpMode {
     public void initialize() {
         super.reset();
 
-        alliance = OpModes.Alliance.BLUE;
+        alliance = Alliance.BLUE;
 
         telemetry.addData("Robot Status", "Initializing AutoScorePreloadFar " + alliance.name());
         telemetry.update();

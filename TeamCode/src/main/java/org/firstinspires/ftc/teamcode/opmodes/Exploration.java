@@ -11,10 +11,9 @@ import com.seattlesolvers.solverslib.util.MathUtils;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+import org.firstinspires.ftc.teamcode.constants.Alliance;
 import org.firstinspires.ftc.teamcode.constants.Constants;
 import org.firstinspires.ftc.teamcode.constants.DriveConstants;
-import org.firstinspires.ftc.teamcode.constants.OpModes;
-import org.firstinspires.ftc.teamcode.constants.OpModes.OpModeSelection;
 import org.firstinspires.ftc.teamcode.NovaPyraRobot;
 import org.firstinspires.ftc.teamcode.constants.VisionConstants;
 import org.firstinspires.ftc.teamcode.lib.triggers.ControllerTriggers;
@@ -25,13 +24,13 @@ import org.firstinspires.ftc.teamcode.triggers.TuningTriggers;
 
 public class Exploration extends CommandOpMode {
     private NovaPyraRobot robot;
-    public OpModes.Alliance alliance;
+    public Alliance alliance;
     public GamepadEx controller1;
     public GamepadEx controller2;
     private ControllerTriggers controllerMappings;
     private RobotTriggers robotTriggers;
 
-    public Exploration(OpModes.Alliance allianceSetting) {
+    public Exploration(Alliance allianceSetting) {
         super();
         alliance = allianceSetting;
     }
@@ -63,7 +62,7 @@ public class Exploration extends CommandOpMode {
         robotTriggers.setupNonControllerTriggers();
         controllerMappings.setupGamepadButtonMappings();
         robot.vision.startVision();
-        robot.vision.setTargetingTag(alliance == OpModes.Alliance.BLUE ?
+        robot.vision.setTargetingTag(alliance == Alliance.BLUE ?
                 VisionConstants.AprilTags.BlueGoal : VisionConstants.AprilTags.RedGoal);
         robot.odometry.setRobotPose(new Pose2D(DistanceUnit.MM, 0.0, 0.0,
                 AngleUnit.DEGREES, robot.allianceDriveHeadingOffset()));
