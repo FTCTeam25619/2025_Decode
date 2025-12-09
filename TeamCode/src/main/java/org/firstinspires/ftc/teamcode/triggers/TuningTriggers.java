@@ -14,10 +14,10 @@ public class TuningTriggers implements ControllerTriggers {
     private final GamepadEx controller1;
     private final GamepadEx controller2;
 
-    public TuningTriggers(NovaPyraRobot robot) {
+    public TuningTriggers(NovaPyraRobot robot, GamepadEx controller1, GamepadEx controller2) {
         this.robot = robot;
-        this.controller1 = robot.controller1;
-        this.controller2 = robot.controller2;
+        this.controller1 = controller1;
+        this.controller2 = controller2;
     }
 
     public void setupGamepadButtonMappings() {

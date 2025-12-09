@@ -31,6 +31,11 @@ public class AutoScorePreloadFar extends CommandOpMode {
     private final Follower follower;
     private final AutoPaths paths;
     protected final TelemetryData telemetryData;
+public class BlueAutoScorePreloadFar extends CommandOpMode {
+    private NovaPyraRobot robot;
+    private RobotTriggers robotTriggers;
+    private Follower follower;
+    private OpModes.Alliance alliance;
 
     // Poses
     private final Pose startPose = new Pose(9, 111, Math.toRadians(-90));
@@ -45,13 +50,6 @@ public class AutoScorePreloadFar extends CommandOpMode {
     private PathChain scorePickup1, scorePickup2, scorePickup3, park;
 
     private boolean pathCompleted = false;
-
-    public AutoScorePreloadFar(NovaPyraRobot robot, Telemetry telemetry) {
-        this.robot = robot;
-        this.follower = robot.pedroFollower;
-        this.paths = new AutoPaths(follower);
-        this.telemetryData = new TelemetryData(telemetry);
-    }
 
     public void buildPaths() {
         // FIXME: Do we need these?
@@ -130,6 +128,24 @@ public class AutoScorePreloadFar extends CommandOpMode {
     @Override
     public void initialize() {
         super.reset();
+
+        alliance = OpModes.Alliance.BLUE;
+
+        telemetry.addData("Robot Status", "Initializing AutoScorePreloadFar " + alliance.name());
+        telemetry.update();
+
+        // Setup Dashboard if setup for shop debugging
+        if (Constants.DebugModes.ENABLE_PANELS_DASHBOARD) {
+            telemetry = new JoinedTelemetry(PanelsTelemetry.INSTANCE.getFtcTelemetry(), telemetry);
+            this.telemetryData = new TelemetryData(telemetry);
+        }
+
+        this.robot = new NovaPyraRobot(hardwareMap, telemetry, alliance);
+        this.robotTriggers = new RobotTriggers(robot);
+        this.robotTriggers.setupNonControllerTriggers();
+
+        this.follower = robot.pedroFollower;
+        this.paths = new AutoPaths(follower);
 
         // Initialize follower
         follower.setStartingPose(startPose);

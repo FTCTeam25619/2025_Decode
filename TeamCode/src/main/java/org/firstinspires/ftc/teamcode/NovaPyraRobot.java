@@ -41,8 +41,6 @@ import org.firstinspires.ftc.teamcode.triggers.TuningTriggers;
    - in Android Studio with a green dot (connected)
  */
 public class NovaPyraRobot extends Robot {
-    public final GamepadEx controller1;
-    public final GamepadEx controller2;
     public static Telemetry telemetry;
     public final Odometry odometry;
     public final ShooterFeed shooterFeed;
@@ -55,22 +53,14 @@ public class NovaPyraRobot extends Robot {
     public final Vision vision;
     public final ShotController shotController;
     public final Follower pedroFollower;
-    private final OpModeSelection selectedOpMode;
     public final OpModes.Alliance alliance;
-    private final ControllerTriggers controllerMappings;
 
-    public NovaPyraRobot(HardwareMap hardwareMap, Gamepad gamepad1, Gamepad gamepad2,
-                         Telemetry telemetry, OpModeSelection opModeSelection, OpModes.Alliance alliance) {
+    public NovaPyraRobot(HardwareMap hardwareMap, Telemetry telemetry, OpModes.Alliance alliance) {
         // OpMode selection
-        selectedOpMode = opModeSelection;
         this.alliance = alliance;
 
         // Telemetry
         NovaPyraRobot.telemetry = telemetry;
-
-        // Controllers
-        controller1 = new GamepadEx(gamepad1);
-        controller2 = new GamepadEx(gamepad2);
 
         // Subsystems
         odometry = new Odometry(hardwareMap, NovaPyraRobot.telemetry);
@@ -86,82 +76,17 @@ public class NovaPyraRobot extends Robot {
 
         // Orchestrators
         shotController = new ShotController(this, NovaPyraRobot.telemetry);
-
-        // ControllerMappings
-        if (Constants.DebugModes.ControlInterface.TUNING_CONTROLS) {
-            controllerMappings = new TuningTriggers(this);
-        } else {
-            controllerMappings = new CompetitionTriggers(this);
-        }
     }
 
     public void initOpMode() {
-        switch (selectedOpMode) {
-            case PEDRO_SAMPLE_AUTO:
-            case PEDRO_SAMPLE_TELEOP:
-                break;
-            case EXPLORATION:
-                controllerMappings.setupGamepadButtonMappings();
-                vision.startVision();
-                vision.setTargetingTag(alliance == OpModes.Alliance.BLUE ?
-                        VisionConstants.AprilTags.BlueGoal : VisionConstants.AprilTags.RedGoal);
-                odometry.setRobotPose(new Pose2D(DistanceUnit.MM, 0.0, 0.0, AngleUnit.DEGREES, 0.0));
-                break;
-        }
     }
 
     @Override
     public void run() {
         super.run();
-        switch (selectedOpMode) {
-            case PEDRO_SAMPLE_AUTO:
-            case PEDRO_SAMPLE_TELEOP:
-                break;
-            case EXPLORATION:
-                double[] driveAxes = NovaPyraUtils.deadbandAndSmooth(
-                        controller1.getLeftY(),
-                        -controller1.getLeftX(),
-                        DriveConstants.Joysticks.driveSmoothFactor,
-                        DriveConstants.Joysticks.driveDeadband,
-                        DriveConstants.Joysticks.driveInverseDeadband
-                );
-
-                double rotateAxis = NovaPyraUtils.deadbandAndSmoothValue(
-                        -controller1.getRightX(),
-                        DriveConstants.Joysticks.rotateSmoothFactor,
-                        DriveConstants.Joysticks.rotateDeadband,
-                        DriveConstants.Joysticks.rotateInverseDeadband
-                );
-
-                if (controller1.getButton(GamepadKeys.Button.RIGHT_STICK_BUTTON) && vision.isSeeingTarget()) {
-                    rotateAxis = MathUtils.clamp(
-                            -DriveConstants.HeadingControl.kPHeadingCorrection * vision.angleToTarget(),
-                            -DriveConstants.HeadingControl.correctionOutputClamp,
-                            DriveConstants.HeadingControl.correctionOutputClamp);
-                } else {
-                    rotateAxis /= DriveConstants.Joysticks.rotateScalingFactor;
-                }
-                pedroFollower.setTeleOpDrive(driveAxes[0], driveAxes[1], rotateAxis, false);
-                pedroFollower.update();
-                shotController.updateState();
-
-                telemetry.addData("X", pedroFollower.getPose().getX());
-                telemetry.addData("Y", pedroFollower.getPose().getY());
-                telemetry.addData("Heading", pedroFollower.getPose().getHeading());
-                telemetry.update();
-                break;
-        }
     }
 
     public void endOpMode() {
-        switch (selectedOpMode) {
-            case PEDRO_SAMPLE_AUTO:
-            case PEDRO_SAMPLE_TELEOP:
-                break;
-            case EXPLORATION:
-                vision.stopVision();
-                break;
-        }
     }
 
     public void trackCycleTime(double newClockReading) {

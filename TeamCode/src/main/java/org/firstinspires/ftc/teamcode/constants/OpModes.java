@@ -14,7 +14,8 @@ public class OpModes {
     public enum OpModeSelection {
         PEDRO_SAMPLE_TELEOP(OpModeType.TELEOP),
         PEDRO_SAMPLE_AUTO(OpModeType.TELEOP),
-        EXPLORATION(OpModeType.TELEOP);
+        EXPLORATION(OpModeType.TELEOP),
+        BLUE_SCORE_PRELOAD_FAR_WALL(OpModeType.AUTO);
 
         private OpModeType opModeType;
 
