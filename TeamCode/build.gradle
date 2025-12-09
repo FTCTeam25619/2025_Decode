@@ -59,7 +59,7 @@ dependencies {
 //    implementation "org.solverslib:pedroPathing:SNAPSHOT-5a81a6b" // pedroPathing
 
     // Pedro Pathing
-    implementation 'com.pedropathing:ftc:2.0.3'
+    implementation 'com.pedropathing:ftc:2.0.4'
     implementation 'com.pedropathing:telemetry:1.0.0'
 
     // Panels Dashboard
