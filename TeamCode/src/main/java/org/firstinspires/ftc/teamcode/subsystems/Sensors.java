@@ -180,12 +180,14 @@ public class Sensors extends SubsystemBase {
             new SupplierTrigger(() -> seesPurpleBall(SensorLocation.FeedHigh));
 
     private void displayTelemetry() {
-        this.telemetry.addData("Sensors Intake Green Ball?", seesGreenBall(SensorLocation.Intake));
-        this.telemetry.addData("Sensors Feed Low Green Ball?", seesGreenBall(SensorLocation.FeedLow));
-        this.telemetry.addData("Sensors Feed High Green Ball?", seesGreenBall(SensorLocation.FeedHigh));
-        this.telemetry.addData("Sensors Intake Purple Ball?", seesPurpleBall(SensorLocation.Intake));
-        this.telemetry.addData("Sensors Feed Low Purple Ball?", seesPurpleBall(SensorLocation.FeedLow));
-        this.telemetry.addData("Sensors Feed High Purple Ball?", seesPurpleBall(SensorLocation.FeedHigh));
+        if (Constants.DebugModes.Telemetry.DEBUG_SENSORS) {
+            this.telemetry.addData("Sensors Intake Green Ball?", seesGreenBall(SensorLocation.Intake));
+            this.telemetry.addData("Sensors Feed Low Green Ball?", seesGreenBall(SensorLocation.FeedLow));
+            this.telemetry.addData("Sensors Feed High Green Ball?", seesGreenBall(SensorLocation.FeedHigh));
+            this.telemetry.addData("Sensors Intake Purple Ball?", seesPurpleBall(SensorLocation.Intake));
+            this.telemetry.addData("Sensors Feed Low Purple Ball?", seesPurpleBall(SensorLocation.FeedLow));
+            this.telemetry.addData("Sensors Feed High Purple Ball?", seesPurpleBall(SensorLocation.FeedHigh));
+        }
     }
 
     private void displayDebugTelemetry() {
