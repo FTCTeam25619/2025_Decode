@@ -16,7 +16,7 @@ import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 import com.seattlesolvers.solverslib.util.TelemetryData;
 
 import org.firstinspires.ftc.teamcode.NovaPyraRobot;
-import org.firstinspires.ftc.teamcode.autos.AutoPaths;
+import org.firstinspires.ftc.teamcode.autos.BlueFarFromGoalConstants;
 import org.firstinspires.ftc.teamcode.autos.TimingConstants;
 import org.firstinspires.ftc.teamcode.constants.Alliance;
 import org.firstinspires.ftc.teamcode.constants.Constants;
@@ -31,7 +31,7 @@ public class BlueAuto6ScoreFar extends CommandOpMode {
     private NovaPyraRobot robot;
     private RobotTriggers robotTriggers;
     private Follower follower;
-    private AutoPaths paths;
+    private BlueFarFromGoalConstants paths;
     protected TelemetryData telemetryData;
     private Alliance alliance;
 
@@ -90,10 +90,10 @@ public class BlueAuto6ScoreFar extends CommandOpMode {
         this.robotTriggers.setupNonControllerTriggers();
 
         this.follower = robot.pedroFollower;
-        this.paths = new AutoPaths(follower);
+        this.paths = new BlueFarFromGoalConstants(follower);
 
         // Initialize follower
-        follower.setStartingPose(paths.blueFarWallStart.withHeading(Math.toRadians(paths.farWallStartHeading)));
+        follower.setStartingPose(paths.blueFarWallStart.withHeading(Math.toRadians(paths.blueFarWallStartHeading)));
 
         // Schedule the autonomous sequence
         schedule(
