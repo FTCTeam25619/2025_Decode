@@ -4,10 +4,6 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.JoinedTelemetry;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.pedropathing.follower.Follower;
-import com.pedropathing.geometry.BezierCurve;
-import com.pedropathing.geometry.BezierLine;
-import com.pedropathing.geometry.Pose;
-import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.InstantCommand;
@@ -21,6 +17,7 @@ import com.seattlesolvers.solverslib.util.TelemetryData;
 
 import org.firstinspires.ftc.teamcode.NovaPyraRobot;
 import org.firstinspires.ftc.teamcode.autos.AutoPaths;
+import org.firstinspires.ftc.teamcode.autos.TimingConstants;
 import org.firstinspires.ftc.teamcode.constants.Alliance;
 import org.firstinspires.ftc.teamcode.constants.Constants;
 import org.firstinspires.ftc.teamcode.lib.orchestration.PresetShot;
@@ -28,78 +25,15 @@ import org.firstinspires.ftc.teamcode.lib.orchestration.ShotCycleState;
 import org.firstinspires.ftc.teamcode.lib.triggers.SupplierTrigger;
 import org.firstinspires.ftc.teamcode.triggers.RobotTriggers;
 
-// TODO: Convert sample auto code to real path. See AutoPaths for a path copied from Pedro Visualizer.
-
-@Autonomous(name = "Blue Score Preload Far Wall", group = "Autonomous")
+@Autonomous(name = "Blue 6-Score Far Wall", group = "Autonomous")
 @Configurable // Panels
-public class BlueAutoScorePreloadFar extends CommandOpMode {
+public class BlueAuto6ScoreFar extends CommandOpMode {
     private NovaPyraRobot robot;
     private RobotTriggers robotTriggers;
     private Follower follower;
     private AutoPaths paths;
     protected TelemetryData telemetryData;
     private Alliance alliance;
-
-    // Poses
-    private final Pose startPose = new Pose(56.000, 8.000, Math.toRadians(90.0));
-    private final Pose scorePose = new Pose(16, 128, Math.toRadians(-45));
-    private final Pose pickup1Pose = new Pose(30, 121, Math.toRadians(0));
-    private final Pose pickup2Pose = new Pose(30, 131, Math.toRadians(0));
-    private final Pose pickup3Pose = new Pose(45, 128, Math.toRadians(90));
-    private final Pose parkPose = new Pose(68, 96, Math.toRadians(-90));
-
-    // Path chains
-    private PathChain scorePreload, grabPickup1, grabPickup2, grabPickup3;
-    private PathChain scorePickup1, scorePickup2, scorePickup3, park;
-
-    private boolean pathCompleted = false;
-
-    public void buildPaths() {
-        // FIXME: Do we need these?
-        scorePreload = follower.pathBuilder()
-                .addPath(new BezierLine(startPose, scorePose))
-                .setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading())
-                .build();
-
-        grabPickup1 = follower.pathBuilder()
-                .addPath(new BezierLine(scorePose, pickup1Pose))
-                .setLinearHeadingInterpolation(scorePose.getHeading(), pickup1Pose.getHeading())
-                .build();
-
-        scorePickup1 = follower.pathBuilder()
-                .addPath(new BezierLine(pickup1Pose, scorePose))
-                .setLinearHeadingInterpolation(pickup1Pose.getHeading(), scorePose.getHeading())
-                .build();
-
-        grabPickup2 = follower.pathBuilder()
-                .addPath(new BezierLine(scorePose, pickup2Pose))
-                .setLinearHeadingInterpolation(scorePose.getHeading(), pickup2Pose.getHeading())
-                .build();
-
-        scorePickup2 = follower.pathBuilder()
-                .addPath(new BezierLine(pickup2Pose, scorePose))
-                .setLinearHeadingInterpolation(pickup2Pose.getHeading(), scorePose.getHeading())
-                .build();
-
-        grabPickup3 = follower.pathBuilder()
-                .addPath(new BezierLine(scorePose, pickup3Pose))
-                .setLinearHeadingInterpolation(scorePose.getHeading(), pickup3Pose.getHeading())
-                .build();
-
-        scorePickup3 = follower.pathBuilder()
-                .addPath(new BezierLine(pickup3Pose, scorePose))
-                .setLinearHeadingInterpolation(pickup3Pose.getHeading(), scorePose.getHeading())
-                .build();
-
-        park = follower.pathBuilder()
-                .addPath(new BezierCurve(
-                        scorePose,
-                        new Pose(68, 110), // Control point
-                        parkPose)
-                )
-                .setLinearHeadingInterpolation(scorePose.getHeading(), parkPose.getHeading())
-                .build();
-    }
 
     // Mechanism commands - replace these with your actual subsystem commands
     private InstantCommand setupFarWallPresetShot() {
@@ -132,17 +66,6 @@ public class BlueAutoScorePreloadFar extends CommandOpMode {
         });
     }
 
-    private InstantCommand alive() {
-        return new InstantCommand(() -> {
-            telemetry.addData("Path finished", true);
-            telemetry.update();
-        });
-    }
-
-    private InstantCommand setPathCompleteFlag(boolean flagValue) {
-        return new InstantCommand(() -> { pathCompleted = flagValue; });
-    }
-
     private Trigger readyToShootPreload() {
         return new SupplierTrigger(() -> (!follower.isBusy()) && robot.shotController.readyToShoot());
     }
@@ -170,7 +93,7 @@ public class BlueAutoScorePreloadFar extends CommandOpMode {
         this.paths = new AutoPaths(follower);
 
         // Initialize follower
-        follower.setStartingPose(startPose);
+        follower.setStartingPose(paths.blueFarWallStart.withHeading(Math.toRadians(paths.farWallStartHeading)));
 
         // Schedule the autonomous sequence
         schedule(
@@ -180,22 +103,23 @@ public class BlueAutoScorePreloadFar extends CommandOpMode {
                                 // Score preload
                                 setupFarWallPresetShot(),
                                 prepareShot(),
-                                new FollowPathCommand(follower, paths.wallToFarZonePrescore),
-                                alive(),
-                                new WaitCommand(500),
+                                new FollowPathCommand(follower, paths.blueWallToFarZonePrescore),
+                                new WaitCommand(TimingConstants.waitBeforeShootingMS),
                                 shoot(),
-                                new WaitCommand(3500),
+                                new WaitCommand(TimingConstants.waitForShootingMS),
+                                // Intake 3 from row closest to far wall from goal
                                 intake(),
-                                new FollowPathCommand(follower, paths.farZonePrescoreToFarIntake),
-                                new WaitCommand(250),
+                                new FollowPathCommand(follower, paths.blueFarZonePrescoreToFarIntake),
+                                new WaitCommand(TimingConstants.waitForIntakeMS),
+                                // Score 3
                                 setupFarWallPresetShot(),
                                 prepareShot(),
-                                new FollowPathCommand(follower, paths.farIntakeToFarZoneScore),
-                                new WaitCommand(500),
+                                new FollowPathCommand(follower, paths.blueFarIntakeToFarZoneScore),
+                                new WaitCommand(TimingConstants.waitBeforeShootingMS),
                                 shoot(),
-                                new WaitCommand(3500),
+                                new WaitCommand(TimingConstants.waitForShootingMS),
                                 // Park
-                                new FollowPathCommand(follower, paths.park, false),
+                                new FollowPathCommand(follower, paths.bluePark, false),
                                 spinDown()
                         )
                 )
@@ -213,7 +137,7 @@ public class BlueAutoScorePreloadFar extends CommandOpMode {
 
         this.robot.shotController.updateState();
 
-        if (follower.getCurrentPath() != null) {
+        if (Constants.DebugModes.Telemetry.DEBUG_PATH_FOLLOWING && follower.getCurrentPath() != null) {
             telemetry.addData("Follower busy", follower.isBusy());
             telemetry.addData("Follower param end", follower.getCurrentPath().isAtParametricEnd());
             telemetry.addData("Follower heading error", follower.getHeadingError());

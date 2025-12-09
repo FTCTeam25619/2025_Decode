@@ -14,6 +14,7 @@ public final class Constants {
             // value to be dependent on whether ENABLE_PANELS_DASHBOARD is true.
             public static final boolean DEBUG_LIGHTS = ENABLE_PANELS_DASHBOARD && false;
             public static final boolean DEBUG_VISION = false;
+            public static final boolean DEBUG_PATH_FOLLOWING = false;
         }
     }
 
