@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.os.SystemClock;
+
 import com.pedropathing.follower.Follower;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -63,14 +65,14 @@ public class NovaPyraRobot extends Robot {
         NovaPyraRobot.telemetry = telemetry;
 
         // Subsystems
-        odometry = new Odometry(hardwareMap, NovaPyraRobot.telemetry);
-        shooterFeed = new ShooterFeed(hardwareMap,NovaPyraRobot.telemetry);
         shooter = new Shooter(hardwareMap, NovaPyraRobot.telemetry);
+        indicatorLights = new IndicatorLights(hardwareMap, NovaPyraRobot.telemetry);
+        shooterFeed = new ShooterFeed(hardwareMap,NovaPyraRobot.telemetry);
         feedStop = new FeedStop(hardwareMap, NovaPyraRobot.telemetry);
         hood = new Hood(hardwareMap, NovaPyraRobot.telemetry);
         intake = new Intake(hardwareMap, NovaPyraRobot.telemetry);
         sensors = new Sensors(hardwareMap, NovaPyraRobot.telemetry);
-        indicatorLights = new IndicatorLights(hardwareMap, NovaPyraRobot.telemetry);
+        odometry = new Odometry(hardwareMap, NovaPyraRobot.telemetry);
         vision = new Vision(hardwareMap, odometry, NovaPyraRobot.telemetry);
         pedroFollower = PedroConstants.createFollower(hardwareMap);
 
