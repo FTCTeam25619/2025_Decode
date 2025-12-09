@@ -93,7 +93,7 @@ public class BlueFarFromGoalConstants {
                         new BezierCurve(
                                 blueFarWallShoot,
                                 blueFarWallShootToMidIntakeCP,
-                                new Pose(22.899, 60.550)
+                                blueFarWallMidIntake
                         )
                 )
                 .setLinearHeadingInterpolation(
