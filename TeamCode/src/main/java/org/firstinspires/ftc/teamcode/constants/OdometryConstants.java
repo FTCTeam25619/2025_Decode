@@ -1,36 +1,37 @@
 package org.firstinspires.ftc.teamcode.constants;
 
-import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 
 public class OdometryConstants {
-    /*
-     * The type of GoBilda Odometry pods used with the PinPoint odometry computer.
-     *
-     * This is used to set the encoder resolution.
-     */
-    public static final GoBildaPinpointDriver.GoBildaOdometryPods podType =
-            GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD;
+    @Configurable
+    public static class OdometryPods {
+        /*
+         * The type of GoBilda Odometry pods used with the PinPoint odometry computer.
+         *
+         * This is used to set the encoder resolution.
+         */
+        public static final GoBildaPinpointDriver.GoBildaOdometryPods podType =
+                GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD;
 
-    /*
-     * Offsets of the Odometry Pods (assuming GoBilda 4-bar pods) relative to the center of the robot.
-     *
-     * Note: Positive direction of axes depends on the mounting position of the GoBilda PinPoint
-     * odometry computer on the robot.
-     */
-    public static double forwardPodYMM = 79.91;
-    public static double strafePodXMM  = 140.41;
+        /*
+         * Directions of each Odometry Pod (assuming GoBilda 4-bar pods)
+         */
+        public static final GoBildaPinpointDriver.EncoderDirection xDirection =
+                GoBildaPinpointDriver.EncoderDirection.FORWARD;
+        public static final GoBildaPinpointDriver.EncoderDirection yDirection =
+                GoBildaPinpointDriver.EncoderDirection.REVERSED;
 
-    /*
-     * Directions of each Odometry Pod (assuming GoBilda 4-bar pods)
-     */
-    public static final GoBildaPinpointDriver.EncoderDirection xDirection =
-            GoBildaPinpointDriver.EncoderDirection.FORWARD;
-    public static final GoBildaPinpointDriver.EncoderDirection yDirection =
-            GoBildaPinpointDriver.EncoderDirection.REVERSED;
+        /*
+         * Offsets of the Odometry Pods (assuming GoBilda 4-bar pods) relative to the center of the robot.
+         *
+         * Note: Positive direction of axes depends on the mounting position of the GoBilda PinPoint
+         * odometry computer on the robot.
+         */
+        public static double forwardPodYMM = 79.91;
+        public static double strafePodXMM = 140.41;
+    }
 
-    @Config
     @Configurable
     public static class TargetDistances {
         // TODO: Tune real values for these
@@ -40,7 +41,6 @@ public class OdometryConstants {
         public static double farWallShot = 360;
     }
 
-    @Config
     @Configurable
     public static class Target {
         // Field coordinates of the GOAL in cm

@@ -32,9 +32,14 @@ public class Odometry extends SubsystemBase {
     }
 
     private void setupOdometry() {
-        this.odometry.setOffsets(OdometryConstants.forwardPodYMM, OdometryConstants.strafePodXMM, DistanceUnit.MM);
-        this.odometry.setEncoderResolution(OdometryConstants.podType);
-        this.odometry.setEncoderDirections(OdometryConstants.xDirection, OdometryConstants.yDirection);
+        this.odometry.setOffsets(
+                OdometryConstants.OdometryPods.forwardPodYMM,
+                OdometryConstants.OdometryPods.strafePodXMM,
+                DistanceUnit.MM);
+        this.odometry.setEncoderResolution(OdometryConstants.OdometryPods.podType);
+        this.odometry.setEncoderDirections(
+                OdometryConstants.OdometryPods.xDirection,
+                OdometryConstants.OdometryPods.yDirection);
         this.odometry.resetPosAndIMU();
 
         if (Constants.DebugModes.Telemetry.DEBUG_ODOMETRY) {

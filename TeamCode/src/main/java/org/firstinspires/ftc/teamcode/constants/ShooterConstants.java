@@ -1,22 +1,22 @@
 package org.firstinspires.ftc.teamcode.constants;
 
-import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
 
+@Configurable
 public class ShooterConstants {
     public static final double flywheelRPMTolerance = 150.0;
     public static final double minFlywheelRPM = 0.0;
     public static final double maxFlywheelRPM = 8000.0;
     public static final double gearRatio = 1.0;
 
+    @Configurable
     public static class VelocityPID {
-        public static final double kP = 600.0; // 300.0;
+        public static final double kP = 600.0;
         public static final double kI = 0.0;
         public static final double kD = 5.0;
         public static final double kF = 21.0;
     }
 
-    @Config
     @Configurable
     public static class Targets {
         public static double idleRPM = 2800.0;

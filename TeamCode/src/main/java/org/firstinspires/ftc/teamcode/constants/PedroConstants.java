@@ -30,25 +30,25 @@ public class PedroConstants {
             .yVelocity(50.0);
 
     public static PinpointConstants localizerConstants = new PinpointConstants()
-            .forwardPodY(OdometryConstants.forwardPodYMM)
-            .strafePodX(OdometryConstants.strafePodXMM)
+            .forwardPodY(OdometryConstants.OdometryPods.forwardPodYMM)
+            .strafePodX(OdometryConstants.OdometryPods.strafePodXMM)
             .distanceUnit(DistanceUnit.MM)
             .hardwareMapName(Devices.Odometry.pinpointOdometry)
-            .encoderResolution(OdometryConstants.podType)
-            .forwardEncoderDirection(OdometryConstants.yDirection)
-            .strafeEncoderDirection(OdometryConstants.xDirection);
+            .encoderResolution(OdometryConstants.OdometryPods.podType)
+            .forwardEncoderDirection(OdometryConstants.OdometryPods.yDirection)
+            .strafeEncoderDirection(OdometryConstants.OdometryPods.xDirection);
 
     public static Drivetrain drivetrain;
     public static FollowerConstants followerConstants = new FollowerConstants()
             .mass(4.92)
             .forwardZeroPowerAcceleration(-34.27)
             .lateralZeroPowerAcceleration(-69.85)
-            .translationalPIDFCoefficients(new PIDFCoefficients(0.16, 0.0, 0.01, 0.0))
-            .headingPIDFCoefficients(new PIDFCoefficients(1.4, 0.0, 0.01, 0.01))
+            .translationalPIDFCoefficients(new PIDFCoefficients(0.12, 0.0, 0.01, 0.04))
+            .headingPIDFCoefficients(new PIDFCoefficients(1.4, 0.0, 0.02, 0.03))
             .centripetalScaling(0.0012);
 
     public static PathConstraints pathConstraints = new PathConstraints(
-            0.99, 100, 1, 1);
+            0.99, 100, 0.6, 1.5);
 
     public static Drivetrain createDrivetrain(HardwareMap hardwareMap) {
         if (drivetrain == null) {

@@ -7,11 +7,9 @@ import com.seattlesolvers.solverslib.util.InterpLUT;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.NovaPyraRobot;
 import org.firstinspires.ftc.teamcode.constants.HoodConstants;
-import org.firstinspires.ftc.teamcode.constants.OdometryConstants;
 import org.firstinspires.ftc.teamcode.constants.ShooterConstants;
 import org.firstinspires.ftc.teamcode.constants.ShooterFeedConstants;
 import org.firstinspires.ftc.teamcode.lib.triggers.SupplierTrigger;
-import org.firstinspires.ftc.teamcode.subsystems.Hood;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.ShooterFeed;
 import com.seattlesolvers.solverslib.util.MathUtils;
@@ -43,7 +41,6 @@ public class ShotController {
 
     private final InterpLUT shooterRPMInterpolator;
     private final InterpLUT hoodAngleInterpolator;
-    private final InterpLUT feedPowerInterpolator;
     private static final double MIN_LUT_DISTANCE_CM = 0.0;
     private static final double MAX_LUT_DISTANCE_CM = 600.0;
 
@@ -54,7 +51,6 @@ public class ShotController {
 
         this.shooterRPMInterpolator = setupShooterRPMInterpolator();
         this.hoodAngleInterpolator = setupHoodAngleInterpolator();
-        this.feedPowerInterpolator = setupFeedPowerInterpolator();
     }
 
     public void setState(ShotCycleState newState) {
@@ -85,6 +81,8 @@ public class ShotController {
 
         // State actions that need to happen each cycle
         switch (this.currentState) {
+            case OFF:
+                break;
             case IDLE:
                 // From idle, if we detect a staged ball, move to STAGED automatically.
                 if (this.staged()) {
@@ -494,21 +492,12 @@ public class ShotController {
         table.add(280, 10);
         table.add(290, 10);
         table.add(310, 10);
+        // FIXME: Soft stop on servo currently set at 10. Do we really need to go below that?
         table.add(330, 0);
         table.add(354, 0);
 
         table.add(600, 0);
 
-        table.createLUT();
-        return table;
-    }
-
-    private InterpLUT setupFeedPowerInterpolator() {
-        InterpLUT table = new InterpLUT();
-        table.add(OdometryConstants.TargetDistances.atGoalShot,      ShooterFeedConstants.Targets.atGoalShot);
-        table.add(OdometryConstants.TargetDistances.nearZoneMidShot, ShooterFeedConstants.Targets.nearZoneMidShot);
-        table.add(OdometryConstants.TargetDistances.nearZoneEndShot, ShooterFeedConstants.Targets.nearZoneEndShot);
-        table.add(OdometryConstants.TargetDistances.farWallShot,     ShooterFeedConstants.Targets.farWallShot);
         table.createLUT();
         return table;
     }

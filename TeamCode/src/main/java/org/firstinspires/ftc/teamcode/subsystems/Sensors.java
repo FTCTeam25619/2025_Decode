@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
-import android.hardware.Sensor;
-
 import com.bylazar.lights.LightsManager;
 import com.bylazar.lights.PanelsLights;
 import com.bylazar.lights.RGBIndicator;
@@ -13,7 +11,7 @@ import com.seattlesolvers.solverslib.hardware.SensorRevColorV3;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.constants.ConfigConstants;
+import org.firstinspires.ftc.teamcode.constants.GamePieceColorConstants;
 import org.firstinspires.ftc.teamcode.constants.Constants;
 import org.firstinspires.ftc.teamcode.constants.Devices;
 import org.firstinspires.ftc.teamcode.constants.IndicatorLightsConstants;
@@ -37,7 +35,7 @@ public class Sensors extends SubsystemBase {
         public RGBIndicator colorIndicator;
         public RGBIndicator ballIndicator;
         public float hue = 0.0f;
-        public double distance = ConfigConstants.Colors.MATCHING_DISTANCE_CM + 100.0;
+        public double distance = GamePieceColorConstants.Colors.MATCHING_DISTANCE_CM + 100.0;
 
         SensorLocation() {}
 
@@ -66,7 +64,7 @@ public class Sensors extends SubsystemBase {
         }
 
         public boolean seeingBall() {
-            return distance <= ConfigConstants.Colors.MATCHING_DISTANCE_CM;
+            return distance <= GamePieceColorConstants.Colors.MATCHING_DISTANCE_CM;
         }
 
         public void updateTelemetry() {
@@ -182,12 +180,14 @@ public class Sensors extends SubsystemBase {
             new SupplierTrigger(() -> seesPurpleBall(SensorLocation.FeedHigh));
 
     private void displayTelemetry() {
-        this.telemetry.addData("Sensors Intake Green Ball?", seesGreenBall(SensorLocation.Intake));
-        this.telemetry.addData("Sensors Feed Low Green Ball?", seesGreenBall(SensorLocation.FeedLow));
-        this.telemetry.addData("Sensors Feed High Green Ball?", seesGreenBall(SensorLocation.FeedHigh));
-        this.telemetry.addData("Sensors Intake Purple Ball?", seesPurpleBall(SensorLocation.Intake));
-        this.telemetry.addData("Sensors Feed Low Purple Ball?", seesPurpleBall(SensorLocation.FeedLow));
-        this.telemetry.addData("Sensors Feed High Purple Ball?", seesPurpleBall(SensorLocation.FeedHigh));
+        if (Constants.DebugModes.Telemetry.DEBUG_SENSORS) {
+            this.telemetry.addData("Sensors Intake Green Ball?", seesGreenBall(SensorLocation.Intake));
+            this.telemetry.addData("Sensors Feed Low Green Ball?", seesGreenBall(SensorLocation.FeedLow));
+            this.telemetry.addData("Sensors Feed High Green Ball?", seesGreenBall(SensorLocation.FeedHigh));
+            this.telemetry.addData("Sensors Intake Purple Ball?", seesPurpleBall(SensorLocation.Intake));
+            this.telemetry.addData("Sensors Feed Low Purple Ball?", seesPurpleBall(SensorLocation.FeedLow));
+            this.telemetry.addData("Sensors Feed High Purple Ball?", seesPurpleBall(SensorLocation.FeedHigh));
+        }
     }
 
     private void displayDebugTelemetry() {

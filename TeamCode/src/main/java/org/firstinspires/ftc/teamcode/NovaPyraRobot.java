@@ -1,26 +1,13 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.pedropathing.follower.Follower;
-import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.command.Robot;
-import com.seattlesolvers.solverslib.gamepad.GamepadEx;
-import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
-import com.seattlesolvers.solverslib.util.MathUtils;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
-import org.firstinspires.ftc.teamcode.constants.Constants;
-import org.firstinspires.ftc.teamcode.constants.DriveConstants;
-import org.firstinspires.ftc.teamcode.constants.OpModes;
-import org.firstinspires.ftc.teamcode.constants.OpModes.OpModeSelection;
 import org.firstinspires.ftc.teamcode.constants.PedroConstants;
-import org.firstinspires.ftc.teamcode.constants.VisionConstants;
 import org.firstinspires.ftc.teamcode.lib.orchestration.ShotController;
-import org.firstinspires.ftc.teamcode.lib.triggers.ControllerTriggers;
-import org.firstinspires.ftc.teamcode.lib.util.NovaPyraUtils;
+import org.firstinspires.ftc.teamcode.constants.Alliance;
 import org.firstinspires.ftc.teamcode.subsystems.FeedStop;
 import org.firstinspires.ftc.teamcode.subsystems.Hood;
 import org.firstinspires.ftc.teamcode.subsystems.IndicatorLights;
@@ -30,8 +17,6 @@ import org.firstinspires.ftc.teamcode.subsystems.Sensors;
 import org.firstinspires.ftc.teamcode.subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.ShooterFeed;
 import org.firstinspires.ftc.teamcode.subsystems.Vision;
-import org.firstinspires.ftc.teamcode.triggers.CompetitionTriggers;
-import org.firstinspires.ftc.teamcode.triggers.TuningTriggers;
 
 /* To connect to the Control Hub device via Wi-Fi:
    - Connect Wi-Fi to the FTC-25619 network
@@ -41,8 +26,6 @@ import org.firstinspires.ftc.teamcode.triggers.TuningTriggers;
    - in Android Studio with a green dot (connected)
  */
 public class NovaPyraRobot extends Robot {
-    public final GamepadEx controller1;
-    public final GamepadEx controller2;
     public static Telemetry telemetry;
     public final Odometry odometry;
     public final ShooterFeed shooterFeed;
@@ -55,177 +38,43 @@ public class NovaPyraRobot extends Robot {
     public final Vision vision;
     public final ShotController shotController;
     public final Follower pedroFollower;
-    private final OpModeSelection selectedOpMode;
-    public final OpModes.Alliance alliance;
-    private final ControllerTriggers controllerMappings;
+    public final Alliance alliance;
 
-    public NovaPyraRobot(HardwareMap hardwareMap, Gamepad gamepad1, Gamepad gamepad2,
-                         Telemetry telemetry, OpModeSelection opModeSelection, OpModes.Alliance alliance) {
+    public NovaPyraRobot(HardwareMap hardwareMap, Telemetry telemetry, Alliance alliance) {
         // OpMode selection
-        selectedOpMode = opModeSelection;
         this.alliance = alliance;
 
         // Telemetry
         NovaPyraRobot.telemetry = telemetry;
 
-        // Controllers
-        controller1 = new GamepadEx(gamepad1);
-        controller2 = new GamepadEx(gamepad2);
-
         // Subsystems
-        odometry = new Odometry(hardwareMap, NovaPyraRobot.telemetry);
-        shooterFeed = new ShooterFeed(hardwareMap,NovaPyraRobot.telemetry);
         shooter = new Shooter(hardwareMap, NovaPyraRobot.telemetry);
+        indicatorLights = new IndicatorLights(hardwareMap, NovaPyraRobot.telemetry);
+        shooterFeed = new ShooterFeed(hardwareMap,NovaPyraRobot.telemetry);
         feedStop = new FeedStop(hardwareMap, NovaPyraRobot.telemetry);
         hood = new Hood(hardwareMap, NovaPyraRobot.telemetry);
         intake = new Intake(hardwareMap, NovaPyraRobot.telemetry);
         sensors = new Sensors(hardwareMap, NovaPyraRobot.telemetry);
-        indicatorLights = new IndicatorLights(hardwareMap, NovaPyraRobot.telemetry);
+        odometry = new Odometry(hardwareMap, NovaPyraRobot.telemetry);
         vision = new Vision(hardwareMap, odometry, NovaPyraRobot.telemetry);
         pedroFollower = PedroConstants.createFollower(hardwareMap);
 
         // Orchestrators
         shotController = new ShotController(this, NovaPyraRobot.telemetry);
-
-        // ControllerMappings
-        if (Constants.DebugModes.ControlInterface.TUNING_CONTROLS) {
-            controllerMappings = new TuningTriggers(this);
-        } else {
-            controllerMappings = new CompetitionTriggers(this);
-        }
-    }
-
-    public void initOpMode() {
-        switch (selectedOpMode) {
-            case PEDRO_SAMPLE_AUTO:
-            case PEDRO_SAMPLE_TELEOP:
-                break;
-            case EXPLORATION:
-                controllerMappings.setupGamepadButtonMappings();
-                vision.startVision();
-                vision.setTargetingTag(alliance == OpModes.Alliance.BLUE ?
-                        VisionConstants.AprilTags.BlueGoal : VisionConstants.AprilTags.RedGoal);
-                odometry.setRobotPose(new Pose2D(DistanceUnit.MM, 0.0, 0.0, AngleUnit.DEGREES, 0.0));
-                break;
-        }
     }
 
     @Override
     public void run() {
         super.run();
-        switch (selectedOpMode) {
-            case PEDRO_SAMPLE_AUTO:
-            case PEDRO_SAMPLE_TELEOP:
-                break;
-            case EXPLORATION:
-                double[] driveAxes = NovaPyraUtils.deadbandAndSmooth(
-                        controller1.getLeftY(),
-                        -controller1.getLeftX(),
-                        DriveConstants.Joysticks.driveSmoothFactor,
-                        DriveConstants.Joysticks.driveDeadband,
-                        DriveConstants.Joysticks.driveInverseDeadband
-                );
-
-                double rawRotateInput = -controller1.getRightX();
-                double rotateAxis = NovaPyraUtils.deadbandAndSmoothValue(
-                        rawRotateInput,
-                        DriveConstants.Joysticks.rotateSmoothFactor,
-                        DriveConstants.Joysticks.rotateDeadband,
-                        DriveConstants.Joysticks.rotateInverseDeadband
-                );
-
-                // ----------------------------------------------------
-                // AUTO-AIM LOGIC (Limelight-only, no odom backup)
-                // ----------------------------------------------------
-
-                // Automatic aiming during PREPARE_SHOT / READY_TO_SHOOT / SHOOTING / RECOVERY
-                if (shotController.isShooting() && vision.isSeeingTarget()) {
-                    double headingErrorDeg = vision.angleToTarget();
-                    rotateAxis = MathUtils.clamp(
-                            -DriveConstants.HeadingControl.kPHeadingCorrection * headingErrorDeg,
-                            -DriveConstants.HeadingControl.correctionOutputClamp,
-                            DriveConstants.HeadingControl.correctionOutputClamp
-                    );
-                }
-                // --- AIM ASSIST BUTTON (only when NOT preparing shot or shooting) ---
-                else if (controller1.getButton(GamepadKeys.Button.RIGHT_STICK_BUTTON) && vision.isSeeingTarget()) {
-                    double headingErrorDeg = vision.angleToTarget();
-                    rotateAxis = MathUtils.clamp(
-                            -DriveConstants.HeadingControl.kPHeadingCorrection * headingErrorDeg,
-                            -DriveConstants.HeadingControl.correctionOutputClamp,
-                            DriveConstants.HeadingControl.correctionOutputClamp
-                    );
-                } else {
-                    // Normal manual rotation
-                    rotateAxis /= DriveConstants.Joysticks.rotateScalingFactor;
-                }
-
-                // ----------------------------------------------------
-                // Drive, update follower + shot controller, telemetry
-                // ----------------------------------------------------
-                pedroFollower.setTeleOpDrive(driveAxes[0], driveAxes[1], rotateAxis, false);
-                pedroFollower.update();
-                shotController.updateState();
-
-                telemetry.addData("X", pedroFollower.getPose().getX());
-                telemetry.addData("Y", pedroFollower.getPose().getY());
-                telemetry.addData("Heading", pedroFollower.getPose().getHeading());
-                telemetry.addData("LL Seeing Target", vision.isSeeingTarget());
-                telemetry.addData("LL Angle (deg)", vision.angleToTarget());
-                telemetry.addData("Is Shooting?", shotController.isShooting());
-                telemetry.update();
-                break;
-        }
-    }
-
-    public void endOpMode() {
-        switch (selectedOpMode) {
-            case PEDRO_SAMPLE_AUTO:
-            case PEDRO_SAMPLE_TELEOP:
-                break;
-            case EXPLORATION:
-                vision.stopVision();
-                break;
-        }
     }
 
     public void trackCycleTime(double newClockReading) {
         odometry.updateRevHubCycleFrequency(newClockReading);
     }
 
-    // --- AUTO AIM HELPERS (Limelight-only for now) ---
 
-    /**
-     * One step of auto-aim:
-     *  - If Limelight sees the tag, use tx (angleToTarget) to rotate.
-     *  - If no target, do nothing (no odometry backup for now).
-     * This ONLY sets teleOpDrive rotation; follower.update() is called elsewhere.
-     */
-    public void autoAimStep() {
-        double rotateAxis = 0.0;
-
-        if (vision.isSeeingTarget()) {
-            double headingErrorDeg = vision.angleToTarget();
-            rotateAxis = MathUtils.clamp(
-                    -DriveConstants.HeadingControl.kPHeadingCorrection * headingErrorDeg,
-                    -DriveConstants.HeadingControl.correctionOutputClamp,
-                    DriveConstants.HeadingControl.correctionOutputClamp
-            );
-        }
-
-        // No translation while lining up – just rotate (if rotateAxis == 0, this is a no-op)
-        pedroFollower.setTeleOpDrive(0.0, 0.0, rotateAxis, false);
-    }
-
-    /**
-     * Returns true when we're "close enough" to facing the target.
-     * For now, ONLY uses Limelight error and tolerance.
-     */
-    public boolean isAutoAimAligned() {
-        if (!vision.isSeeingTarget()) {
-            return false; // no target, not aligned
-        }
-        return Math.abs(vision.angleToTarget()) <= VisionConstants.headingAngleThresholdDeg;
+    public double allianceDriveHeadingOffset() {
+        return this.alliance == Alliance.RED ? 0.0 : 180.0;
     }
 }
 
