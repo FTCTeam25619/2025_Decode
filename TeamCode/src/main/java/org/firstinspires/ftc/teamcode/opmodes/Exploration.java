@@ -9,10 +9,12 @@ import org.firstinspires.ftc.teamcode.constants.Constants;
 import org.firstinspires.ftc.teamcode.constants.OpModes;
 import org.firstinspires.ftc.teamcode.constants.OpModes.OpModeSelection;
 import org.firstinspires.ftc.teamcode.NovaPyraRobot;
+import org.firstinspires.ftc.teamcode.triggers.RobotTriggers;
 
 public class Exploration extends CommandOpMode {
     private NovaPyraRobot robot;
     public OpModes.Alliance alliance;
+    private RobotTriggers robotTriggers;
 
     public Exploration(OpModes.Alliance allianceSetting) {
         super();
@@ -28,8 +30,10 @@ public class Exploration extends CommandOpMode {
 
         robot = new NovaPyraRobot(hardwareMap, gamepad1, gamepad2, telemetry,
                 OpModeSelection.EXPLORATION, alliance);
+        robotTriggers = new RobotTriggers(robot);
 
         telemetry.addData("Robot Status", "Initializing Exploration " + alliance.name());
+        robotTriggers.setupNonControllerTriggers();
     }
 
     @Override
