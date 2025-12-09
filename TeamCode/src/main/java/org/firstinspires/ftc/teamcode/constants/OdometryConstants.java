@@ -34,10 +34,10 @@ public class OdometryConstants {
     @Configurable
     public static class TargetDistances {
         // TODO: Tune real values for these
-        public static double atGoalShot = 0.2;
-        public static double nearZoneMidShot = 1.0;
-        public static double nearZoneEndShot = 2.0;
-        public static double farWallShot = 3.5;
+        public static double atGoalShot = 51;
+        public static double nearZoneMidShot = 150;
+        public static double nearZoneEndShot = 212;
+        public static double farWallShot = 360;
     }
 
     @Config

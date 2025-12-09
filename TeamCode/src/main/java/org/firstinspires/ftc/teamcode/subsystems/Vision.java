@@ -13,7 +13,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.teamcode.constants.Constants;
 import org.firstinspires.ftc.teamcode.constants.Devices;
 import org.firstinspires.ftc.teamcode.constants.VisionConstants;
-import org.firstinspires.ftc.teamcode.constants.OdometryConstants;
 
 public class Vision extends SubsystemBase {
     private final Limelight3A limelightCamera;
@@ -67,23 +66,8 @@ public class Vision extends SubsystemBase {
         return seeingTarget;
     }
 
-    /**
-     * Returns true if we are at an acceptable heading toward the target.
-     * If Limelight sees the tag, use LL tx (angleToTargetDeg).
-     * Otherwise, fall back to odometry-based heading toward the goal point.
-     */
     public boolean atHeading() {
-        if (seeingTarget) {
-            return Math.abs(angleToTargetDeg) <= VisionConstants.headingAngleThresholdDeg;
-        } else {
-            double desired = odometry.getHeadingTo(
-                    OdometryConstants.Target.x,
-                    OdometryConstants.Target.y
-            );
-            double current = odometry.getHeadingField();
-            double error = Math.atan2(Math.sin(desired - current), Math.cos(desired - current));
-            return Math.abs(Math.toDegrees(error)) <= VisionConstants.headingAngleThresholdDeg;
-        }
+        return seeingTarget && Math.abs(angleToTargetDeg) <= VisionConstants.headingAngleThresholdDeg;
     }
 
     public void updateFromLimelight() {
@@ -106,11 +90,11 @@ public class Vision extends SubsystemBase {
         }
     }
 
-    public Double distanceToTarget() {
+    public double distanceToTarget() {
         return distanceToTagCM;
     }
 
-    public Double angleToTarget() {
+    public double angleToTarget() {
         return angleToTargetDeg;
     }
 }

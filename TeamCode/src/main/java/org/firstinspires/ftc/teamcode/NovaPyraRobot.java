@@ -16,9 +16,8 @@ import org.firstinspires.ftc.teamcode.constants.Constants;
 import org.firstinspires.ftc.teamcode.constants.DriveConstants;
 import org.firstinspires.ftc.teamcode.constants.OpModes;
 import org.firstinspires.ftc.teamcode.constants.OpModes.OpModeSelection;
-import org.firstinspires.ftc.teamcode.constants.VisionConstants;
 import org.firstinspires.ftc.teamcode.constants.PedroConstants;
-import org.firstinspires.ftc.teamcode.constants.OdometryConstants;
+import org.firstinspires.ftc.teamcode.constants.VisionConstants;
 import org.firstinspires.ftc.teamcode.lib.orchestration.ShotController;
 import org.firstinspires.ftc.teamcode.lib.triggers.ControllerTriggers;
 import org.firstinspires.ftc.teamcode.lib.util.NovaPyraUtils;
@@ -75,7 +74,7 @@ public class NovaPyraRobot extends Robot {
 
         // Subsystems
         odometry = new Odometry(hardwareMap, NovaPyraRobot.telemetry);
-        shooterFeed = new ShooterFeed(hardwareMap, NovaPyraRobot.telemetry);
+        shooterFeed = new ShooterFeed(hardwareMap,NovaPyraRobot.telemetry);
         shooter = new Shooter(hardwareMap, NovaPyraRobot.telemetry);
         feedStop = new FeedStop(hardwareMap, NovaPyraRobot.telemetry);
         hood = new Hood(hardwareMap, NovaPyraRobot.telemetry);
@@ -127,44 +126,34 @@ public class NovaPyraRobot extends Robot {
                         DriveConstants.Joysticks.driveInverseDeadband
                 );
 
+                double rawRotateInput = -controller1.getRightX();
                 double rotateAxis = NovaPyraUtils.deadbandAndSmoothValue(
-                        -controller1.getRightX(),
+                        rawRotateInput,
                         DriveConstants.Joysticks.rotateSmoothFactor,
                         DriveConstants.Joysticks.rotateDeadband,
                         DriveConstants.Joysticks.rotateInverseDeadband
                 );
 
-                // AUTO-AIM LOGIC
-                if (shotController.isShooting()) {
-                    double headingErrorDeg;
+                // ----------------------------------------------------
+                // AUTO-AIM LOGIC (Limelight-only, no odom backup)
+                // ----------------------------------------------------
 
-                    if (vision.isSeeingTarget()) {
-                        // Prefer Limelight if it has a target
-                        headingErrorDeg = vision.angleToTarget();
-                    } else {
-                        // Fallback to odometry-based heading to goal
-                        double goalX = OdometryConstants.Target.x;
-                        double goalY = OdometryConstants.Target.y;
-
-                        double desiredHeading = odometry.getHeadingTo(goalX, goalY);   // radians
-                        double currentHeading = odometry.getHeadingField();            // radians
-                        double errorRad = Math.atan2(
-                                Math.sin(desiredHeading - currentHeading),
-                                Math.cos(desiredHeading - currentHeading)
-                        );
-                        headingErrorDeg = Math.toDegrees(errorRad);
-                    }
-
+                // Automatic aiming during PREPARE_SHOT / READY_TO_SHOOT / SHOOTING / RECOVERY
+                if (shotController.isShooting() && vision.isSeeingTarget()) {
+                    double headingErrorDeg = vision.angleToTarget();
                     rotateAxis = MathUtils.clamp(
                             -DriveConstants.HeadingControl.kPHeadingCorrection * headingErrorDeg,
                             -DriveConstants.HeadingControl.correctionOutputClamp,
                             DriveConstants.HeadingControl.correctionOutputClamp
                     );
+                }
+                // --- AIM ASSIST BUTTON (only when NOT preparing shot or shooting) ---
+                else if (controller1.getButton(GamepadKeys.Button.RIGHT_STICK_BUTTON)
+                        && vision.isSeeingTarget()) {
 
-                } else if (controller1.getButton(GamepadKeys.Button.RIGHT_STICK_BUTTON) && vision.isSeeingTarget()) {
-                    // Optional manual aim-assist mode
+                    double headingErrorDeg = vision.angleToTarget();
                     rotateAxis = MathUtils.clamp(
-                            -DriveConstants.HeadingControl.kPHeadingCorrection * vision.angleToTarget(),
+                            -DriveConstants.HeadingControl.kPHeadingCorrection * headingErrorDeg,
                             -DriveConstants.HeadingControl.correctionOutputClamp,
                             DriveConstants.HeadingControl.correctionOutputClamp
                     );
@@ -173,6 +162,9 @@ public class NovaPyraRobot extends Robot {
                     rotateAxis /= DriveConstants.Joysticks.rotateScalingFactor;
                 }
 
+                // ----------------------------------------------------
+                // Drive, update follower + shot controller, telemetry
+                // ----------------------------------------------------
                 pedroFollower.setTeleOpDrive(driveAxes[0], driveAxes[1], rotateAxis, false);
                 pedroFollower.update();
                 shotController.updateState();
@@ -180,6 +172,9 @@ public class NovaPyraRobot extends Robot {
                 telemetry.addData("X", pedroFollower.getPose().getX());
                 telemetry.addData("Y", pedroFollower.getPose().getY());
                 telemetry.addData("Heading", pedroFollower.getPose().getHeading());
+                telemetry.addData("LL Seeing Target", vision.isSeeingTarget());
+                telemetry.addData("LL Angle (deg)", vision.angleToTarget());
+                telemetry.addData("Is Shooting?", shotController.isShooting());
                 telemetry.update();
                 break;
         }
@@ -200,83 +195,40 @@ public class NovaPyraRobot extends Robot {
         odometry.updateRevHubCycleFrequency(newClockReading);
     }
 
-    // --- AUTO AIM HELPERS ---
+    // --- AUTO AIM HELPERS (Limelight-only for now) ---
 
     /**
      * One step of auto-aim:
      *  - If Limelight sees the tag, use tx (angleToTarget) to rotate.
-     *  - Otherwise, use Pedro pose + field target to compute an odometry-based heading error.
-     *  - This ONLY sets teleOpDrive rotation; follower.update() is called elsewhere.
+     *  - If no target, do nothing (no odometry backup for now).
+     * This ONLY sets teleOpDrive rotation; follower.update() is called elsewhere.
      */
     public void autoAimStep() {
-        double rotateAxis;
+        double rotateAxis = 0.0;
 
         if (vision.isSeeingTarget()) {
-            // Limelight: angleToTarget() is in DEGREES
+            double headingErrorDeg = vision.angleToTarget();
             rotateAxis = MathUtils.clamp(
-                    -DriveConstants.HeadingControl.kPHeadingCorrection * vision.angleToTarget(),
-                    -DriveConstants.HeadingControl.correctionOutputClamp,
-                    DriveConstants.HeadingControl.correctionOutputClamp
-            );
-        } else {
-            // Fallback: odometry / Pedro pose aiming
-            // OdometryConstants.Target.x/y are in cm; Pedro uses inches → convert target to inches.
-            double goalXIn = OdometryConstants.Target.x / 2.54;
-            double goalYIn = OdometryConstants.Target.y / 2.54;
-
-            double robotXIn = pedroFollower.getPose().getX();
-            double robotYIn = pedroFollower.getPose().getY();
-
-            double dx = goalXIn - robotXIn;
-            double dy = goalYIn - robotYIn;
-
-            double desiredHeading = Math.atan2(dy, dx);           // radians
-            double currentHeading = pedroFollower.getPose().getHeading(); // radians
-
-            double errorRad = desiredHeading - currentHeading;
-            // normalize to [-pi, pi]
-            errorRad = Math.atan2(Math.sin(errorRad), Math.cos(errorRad));
-            double errorDeg = Math.toDegrees(errorRad);
-
-            rotateAxis = MathUtils.clamp(
-                    -DriveConstants.HeadingControl.kPHeadingCorrection * errorDeg,
+                    -DriveConstants.HeadingControl.kPHeadingCorrection * headingErrorDeg,
                     -DriveConstants.HeadingControl.correctionOutputClamp,
                     DriveConstants.HeadingControl.correctionOutputClamp
             );
         }
 
-        // No translation while lining up – just rotate
+        // No translation while lining up – just rotate (if rotateAxis == 0, this is a no-op)
         pedroFollower.setTeleOpDrive(0.0, 0.0, rotateAxis, false);
     }
 
     /**
      * Returns true when we're "close enough" to facing the target.
-     * Uses Limelight tolerance if target is visible; otherwise uses odometry-based error.
+     * For now, ONLY uses Limelight error and tolerance.
      */
     public boolean isAutoAimAligned() {
-        if (vision.isSeeingTarget()) {
-            return Math.abs(vision.angleToTarget()) <= VisionConstants.headingAngleThresholdDeg;
-        } else {
-            double goalXIn = OdometryConstants.Target.x / 2.54;
-            double goalYIn = OdometryConstants.Target.y / 2.54;
-
-            double robotXIn = pedroFollower.getPose().getX();
-            double robotYIn = pedroFollower.getPose().getY();
-
-            double dx = goalXIn - robotXIn;
-            double dy = goalYIn - robotYIn;
-
-            double desiredHeading = Math.atan2(dy, dx);
-            double currentHeading = pedroFollower.getPose().getHeading();
-
-            double errorRad = desiredHeading - currentHeading;
-            errorRad = Math.atan2(Math.sin(errorRad), Math.cos(errorRad));
-            double errorDeg = Math.toDegrees(errorRad);
-
-            // You can have a separate tolerance for odom if you want;
-            // for now reuse VisionConstants.headingAngleThresholdDeg.
-            return Math.abs(errorDeg) <= VisionConstants.headingAngleThresholdDeg;
+        if (!vision.isSeeingTarget()) {
+            return false; // no target, not aligned
         }
+        return Math.abs(vision.angleToTarget()) <= VisionConstants.headingAngleThresholdDeg;
     }
-
 }
+
+

@@ -11,8 +11,11 @@ import org.firstinspires.ftc.teamcode.constants.OdometryConstants;
 import org.firstinspires.ftc.teamcode.constants.ShooterConstants;
 import org.firstinspires.ftc.teamcode.constants.ShooterFeedConstants;
 import org.firstinspires.ftc.teamcode.lib.triggers.SupplierTrigger;
+import org.firstinspires.ftc.teamcode.subsystems.Hood;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.ShooterFeed;
+import com.seattlesolvers.solverslib.util.MathUtils;
+
 
 import java.util.function.Predicate;
 
@@ -36,11 +39,14 @@ public class ShotController {
     private double targetFlywheelRPM = ShooterConstants.Targets.idleRPM;
     private double targetHoodAngle = HoodConstants.Limits.hoodHardStopMax;
     private double targetFeedPower = ShooterFeedConstants.Targets.defaultFeedPower;
-    private boolean presetShotMode = true;
+    private boolean presetShotMode = false;
 
     private final InterpLUT shooterRPMInterpolator;
     private final InterpLUT hoodAngleInterpolator;
     private final InterpLUT feedPowerInterpolator;
+    private static final double MIN_LUT_DISTANCE_CM = 0.0;
+    private static final double MAX_LUT_DISTANCE_CM = 600.0;
+
 
     public ShotController(NovaPyraRobot robot, Telemetry telemetry) {
         this.robot = robot;
@@ -110,8 +116,9 @@ public class ShotController {
                 break;
 
             case SHOOTING:
+                runPrepareShotLogic();
                 // While shooting, if we fall out of "ready" (RPM drop, hood/heading error), stop feeding and go into recovery.
-                if (!this.readyToShoot()) {
+                if (!this.isRPMatTarget()) {
                     this.currentState = ShotCycleState.RECOVERY;
                 }
                 break;
@@ -119,7 +126,7 @@ public class ShotController {
             case RECOVERY:
                 // In recovery we keep shooter + hood at target, but feed is stopped.
                 // Once we are “ready” again, resume SHOOTING.
-                if (this.readyToShoot()) {
+                if (this.isRPMatTarget()) {
                     this.currentState = ShotCycleState.SHOOTING;
                 }
                 break;
@@ -149,11 +156,26 @@ public class ShotController {
 
     public void autoTargetShot() {
         this.presetShotMode = false;
-        double distance = getDistanceToTarget();
+
+        double rawDistance = getDistanceToTarget();
+
+        // If we don't have a valid distance (no tag, NaN, etc.), don't touch current targets
+        if (Double.isNaN(rawDistance) || Double.isInfinite(rawDistance)) {
+            telemetry.addData("Autoshoot", "No valid distance (no vision target); skipping LUT");
+            return;
+        }
+
+        // Clamp to valid LUT range to avoid tiny floating point out-of-bounds
+        double distance = MathUtils.clamp(rawDistance, MIN_LUT_DISTANCE_CM, MAX_LUT_DISTANCE_CM);
+
         setTargetFlywheelRPM(shooterRPMInterpolator.get(distance));
         setTargetHoodAngle(hoodAngleInterpolator.get(distance));
-        setTargetFeedPower(feedPowerInterpolator.get(distance));
+        // setTargetFeedPower(feedPowerInterpolator.get(distance));
+
+        telemetry.addData("Autoshoot Raw Distance (cm)", rawDistance);
+        telemetry.addData("Autoshoot LUT Distance (cm)", distance);
     }
+
 
     /**
      * Hybrid distance:
@@ -165,18 +187,20 @@ public class ShotController {
             // Limelight reports distance in cm.
             return robot.vision.distanceToTarget();
         }
-        // Fallback: geometric distance from odometry pose to goal point
-        return robot.odometry.getDistanceTo(
-                OdometryConstants.Target.x,
-                OdometryConstants.Target.y
-        );
+
+        // No valid distance when we don't see the tag
+        return Double.NaN;
     }
+
 
     public void setupPresetShot(PresetShot shotSetting) {
         this.presetShotMode    = true;
         this.targetFlywheelRPM = shotSetting.targetFlywheelRPM;
         this.targetHoodAngle   = shotSetting.targetHoodAngle;
         this.targetFeedPower   = shotSetting.targetFeedPower;
+        //this.targetFlywheelRPM = ShooterConstants.Targets.atGoalShot;
+        //this.targetHoodAngle = HoodConstants.Targets.atGoalShot;
+
     }
 
     // --------------------------
@@ -230,6 +254,10 @@ public class ShotController {
 
     public boolean readyToShoot() {
         return this.atRPM() && this.atTargetAngle() && this.atTargetHeading();
+    }
+
+    public boolean isRPMatTarget(){
+        return this.atRPM();
     }
 
     public boolean transitionedTo(ShotCycleState newState) {
@@ -355,7 +383,8 @@ public class ShotController {
     public boolean isShooting() {
         return this.currentState == ShotCycleState.PREPARE_SHOT ||
                 this.currentState == ShotCycleState.READY_TO_SHOOT ||
-                this.currentState == ShotCycleState.SHOOTING;
+                this.currentState == ShotCycleState.SHOOTING ||
+                this.currentState == ShotCycleState.RECOVERY;
     }
 
     public Trigger isShootingTrigger() {
@@ -408,20 +437,68 @@ public class ShotController {
 
     private InterpLUT setupShooterRPMInterpolator() {
         InterpLUT table = new InterpLUT();
-        table.add(OdometryConstants.TargetDistances.atGoalShot,      ShooterConstants.Targets.atGoalShot);
-        table.add(OdometryConstants.TargetDistances.nearZoneMidShot, ShooterConstants.Targets.nearZoneMidShot);
-        table.add(OdometryConstants.TargetDistances.nearZoneEndShot, ShooterConstants.Targets.nearZoneEndShot);
-        table.add(OdometryConstants.TargetDistances.farWallShot,     ShooterConstants.Targets.farWallShot);
+       // table.add(OdometryConstants.TargetDistances.atGoalShot,      ShooterConstants.RPMTargets.atGoalShot);
+       // table.add(OdometryConstants.TargetDistances.nearZoneMidShot, ShooterConstants.RPMTargets.nearZoneMidShot);
+       // table.add(OdometryConstants.TargetDistances.nearZoneEndShot, ShooterConstants.RPMTargets.nearZoneEndShot);
+       // table.add(OdometryConstants.TargetDistances.farWallShot,     ShooterConstants.RPMTargets.farWallShot);
+
+
+        table.add(0, 1850);
+
+        // Big Triangle / Close Shots
+        table.add(51, 1950);
+        table.add(69, 2050);
+        table.add(109, 2300);
+        table.add(129, 2350);
+        table.add(152, 2500);
+        table.add(172, 2500);
+        table.add(177, 2500);
+        table.add(190, 2500);
+        table.add(212, 2650);
+
+        // Small Triangle / Far Shots
+        table.add(280, 2850);
+        table.add(290, 2900);
+        table.add(310, 2950);
+        table.add(330, 3050);
+        table.add(354, 3100);
+
+
+        table.add(600, 3200);
         table.createLUT();
         return table;
     }
 
     private InterpLUT setupHoodAngleInterpolator() {
         InterpLUT table = new InterpLUT();
-        table.add(OdometryConstants.TargetDistances.atGoalShot,      HoodConstants.Targets.atGoalShot);
-        table.add(OdometryConstants.TargetDistances.nearZoneMidShot, HoodConstants.Targets.nearZoneMidShot);
-        table.add(OdometryConstants.TargetDistances.nearZoneEndShot, HoodConstants.Targets.nearZoneEndShot);
-        table.add(OdometryConstants.TargetDistances.farWallShot,     HoodConstants.Targets.farWallShot);
+        //table.add(OdometryConstants.TargetDistances.atGoalShot,      HoodConstants.Targets.atGoalShot);
+        //table.add(OdometryConstants.TargetDistances.nearZoneMidShot, HoodConstants.Targets.nearZoneMidShot);
+        //table.add(OdometryConstants.TargetDistances.nearZoneEndShot, HoodConstants.Targets.nearZoneEndShot);
+        //table.add(OdometryConstants.TargetDistances.farWallShot,     HoodConstants.Targets.farWallShot);
+
+
+        table.add(0, 275);
+
+        // Big Triangle / Close Shots
+        table.add(51, 275);
+        table.add(69, 275);
+        table.add(109, 230);
+        table.add(129, 210);
+        table.add(152, 200);
+        table.add(172, 180);
+        table.add(177, 165);
+        table.add(190, 110);
+        table.add(212, 110);
+
+        // Small Triangle / Far Shots
+        table.add(280, 10);
+        table.add(290, 10);
+        table.add(310, 10);
+        table.add(330, 0);
+        table.add(354, 0);
+
+        table.add(600, 0);
+
         table.createLUT();
         return table;
     }
