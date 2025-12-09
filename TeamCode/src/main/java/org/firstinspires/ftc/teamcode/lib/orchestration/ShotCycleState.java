@@ -2,6 +2,11 @@ package org.firstinspires.ftc.teamcode.lib.orchestration;
 
 public enum ShotCycleState {
     /**
+     * State: OFF
+     * Used in Auto
+     */
+    OFF,
+    /**
      * State: IDLE
      * Awaiting next shot cycle
      * Prior states: none or any (default state)

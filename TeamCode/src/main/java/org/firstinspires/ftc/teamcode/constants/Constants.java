@@ -13,7 +13,8 @@ public final class Constants {
             // Editor complains about simplifying this, but we intentionally want the
             // value to be dependent on whether ENABLE_PANELS_DASHBOARD is true.
             public static final boolean DEBUG_LIGHTS = ENABLE_PANELS_DASHBOARD && false;
-            public static final boolean DEBUG_VISION = true;
+            public static final boolean DEBUG_VISION = false;
+            public static final boolean DEBUG_PATH_FOLLOWING = false;
         }
     }
 
