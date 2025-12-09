@@ -8,11 +8,11 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 
 @Configurable
-public class AutoPaths {
+public class BlueFarFromGoalConstants {
     public Pose blueFarWallStart = new Pose(56.000, 8.000);
     public Pose blueFarWallShoot = new Pose(56.742, 14.543);
     public Pose blueFarWallRowIntake = new Pose(24.318, 36.954);
-    public double farWallStartHeading = 90.0;
+    public double blueFarWallStartHeading = 90.0;
     public double blueFarWallShootHeading = 110.0;
     public double blueFarWallRowIntakeHeading = 355.0;
 
@@ -21,7 +21,11 @@ public class AutoPaths {
     public PathChain blueFarIntakeToFarZoneScore;
     public PathChain bluePark;
 
-    public AutoPaths(Follower follower) {
+    public BlueFarFromGoalConstants(Follower follower) {
+        buildPaths(follower);
+    }
+
+    private void buildPaths(Follower follower) {
         blueWallToFarZonePrescore = follower
                 .pathBuilder()
                 .addPath(
@@ -32,7 +36,7 @@ public class AutoPaths {
                         )
                 )
                 .setLinearHeadingInterpolation(
-                        Math.toRadians(farWallStartHeading),
+                        Math.toRadians(blueFarWallStartHeading),
                         Math.toRadians(blueFarWallShootHeading),
                         0.7)
                 .setVelocityConstraint(25.0)
