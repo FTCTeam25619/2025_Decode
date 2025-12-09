@@ -1,11 +1,13 @@
 package org.firstinspires.ftc.teamcode.autos;
 
+import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 
+@Configurable
 public class BlueFarFromGoalConstants {
     public Pose blueFarWallStart = new Pose(56.000, 8.000);
     public Pose blueFarWallShoot = new Pose(56.742, 14.543);
