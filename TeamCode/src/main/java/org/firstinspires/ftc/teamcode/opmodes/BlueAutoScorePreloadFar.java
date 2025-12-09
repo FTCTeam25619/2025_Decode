@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
 import com.bylazar.configurables.annotations.Configurable;
+import com.bylazar.telemetry.JoinedTelemetry;
+import com.bylazar.telemetry.PanelsTelemetry;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
@@ -9,36 +11,39 @@ import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.InstantCommand;
+import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 import com.seattlesolvers.solverslib.command.RunCommand;
+import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.command.button.Trigger;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 import com.seattlesolvers.solverslib.util.TelemetryData;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.NovaPyraRobot;
 import org.firstinspires.ftc.teamcode.autos.AutoPaths;
+import org.firstinspires.ftc.teamcode.constants.Constants;
+import org.firstinspires.ftc.teamcode.constants.OpModes;
 import org.firstinspires.ftc.teamcode.lib.orchestration.PresetShot;
 import org.firstinspires.ftc.teamcode.lib.orchestration.ShotCycleState;
 import org.firstinspires.ftc.teamcode.lib.triggers.SupplierTrigger;
+import org.firstinspires.ftc.teamcode.triggers.RobotTriggers;
+
+import kotlin.time.Instant;
 
 // TODO: Convert sample auto code to real path. See AutoPaths for a path copied from Pedro Visualizer.
 
-@Autonomous(name = "Score Preload Far Wall", group = "Autonomous")
+@Autonomous(name = "Blue Score Preload Far Wall", group = "Autonomous")
 @Configurable // Panels
-public class AutoScorePreloadFar extends CommandOpMode {
-    private final NovaPyraRobot robot;
-    private final Follower follower;
-    private final AutoPaths paths;
-    protected final TelemetryData telemetryData;
 public class BlueAutoScorePreloadFar extends CommandOpMode {
     private NovaPyraRobot robot;
     private RobotTriggers robotTriggers;
     private Follower follower;
+    private AutoPaths paths;
+    protected TelemetryData telemetryData;
     private OpModes.Alliance alliance;
 
     // Poses
-    private final Pose startPose = new Pose(9, 111, Math.toRadians(-90));
+    private final Pose startPose = new Pose(56.000, 8.000, Math.toRadians(90.0));
     private final Pose scorePose = new Pose(16, 128, Math.toRadians(-45));
     private final Pose pickup1Pose = new Pose(30, 121, Math.toRadians(0));
     private final Pose pickup2Pose = new Pose(30, 131, Math.toRadians(0));
@@ -105,6 +110,12 @@ public class BlueAutoScorePreloadFar extends CommandOpMode {
         });
     }
 
+    private InstantCommand intake() {
+        return new InstantCommand(() -> {
+            robot.shotController.setState(ShotCycleState.INTAKE);
+        });
+    }
+
     private InstantCommand prepareShot() {
         return new InstantCommand(() -> {
             robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
@@ -117,12 +128,25 @@ public class BlueAutoScorePreloadFar extends CommandOpMode {
         });
     }
 
+    private InstantCommand spinDown() {
+        return new InstantCommand(() -> {
+            robot.shotController.setState(ShotCycleState.OFF);
+        });
+    }
+
+    private InstantCommand alive() {
+        return new InstantCommand(() -> {
+            telemetry.addData("Path finished", true);
+            telemetry.update();
+        });
+    }
+
     private InstantCommand setPathCompleteFlag(boolean flagValue) {
         return new InstantCommand(() -> { pathCompleted = flagValue; });
     }
 
     private Trigger readyToShootPreload() {
-        return new SupplierTrigger(() -> pathCompleted && robot.shotController.readyToShoot());
+        return new SupplierTrigger(() -> (!follower.isBusy()) && robot.shotController.readyToShoot());
     }
 
     @Override
@@ -149,30 +173,53 @@ public class BlueAutoScorePreloadFar extends CommandOpMode {
 
         // Initialize follower
         follower.setStartingPose(startPose);
-        buildPaths();
 
         // Schedule the autonomous sequence
         schedule(
-                new RunCommand(follower::update),
-                // Score preload
-                setupFarWallPresetShot(),
-                prepareShot(),
-                setPathCompleteFlag(false),
-                new FollowPathCommand(follower, paths.wallToFarZonePrescore),
-                setPathCompleteFlag(true),
-                new WaitCommand(1000),
-                // Shoot will happen during the WaitCommand when triggered
-                setPathCompleteFlag(false),
-                // Park
-                new FollowPathCommand(follower, park, false) // park with holdEnd false
+                new ParallelCommandGroup(
+                        new RunCommand(follower::update),
+                        new SequentialCommandGroup(
+                                // Score preload
+                                setupFarWallPresetShot(),
+                                prepareShot(),
+                                new FollowPathCommand(follower, paths.wallToFarZonePrescore),
+                                alive(),
+                                new WaitCommand(500),
+                                shoot(),
+                                new WaitCommand(3500),
+                                intake(),
+                                new FollowPathCommand(follower, paths.farZonePrescoreToFarIntake),
+                                new WaitCommand(250),
+                                setupFarWallPresetShot(),
+                                prepareShot(),
+                                new FollowPathCommand(follower, paths.farIntakeToFarZoneScore),
+                                new WaitCommand(500),
+                                shoot(),
+                                new WaitCommand(3500),
+                                // Park
+                                new FollowPathCommand(follower, paths.park, false),
+                                spinDown()
+                        )
+                )
         );
 
-        readyToShootPreload().whenActive(shoot());
+//        readyToShootPreload().whenActive(shoot());
+
+        telemetry.addData("Robot Status", "Initialized AutoScorePreloadFar " + alliance.name());
+        telemetry.update();
     }
 
     @Override
     public void run() {
         super.run();
+
+        this.robot.shotController.updateState();
+
+        if (follower.getCurrentPath() != null) {
+            telemetry.addData("Follower busy", follower.isBusy());
+            telemetry.addData("Follower param end", follower.getCurrentPath().isAtParametricEnd());
+            telemetry.addData("Follower heading error", follower.getHeadingError());
+        }
 
         telemetryData.addData("X", follower.getPose().getX());
         telemetryData.addData("Y", follower.getPose().getY());
