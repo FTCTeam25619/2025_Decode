@@ -12,6 +12,7 @@ import org.firstinspires.ftc.teamcode.constants.ShooterConstants;
 import org.firstinspires.ftc.teamcode.constants.ShooterFeedConstants;
 import org.firstinspires.ftc.teamcode.lib.triggers.SupplierTrigger;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
+import org.firstinspires.ftc.teamcode.subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.ShooterFeed;
 
 import java.util.function.Predicate;
@@ -78,6 +79,8 @@ public class ShotController {
 
         // State actions that need to happen each cycle
         switch (this.currentState) {
+            case OFF:
+                break;
             case IDLE:
                 if (this.staged()) {
                     this.currentState = ShotCycleState.STAGED;
@@ -108,11 +111,21 @@ public class ShotController {
     }
 
     public void setupStateTransitionTriggers() {
+        stateTransitionTrigger(ShotCycleState.OFF).whenActive(new InstantCommand(() -> {
+            // Transitioning to OFF state
+            this.robot.intake.setState(Intake.IntakeState.Stopped);
+            this.robot.feedStop.disengage();
+            this.robot.shooter.setState(Shooter.ShooterState.Stopped);
+            this.robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
+            this.robot.hood.setAngle(HoodConstants.Limits.hoodHardStopMax);
+        }));
+
         stateTransitionTrigger(ShotCycleState.IDLE).whenActive(new InstantCommand(() -> {
             // Transitioning back to IDLE state
             // NOTE: This will not trigger at start because initial state is IDLE
             this.robot.intake.setState(Intake.IntakeState.Stopped);
             this.robot.feedStop.disengage();
+            this.robot.shooter.setState(Shooter.ShooterState.Shooting);
             this.robot.shooter.setTargetRPM(ShooterConstants.Targets.idleRPM);
             this.robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
             this.robot.hood.setAngle(HoodConstants.Limits.hoodHardStopMax);
@@ -138,6 +151,7 @@ public class ShotController {
         stateTransitionTrigger(ShotCycleState.PREPARE_SHOT).whenActive(new InstantCommand(() -> {
             // Transitioning to PREPARE_SHOT state
             this.robot.feedStop.engage();
+            this.robot.shooter.setState(Shooter.ShooterState.Shooting);
             this.robot.shooter.setTargetRPM(this.getTargetFlywheelRPM());
             this.robot.hood.setAngle(this.getTargetHoodAngle());
             this.robot.intake.setState(Intake.IntakeState.Stopped);
