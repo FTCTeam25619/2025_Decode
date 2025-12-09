@@ -148,9 +148,7 @@ public class NovaPyraRobot extends Robot {
                     );
                 }
                 // --- AIM ASSIST BUTTON (only when NOT preparing shot or shooting) ---
-                else if (controller1.getButton(GamepadKeys.Button.RIGHT_STICK_BUTTON)
-                        && vision.isSeeingTarget()) {
-
+                else if (controller1.getButton(GamepadKeys.Button.RIGHT_STICK_BUTTON) && vision.isSeeingTarget()) {
                     double headingErrorDeg = vision.angleToTarget();
                     rotateAxis = MathUtils.clamp(
                             -DriveConstants.HeadingControl.kPHeadingCorrection * headingErrorDeg,
