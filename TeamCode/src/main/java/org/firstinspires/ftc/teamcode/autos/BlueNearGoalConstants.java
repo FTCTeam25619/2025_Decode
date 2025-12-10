@@ -11,16 +11,16 @@ import com.pedropathing.paths.PathChain;
 public class BlueNearGoalConstants {
 
     public Pose blueNearWallStart = new Pose(15.413, 114.055);
-    public Pose blueNearWallToShootCP = new Pose(36.110, 114.275);
-    public Pose blueNearWallShoot = new Pose(54.606, 107.009);
-    public Pose blueNearWallShootToNearIntakeCP = new Pose(63.853, 75.523);
-    public Pose blueNearWallNearIntake = new Pose(22.899, 87.633);
-    public Pose blueNearWallShootToMidIntakeCP = new Pose(65.174, 56.367);
-    public Pose blueNearWallMidIntake = new Pose(22.459, 63.193);
+    public Pose blueNearWallToShootCP = new Pose(28.624, 109.431);
+    public Pose blueNearWallShoot = new Pose(48.606, 103.009);
+    public Pose blueNearWallShootToNearIntakeCP = new Pose(63.193, 63.615);
+    public Pose blueNearWallNearIntake = new Pose(23.339, 86.532);
+    public Pose blueNearWallShootToMidIntakeCP = new Pose(64.294, 38.514);
+    public Pose blueNearWallMidIntake = new Pose(26.0, 62.193);
     public Pose blueNearWallPark = new Pose(54.606, 114.275);
     public double blueNearWallStartHeading = 90.0;
-    public double blueNearWallShootHeading = 135.0;
-    public double blueNearWallRowIntakeHeading = 10.0;
+    public double blueNearWallShootHeading = 142.0;
+    public double blueNearWallRowIntakeHeading = 350;
 
     public PathChain blueWallToNearZonePrescore;
     public PathChain blueNearZonePrescoreToNearIntake;
@@ -64,8 +64,8 @@ public class BlueNearGoalConstants {
                 .setLinearHeadingInterpolation(
                         Math.toRadians(blueNearWallShootHeading),
                         Math.toRadians(blueNearWallRowIntakeHeading),
-                        0.7)
-                .setVelocityConstraint(25.0)
+                        0.5)
+                .setVelocityConstraint(10.0)
                 .setTranslationalConstraint(0.5)
                 .setHeadingConstraint(Math.toRadians(2.0))
                 .build();
@@ -100,8 +100,8 @@ public class BlueNearGoalConstants {
                 .setLinearHeadingInterpolation(
                         Math.toRadians(blueNearWallShootHeading),
                         Math.toRadians(blueNearWallRowIntakeHeading),
-                        0.7)
-                .setVelocityConstraint(25.0)
+                        0.4)
+                .setVelocityConstraint(20.0)
                 .setTranslationalConstraint(0.5)
                 .setHeadingConstraint(Math.toRadians(2.0))
                 .build();
