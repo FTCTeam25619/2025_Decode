@@ -58,8 +58,22 @@ public class Odometry extends SubsystemBase {
         addOdometryTelemetry();
     }
 
+    // Position helpers (cm)
+    public double getX() {
+        return this.odometry.getPosition().getX(DistanceUnit.MM) / 10.0;
+    }
+
+    public double getY() {
+        return this.odometry.getPosition().getY(DistanceUnit.MM) / 10.0;
+    }
+
+    // Heading helpers
     public double getHeading() {
         return this.odometry.getHeading(AngleUnit.DEGREES);
+    }
+
+    public double getHeadingField() {
+        return Math.toRadians(this.odometry.getHeading(AngleUnit.DEGREES));
     }
 
     public void setOdometryHeading(double heading, AngleUnit angleUnit) {
@@ -78,6 +92,7 @@ public class Odometry extends SubsystemBase {
         this.odometry.recalibrateIMU();
     }
 
+    // Telemetry
     public void updateRevHubCycleFrequency(double newClockReading) {
         trackingCycleTime = true;
         cyclePeriod = newClockReading - priorRevHubClockReading;
@@ -135,3 +150,4 @@ public class Odometry extends SubsystemBase {
         }
     }
 }
+
