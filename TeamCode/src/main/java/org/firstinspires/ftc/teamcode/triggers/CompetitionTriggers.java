@@ -8,6 +8,7 @@ import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.NovaPyraRobot;
+import org.firstinspires.ftc.teamcode.constants.OdometryConstants;
 import org.firstinspires.ftc.teamcode.lib.orchestration.PresetShot;
 import org.firstinspires.ftc.teamcode.lib.orchestration.ShotCycleState;
 import org.firstinspires.ftc.teamcode.lib.triggers.ControllerTriggers;
@@ -101,7 +102,8 @@ public class CompetitionTriggers implements ControllerTriggers {
 
         // Reset odometry heading to 0 degrees
         c1Start.whenPressed(new InstantCommand(() -> robot.odometry.setOdometryHeading(
-                robot.allianceDriveHeadingOffset(), AngleUnit.DEGREES)));
+                OdometryConstants.DefaultStartPose.allianceDriveHeadingOffset(robot.alliance),
+                AngleUnit.DEGREES)));
     }
 
     private void setupController2ButtonMappings() {
