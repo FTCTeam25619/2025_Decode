@@ -5,10 +5,10 @@ import com.bylazar.configurables.annotations.Configurable;
 public class ShooterFeedConstants {
     @Configurable
     public static class Targets {
-        public static double defaultFeedPower = 0.22;
-        public static double atGoalShot = 0.34;
-        public static double nearZoneMidShot = 0.32;
-        public static double nearZoneEndShot = 0.32;
-        public static double farWallShot = 0.2;
+        public static double defaultFeedPower = 1.0;
+        public static double atGoalShot = 1.0;
+        public static double nearZoneMidShot = 1.0;
+        public static double nearZoneEndShot = 1.0;
+        public static double farWallShot = 1.0;
     }
 }

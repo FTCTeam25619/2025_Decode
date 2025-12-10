@@ -64,5 +64,6 @@ public enum ShotCycleState {
      *   - Auto-shooting: not in shot preset mode
      */
     // Shooting: Feed wheels on
-    SHOOTING;
+    SHOOTING,
+    RECOVERY;
 }
