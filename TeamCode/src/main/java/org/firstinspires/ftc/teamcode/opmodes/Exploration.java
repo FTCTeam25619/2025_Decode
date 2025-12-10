@@ -100,7 +100,21 @@ public class Exploration extends CommandOpMode {
                 DriveConstants.Joysticks.rotateInverseDeadband
         );
 
-        if (controller1.getButton(GamepadKeys.Button.RIGHT_STICK_BUTTON) && robot.vision.isSeeingTarget()) {
+        // ----------------------------------------------------
+        // AUTO-AIM LOGIC (Limelight-only, no odom backup)
+        // ----------------------------------------------------
+
+        // Automatic aiming during PREPARE_SHOT / READY_TO_SHOOT / SHOOTING / RECOVERY
+        if (robot.shotController.isShooting() && robot.vision.isSeeingTarget()) {
+            double headingErrorDeg = robot.vision.angleToTarget();
+            rotateAxis = MathUtils.clamp(
+                    -DriveConstants.HeadingControl.kPHeadingCorrection * headingErrorDeg,
+                    -DriveConstants.HeadingControl.correctionOutputClamp,
+                    DriveConstants.HeadingControl.correctionOutputClamp
+            );
+        }
+        // --- AIM ASSIST BUTTON (only when NOT preparing shot or shooting) ---
+        else if (controller1.getButton(GamepadKeys.Button.RIGHT_STICK_BUTTON) && robot.vision.isSeeingTarget()) {
             rotateAxis = MathUtils.clamp(
                     -DriveConstants.HeadingControl.kPHeadingCorrection * robot.vision.angleToTarget(),
                     -DriveConstants.HeadingControl.correctionOutputClamp,
@@ -108,6 +122,10 @@ public class Exploration extends CommandOpMode {
         } else {
             rotateAxis /= DriveConstants.Joysticks.rotateScalingFactor;
         }
+
+        // ----------------------------------------------------
+        // Drive, update follower + shot controller, telemetry
+        // ----------------------------------------------------
         robot.pedroFollower.setTeleOpDrive(driveAxes[0], driveAxes[1], rotateAxis,
                 false, Math.toRadians(robot.allianceDriveHeadingOffset()));
         robot.pedroFollower.update();
@@ -116,6 +134,9 @@ public class Exploration extends CommandOpMode {
         telemetry.addData("X", robot.pedroFollower.getPose().getX());
         telemetry.addData("Y", robot.pedroFollower.getPose().getY());
         telemetry.addData("Heading", robot.pedroFollower.getPose().getHeading());
+        telemetry.addData("LL Seeing Target", robot.vision.isSeeingTarget());
+        telemetry.addData("LL Angle (deg)", robot.vision.angleToTarget());
+        telemetry.addData("Is Shooting?", robot.shotController.isShooting());
         telemetry.update();
     }
 
@@ -128,5 +149,40 @@ public class Exploration extends CommandOpMode {
     @Override
     public void reset() {
         robot.reset();
+    }
+
+    // --- AUTO AIM HELPERS (Limelight-only for now) ---
+
+    /**
+     * One step of auto-aim:
+     * - If Limelight sees the tag, use tx (angleToTarget) to rotate.
+     * - If no target, do nothing (no odometry backup for now).
+     * This ONLY sets teleOpDrive rotation; follower.update() is called elsewhere.
+     */
+    public void autoAimStep() {
+        double rotateAxis = 0.0;
+
+        if (robot.vision.isSeeingTarget()) {
+            double headingErrorDeg = robot.vision.angleToTarget();
+            rotateAxis = MathUtils.clamp(
+                    -DriveConstants.HeadingControl.kPHeadingCorrection * headingErrorDeg,
+                    -DriveConstants.HeadingControl.correctionOutputClamp,
+                    DriveConstants.HeadingControl.correctionOutputClamp
+            );
+        }
+
+        // No translation while lining up – just rotate (if rotateAxis == 0, this is a no-op)
+        robot.pedroFollower.setTeleOpDrive(0.0, 0.0, rotateAxis, false);
+    }
+
+    /**
+     * Returns true when we're "close enough" to facing the target.
+     * For now, ONLY uses Limelight error and tolerance.
+     */
+    public boolean isAutoAimAligned() {
+        if (!robot.vision.isSeeingTarget()) {
+            return false; // no target, not aligned
+        }
+        return Math.abs(robot.vision.angleToTarget()) <= VisionConstants.headingAngleThresholdDeg;
     }
 }
