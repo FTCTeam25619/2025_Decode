@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.triggers;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.RepeatCommand;
 import com.seattlesolvers.solverslib.command.button.GamepadButton;
+import com.seattlesolvers.solverslib.command.button.Trigger;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
@@ -53,40 +54,56 @@ public class CompetitionTriggers implements ControllerTriggers {
         GamepadButton c1Back = new GamepadButton(controller1, GamepadKeys.Button.BACK);
         GamepadButton c1Start = new GamepadButton(controller1, GamepadKeys.Button.START);
 
-        // Map controller 1 buttons to commands
+        // LEFT TRIGGER: INTAKE
         c1LeftTrigger.whenActive(new InstantCommand(() -> {
             robot.shotController.setState(ShotCycleState.INTAKE);
         }));
-        c1LeftTrigger.and(c1LeftBumper).whileActiveContinuous(new RepeatCommand(new InstantCommand(() -> {
-            robot.intake.setState(Intake.IntakeState.Dejam);
-        })));
+
+        // On release of LT → go back to IDLE (ShotController will auto-STAGED if a piece is detected)
         c1LeftTrigger.whenInactive(new InstantCommand(() -> {
             robot.shotController.setState(ShotCycleState.IDLE);
         }));
-        c1DPadRight.whenPressed(new InstantCommand(() -> robot.shooterFeed.changeFeedPower(0.01)));
-        c1DPadLeft.whenPressed(new InstantCommand(() -> robot.shooterFeed.changeFeedPower(-0.01)));
 
-        c1RightTrigger.and(c1RightBumper.negate()).whenActive(new InstantCommand(() -> {
+        // Dejam while both LT + LB held
+        c1LeftTrigger.and(c1LeftBumper).whileActiveContinuous(
+                new RepeatCommand(new InstantCommand(() -> {
+                    robot.intake.setState(Intake.IntakeState.Dejam);
+                })));
+
+        // LEFT BUMPER: PREPARE SHOT (aim & spin up while driving)
+        c1LeftBumper.whenActive(new InstantCommand(() -> {
             robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
         }));
-        c1RightBumper.whenActive(new InstantCommand(() -> {
-            robot.shotController.setState(ShotCycleState.SHOOTING);
+
+        c1LeftBumper.whenInactive(new InstantCommand(() -> {
+            // If we were in any shooting-related state, drop back to IDLE
+            if (robot.shotController.isShooting()) {
+                robot.shotController.setState(ShotCycleState.IDLE);
+            }
         }));
-        c1RightBumper.negate().and(robot.shotController.presetShotMode()).whenActive(
-                new InstantCommand(() -> robot.shotController.setState(ShotCycleState.IDLE)));
+
+        // RIGHT TRIGGER: SHOOT (only when READY_TO_SHOOT)
+        c1RightTrigger.whenActive(new InstantCommand(() -> {
+           // if (robot.shotController.getState() == ShotCycleState.READY_TO_SHOOT) {
+                robot.shotController.setState(ShotCycleState.SHOOTING);
+           // }
+        }));
+
         c1RightTrigger.whenInactive(new InstantCommand(() -> {
-            robot.shotController.setState(ShotCycleState.IDLE);
+            // After shot or abort, if LB still held, go back to PREPARE_SHOT; else IDLE
+            if (controller1.getButton(GamepadKeys.Button.LEFT_BUMPER)) {
+                if (robot.shotController.staged()) {
+                    robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
+                } else {
+                    robot.shotController.setState(ShotCycleState.IDLE);
+                }
+            } else {
+                robot.shotController.setState(ShotCycleState.IDLE);
+            }
         }));
-        c1DPadUp.whenPressed(new InstantCommand(() -> robot.shooter.changeTargetRPM(100)));
-        c1DPadDown.whenPressed(new InstantCommand(() -> robot.shooter.changeTargetRPM(-100)));
 
-//        c1A.whenPressed(new InstantCommand(() -> robot.hood.moveBy(HoodConstants.Control.incrementSize)));
-//        c1B.whenPressed(new InstantCommand(() -> robot.hood.moveBy(-HoodConstants.Control.incrementSize)));
 
-//        c1RightBumper.whenPressed(new InstantCommand(robot.feedStop::setTestPosition));
-//        c1X.whenPressed(new InstantCommand(robot.feedStop::disengage));
-//        c1Y.whenPressed(new InstantCommand(robot.feedStop::engage));
-
+        // PRESET SHOTS (fallback / manual)
         c1A.whenPressed(new InstantCommand(() -> {
             robot.shotController.setupPresetShot(PresetShot.AtGoal);
         }));
@@ -99,6 +116,18 @@ public class CompetitionTriggers implements ControllerTriggers {
         c1Y.whenPressed(new InstantCommand(() -> {
             robot.shotController.setupPresetShot(PresetShot.FarWall);
         }));
+
+        // Shooter RPM fine-tune
+        c1DPadUp.whenPressed(new InstantCommand(() -> robot.shooter.changeTargetRPM(100)));
+        c1DPadDown.whenPressed(new InstantCommand(() -> robot.shooter.changeTargetRPM(-100)));
+
+        // Shooter feed power fine-tune
+        // c1DPadRight.whenPressed(new InstantCommand(() -> robot.shooterFeed.changeFeedPower(0.01)));
+        // c1DPadLeft.whenPressed(new InstantCommand(() -> robot.shooterFeed.changeFeedPower(-0.01)));
+
+        // Hood fine-tune adjustment
+        c1DPadRight.whenPressed(new InstantCommand(() -> robot.hood.moveBy(0.05)));
+        c1DPadLeft.whenPressed(new InstantCommand(() -> robot.hood.moveBy(-0.05)));
 
         // Reset odometry heading to 0 degrees
         c1Start.whenPressed(new InstantCommand(() -> robot.odometry.setOdometryHeading(
