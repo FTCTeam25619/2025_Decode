@@ -92,24 +92,6 @@ public class Odometry extends SubsystemBase {
         this.odometry.recalibrateIMU();
     }
 
-    // Geometry helpers
-    public double getDistanceTo(double x_t, double y_t) {
-        double dx = x_t - getX();
-        double dy = y_t - getY();
-        return Math.sqrt(dx * dx + dy * dy);
-    }
-
-    public double getHeadingTo(double x_t, double y_t) {
-        double dx = x_t - getX();
-        double dy = y_t - getY();
-        return Math.atan2(dy, dx);
-    }
-
-    public double getHeadingError(double targetHeading) {
-        double error = targetHeading - getHeadingField();
-        return Math.atan2(Math.sin(error), Math.cos(error));
-    }
-
     // Telemetry
     public void updateRevHubCycleFrequency(double newClockReading) {
         trackingCycleTime = true;
