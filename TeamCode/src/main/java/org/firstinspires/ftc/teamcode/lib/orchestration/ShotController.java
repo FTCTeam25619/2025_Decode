@@ -11,6 +11,7 @@ import org.firstinspires.ftc.teamcode.constants.ShooterConstants;
 import org.firstinspires.ftc.teamcode.constants.ShooterFeedConstants;
 import org.firstinspires.ftc.teamcode.lib.triggers.SupplierTrigger;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
+import org.firstinspires.ftc.teamcode.subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.ShooterFeed;
 import com.seattlesolvers.solverslib.util.MathUtils;
 
@@ -267,11 +268,21 @@ public class ShotController {
     // --------------------------
 
     public void setupStateTransitionTriggers() {
+        stateTransitionTrigger(ShotCycleState.OFF).whenActive(new InstantCommand(() -> {
+            // Transitioning back to OFF state
+            this.robot.intake.setState(Intake.IntakeState.Stopped);
+            this.robot.feedStop.disengage();
+            this.robot.shooter.setState(Shooter.ShooterState.Stopped);
+            this.robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
+            this.robot.hood.setAngle(HoodConstants.Limits.hoodHardStopMax);
+        }));
+
         stateTransitionTrigger(ShotCycleState.IDLE).whenActive(new InstantCommand(() -> {
             // Transitioning back to IDLE state
             // NOTE: This will not trigger at start because initial state is IDLE
             this.robot.intake.setState(Intake.IntakeState.Stopped);
             this.robot.feedStop.disengage();
+            this.robot.shooter.setState(Shooter.ShooterState.Shooting);
             this.robot.shooter.setTargetRPM(ShooterConstants.Targets.idleRPM);
             this.robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
             this.robot.hood.setAngle(HoodConstants.Limits.hoodHardStopMax);
@@ -283,6 +294,7 @@ public class ShotController {
             this.robot.intake.setState(Intake.IntakeState.Intake);
             this.robot.feedStop.engage();
             // Same as prior state IDLE
+            this.robot.shooter.setState(Shooter.ShooterState.Shooting);
             this.robot.shooter.setTargetRPM(ShooterConstants.Targets.idleRPM);
             this.robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
             this.robot.hood.setAngle(HoodConstants.Limits.hoodHardStopMax);
@@ -294,6 +306,7 @@ public class ShotController {
             this.robot.intake.setState(Intake.IntakeState.Stopped);
             // Same as prior state INTAKE
             this.robot.feedStop.engage();
+            this.robot.shooter.setState(Shooter.ShooterState.Shooting);
             this.robot.shooter.setTargetRPM(ShooterConstants.Targets.idleRPM);
             this.robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
             this.robot.hood.setAngle(HoodConstants.Limits.hoodHardStopMax);
@@ -303,6 +316,7 @@ public class ShotController {
         stateTransitionTrigger(ShotCycleState.PREPARE_SHOT).whenActive(new InstantCommand(() -> {
             // Transitioning to PREPARE_SHOT state
             this.robot.feedStop.engage();
+            this.robot.shooter.setState(Shooter.ShooterState.Shooting);
             this.robot.shooter.setTargetRPM(this.getTargetFlywheelRPM());
             this.robot.hood.setAngle(this.getTargetHoodAngle());
             this.robot.intake.setState(Intake.IntakeState.Stopped);
@@ -315,6 +329,7 @@ public class ShotController {
             // Transitioning to READY_TO_SHOOT state
             // Same as prior state PREPARE_SHOT
             this.robot.feedStop.engage();
+            this.robot.shooter.setState(Shooter.ShooterState.Shooting);
             this.robot.shooter.setTargetRPM(this.getTargetFlywheelRPM());
             this.robot.hood.setAngle(this.getTargetHoodAngle());
             this.robot.intake.setState(Intake.IntakeState.Stopped);
@@ -324,6 +339,7 @@ public class ShotController {
         // SHOOTING: open feedStop + run feed & intake while keeping shooter/hood targets
         stateTransitionTrigger(ShotCycleState.SHOOTING).whenActive(new InstantCommand(() -> {
             this.robot.feedStop.disengage();
+            this.robot.shooter.setState(Shooter.ShooterState.Shooting);
             this.robot.shooterFeed.setFeedPower(this.getTargetFeedPower());
             this.robot.shooterFeed.setState(ShooterFeed.FeedState.Feeding);
             this.robot.intake.setState(Intake.IntakeState.Intake);
@@ -340,6 +356,7 @@ public class ShotController {
             this.robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
             this.robot.intake.setState(Intake.IntakeState.Stopped);
 
+            this.robot.shooter.setState(Shooter.ShooterState.Shooting);
             this.robot.shooter.setTargetRPM(this.getTargetFlywheelRPM());
             this.robot.hood.setAngle(this.getTargetHoodAngle());
         }));
@@ -413,14 +430,14 @@ public class ShotController {
         return this._robotAtHeadingTrigger;
     }
 
-    public StateTransitionTrigger stateTransitionTrigger(ShotCycleState toState) {
-        return new StateTransitionTrigger(this::transitionedTo, toState);
+    public StateTransitionToTrigger stateTransitionTrigger(ShotCycleState toState) {
+        return new StateTransitionToTrigger(this::transitionedTo, toState);
     }
 
-    public static class StateTransitionTrigger extends Trigger {
+    public static class StateTransitionToTrigger extends Trigger {
         ShotCycleState checkState;
         Predicate<ShotCycleState> getFn;
-        public StateTransitionTrigger(Predicate<ShotCycleState> shotCycleStateSupplier, ShotCycleState state) {
+        public StateTransitionToTrigger(Predicate<ShotCycleState> shotCycleStateSupplier, ShotCycleState state) {
             this.checkState = state;
             this.getFn = shotCycleStateSupplier;
         }
