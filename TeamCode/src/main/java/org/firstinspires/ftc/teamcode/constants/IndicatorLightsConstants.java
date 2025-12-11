@@ -4,7 +4,7 @@ public class IndicatorLightsConstants {
     public enum IndicatorColors {
         GREEN(0.535),
         PURPLE(0.713),
-        RED(0.278),
+        RED(0.277),
         ORANGE(0.333),
         YELLOW(0.388),
         BLUE(0.611),
