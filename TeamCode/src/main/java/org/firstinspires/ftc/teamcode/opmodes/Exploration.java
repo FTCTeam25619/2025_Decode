@@ -113,7 +113,8 @@ public class Exploration extends CommandOpMode {
         if (robot.vision.isSeeingTarget()) {
             // We see proper tag so calculate the target heading
             double headingErrorSample = robot.vision.angleToTarget() + Math.toDegrees(robot.pedroFollower.getHeading());
-            headingtoGoal = headingMovingAvg.next(headingErrorSample);
+//            headingtoGoal = headingMovingAvg.next(headingErrorSample);
+            headingtoGoal = headingErrorSample;
             headingToGoalValid = true;
         } else {
             // We don't see tag to no valid heading correction possible
@@ -140,12 +141,12 @@ public class Exploration extends CommandOpMode {
         // ----------------------------------------------------
 
         // If robot not translating and we are auto-aiming use follower rotate
-        if (driveAxes[2] == 0.0 && headingToGoalValid) {
-            robot.pedroFollower.turnToDegrees(headingtoGoal);
-        } else {
+//        if (driveAxes[2] == 0.0 && robot.vision.isSeeingTarget() && headingToGoalValid) {
+//            robot.pedroFollower.turnToDegrees(headingtoGoal);
+//        } else {
             robot.pedroFollower.setTeleOpDrive(driveAxes[0], driveAxes[1], rotateAxis, false,
                     Math.toRadians(OdometryConstants.DefaultStartPose.allianceDriveHeadingOffset(alliance)));
-        }
+//        }
 
         robot.pedroFollower.update();
         robot.shotController.updateState();
