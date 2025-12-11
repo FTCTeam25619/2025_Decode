@@ -17,6 +17,7 @@ import org.firstinspires.ftc.teamcode.constants.OdometryConstants;
 import org.firstinspires.ftc.teamcode.constants.VisionConstants;
 import org.firstinspires.ftc.teamcode.lib.triggers.ControllerTriggers;
 import org.firstinspires.ftc.teamcode.lib.util.BlackboardHelpers;
+import org.firstinspires.ftc.teamcode.lib.util.MovingAverageDouble;
 import org.firstinspires.ftc.teamcode.lib.util.NovaPyraUtils;
 import org.firstinspires.ftc.teamcode.triggers.CompetitionTriggers;
 import org.firstinspires.ftc.teamcode.triggers.RobotTriggers;
@@ -29,6 +30,10 @@ public class Exploration extends CommandOpMode {
     public GamepadEx controller2;
     private ControllerTriggers controllerMappings;
     private RobotTriggers robotTriggers;
+
+    private boolean headingToGoalValid = false;
+    private double headingtoGoal = 0.0;
+    private MovingAverageDouble headingMovingAvg = new MovingAverageDouble(3);
 
     public Exploration(Alliance allianceSetting) {
         super();
@@ -104,46 +109,60 @@ public class Exploration extends CommandOpMode {
                 DriveConstants.Joysticks.rotateInverseDeadband
         );
 
+        // If seeing target, update target heading values, even if not auto-aiming
+        if (robot.vision.isSeeingTarget()) {
+            // We see proper tag so calculate the target heading
+            double headingErrorSample = robot.vision.angleToTarget() + Math.toDegrees(robot.pedroFollower.getHeading());
+            headingtoGoal = headingMovingAvg.next(headingErrorSample);
+            headingToGoalValid = true;
+        } else {
+            // We don't see tag to no valid heading correction possible
+            headingMovingAvg.clear();
+            headingToGoalValid = false;
+            headingtoGoal = 0.0;
+        }
+
         // ----------------------------------------------------
         // AUTO-AIM LOGIC (Limelight-only, no odom backup)
         // ----------------------------------------------------
 
-        // Automatic aiming during PREPARE_SHOT / READY_TO_SHOOT / SHOOTING / RECOVERY
-        if (robot.shotController.isShooting() && robot.vision.isSeeingTarget()) {
-            double headingErrorDeg = robot.vision.angleToTarget();
-            rotateAxis = MathUtils.clamp(
-                    -DriveConstants.HeadingControl.kPHeadingCorrection * headingErrorDeg,
-                    -DriveConstants.HeadingControl.correctionOutputClamp,
-                    DriveConstants.HeadingControl.correctionOutputClamp
-            );
-        }
-        // --- AIM ASSIST BUTTON (only when NOT preparing shot or shooting) ---
-        else if (controller1.getButton(GamepadKeys.Button.RIGHT_STICK_BUTTON) && robot.vision.isSeeingTarget()) {
-            rotateAxis = MathUtils.clamp(
-                    -DriveConstants.HeadingControl.kPHeadingCorrection * robot.vision.angleToTarget(),
-                    -DriveConstants.HeadingControl.correctionOutputClamp,
-                    DriveConstants.HeadingControl.correctionOutputClamp);
+        // AIM ASSIST PREPARE_SHOT / READY_TO_SHOOT / SHOOTING / RECOVERY or right stick pressed
+        if ((robot.shotController.isShooting() || controller1.getButton(GamepadKeys.Button.RIGHT_STICK_BUTTON))
+                && robot.vision.isSeeingTarget()) {
+            rotateAxis = autoAimCalculateRotateAxis(headingtoGoal - Math.toDegrees(robot.pedroFollower.getHeading()));
         } else {
+            // No AIM Assist so just drive normal
             rotateAxis /= DriveConstants.Joysticks.rotateScalingFactor;
         }
 
         // ----------------------------------------------------
         // Drive, update follower + shot controller, telemetry
         // ----------------------------------------------------
-        robot.pedroFollower.setTeleOpDrive(driveAxes[0], driveAxes[1], rotateAxis, false,
-                Math.toRadians(OdometryConstants.DefaultStartPose.allianceDriveHeadingOffset(alliance)));
+
+        // If robot not translating and we are auto-aiming use follower rotate
+        if (driveAxes[2] == 0.0 && headingToGoalValid) {
+            robot.pedroFollower.turnToDegrees(headingtoGoal);
+        } else {
+            robot.pedroFollower.setTeleOpDrive(driveAxes[0], driveAxes[1], rotateAxis, false,
+                    Math.toRadians(OdometryConstants.DefaultStartPose.allianceDriveHeadingOffset(alliance)));
+        }
+
         robot.pedroFollower.update();
         robot.shotController.updateState();
 
         telemetry.addData("X", robot.pedroFollower.getPose().getX());
         telemetry.addData("Y", robot.pedroFollower.getPose().getY());
         telemetry.addData("Heading", robot.pedroFollower.getPose().getHeading());
+
         telemetry.addData("LL Seeing Target", robot.vision.isSeeingTarget());
         telemetry.addData("LL Angle (deg)", robot.vision.angleToTarget());
         telemetry.addData("Is Shooting?", robot.shotController.isShooting());
         telemetry.update();
     }
 
+    public boolean isHeadingToGoalValid() {
+        return headingToGoalValid;
+    };
     @Override
     public void end() {
         robot.vision.stopVision();
@@ -157,6 +176,16 @@ public class Exploration extends CommandOpMode {
     }
 
     // --- AUTO AIM HELPERS (Limelight-only for now) ---
+
+    public double autoAimCalculateRotateAxis(double headingErrorDeg) {
+
+        return MathUtils.clamp(
+                -DriveConstants.HeadingControl.kPHeadingCorrection * headingErrorDeg,
+                -DriveConstants.HeadingControl.correctionOutputClamp,
+                DriveConstants.HeadingControl.correctionOutputClamp
+        );
+    }
+
 
     /**
      * One step of auto-aim:
