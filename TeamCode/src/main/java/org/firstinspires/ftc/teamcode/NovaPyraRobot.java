@@ -71,11 +71,6 @@ public class NovaPyraRobot extends Robot {
     public void trackCycleTime(double newClockReading) {
         odometry.updateRevHubCycleFrequency(newClockReading);
     }
-
-
-    public double allianceDriveHeadingOffset() {
-        return this.alliance == Alliance.RED ? 0.0 : 180.0;
-    }
 }
 
 
