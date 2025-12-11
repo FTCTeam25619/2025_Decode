@@ -3,20 +3,20 @@ package org.firstinspires.ftc.teamcode.opmodes;
 
 import com.bylazar.telemetry.JoinedTelemetry;
 import com.bylazar.telemetry.PanelsTelemetry;
+import com.pedropathing.geometry.Pose;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 import com.seattlesolvers.solverslib.util.MathUtils;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.constants.Alliance;
 import org.firstinspires.ftc.teamcode.constants.Constants;
 import org.firstinspires.ftc.teamcode.constants.DriveConstants;
 import org.firstinspires.ftc.teamcode.NovaPyraRobot;
+import org.firstinspires.ftc.teamcode.constants.OdometryConstants;
 import org.firstinspires.ftc.teamcode.constants.VisionConstants;
 import org.firstinspires.ftc.teamcode.lib.triggers.ControllerTriggers;
+import org.firstinspires.ftc.teamcode.lib.util.BlackboardHelpers;
 import org.firstinspires.ftc.teamcode.lib.util.NovaPyraUtils;
 import org.firstinspires.ftc.teamcode.triggers.CompetitionTriggers;
 import org.firstinspires.ftc.teamcode.triggers.RobotTriggers;
@@ -64,8 +64,12 @@ public class Exploration extends CommandOpMode {
         robot.vision.startVision();
         robot.vision.setTargetingTag(alliance == Alliance.BLUE ?
                 VisionConstants.AprilTags.BlueGoal : VisionConstants.AprilTags.RedGoal);
-        robot.odometry.setRobotPose(new Pose2D(DistanceUnit.MM, 0.0, 0.0,
-                AngleUnit.DEGREES, robot.allianceDriveHeadingOffset()));
+
+        Pose startingPose = BlackboardHelpers.getAutoEndPoseOrDefault(blackboard, alliance);
+//        robot.odometry.setRobotPose(
+//                new Pose2D(DistanceUnit.INCH, startingPose.getX(), startingPose.getY(),
+//                        AngleUnit.RADIANS, startingPose.getHeading()));
+        robot.pedroFollower.setPose(startingPose);
 
         robot.pedroFollower.startTeleopDrive();
 
@@ -126,8 +130,8 @@ public class Exploration extends CommandOpMode {
         // ----------------------------------------------------
         // Drive, update follower + shot controller, telemetry
         // ----------------------------------------------------
-        robot.pedroFollower.setTeleOpDrive(driveAxes[0], driveAxes[1], rotateAxis,
-                false, Math.toRadians(robot.allianceDriveHeadingOffset()));
+        robot.pedroFollower.setTeleOpDrive(driveAxes[0], driveAxes[1], rotateAxis, false,
+                Math.toRadians(OdometryConstants.DefaultStartPose.allianceDriveHeadingOffset(alliance)));
         robot.pedroFollower.update();
         robot.shotController.updateState();
 
@@ -143,6 +147,7 @@ public class Exploration extends CommandOpMode {
     @Override
     public void end() {
         robot.vision.stopVision();
+        BlackboardHelpers.clearAutoEndPose(blackboard);
         telemetry.addData("Robot Status", "Stopped Exploration " + alliance.name());
     }
 

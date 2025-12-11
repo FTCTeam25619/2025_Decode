@@ -32,6 +32,12 @@ public class OdometryConstants {
         public static double strafePodXMM = 140.41;
     }
 
+    public static class DefaultStartPose {
+        public static double allianceDriveHeadingOffset(Alliance alliance) {
+            return alliance == Alliance.RED ? 0.0 : 180.0;
+        }
+    }
+
     @Configurable
     public static class TargetDistances {
         // TODO: Tune real values for these
