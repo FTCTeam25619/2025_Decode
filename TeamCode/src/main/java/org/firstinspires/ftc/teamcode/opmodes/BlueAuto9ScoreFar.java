@@ -23,6 +23,7 @@ import org.firstinspires.ftc.teamcode.constants.Constants;
 import org.firstinspires.ftc.teamcode.lib.orchestration.PresetShot;
 import org.firstinspires.ftc.teamcode.lib.orchestration.ShotCycleState;
 import org.firstinspires.ftc.teamcode.lib.triggers.SupplierTrigger;
+import org.firstinspires.ftc.teamcode.lib.util.BlackboardHelpers;
 import org.firstinspires.ftc.teamcode.triggers.RobotTriggers;
 
 @Autonomous(name = "Blue 9-Score Far Wall", group = "Autonomous")
@@ -94,6 +95,7 @@ public class BlueAuto9ScoreFar extends CommandOpMode {
 
         // Initialize follower
         follower.setStartingPose(paths.blueFarWallStart.withHeading(Math.toRadians(paths.blueFarWallStartHeading)));
+        BlackboardHelpers.setAutoEndPose(blackboard, follower.getPose());
 
         // Schedule the autonomous sequence
         schedule(
@@ -158,5 +160,11 @@ public class BlueAuto9ScoreFar extends CommandOpMode {
         telemetryData.addData("Y", follower.getPose().getY());
         telemetryData.addData("Heading", follower.getPose().getHeading());
         telemetryData.update();
+    }
+
+    @Override
+    public void end() {
+        super.end();
+        BlackboardHelpers.setAutoEndPose(blackboard, follower.getPose());
     }
 }
