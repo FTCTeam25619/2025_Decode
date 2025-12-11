@@ -117,17 +117,11 @@ public class CompetitionTriggers implements ControllerTriggers {
             robot.shotController.setupPresetShot(PresetShot.FarWall);
         }));
 
-        // Shooter RPM fine-tune
-        c1DPadUp.whenPressed(new InstantCommand(() -> robot.shooter.changeTargetRPM(100)));
-        c1DPadDown.whenPressed(new InstantCommand(() -> robot.shooter.changeTargetRPM(-100)));
-
-        // Shooter feed power fine-tune
-        // c1DPadRight.whenPressed(new InstantCommand(() -> robot.shooterFeed.changeFeedPower(0.01)));
-        // c1DPadLeft.whenPressed(new InstantCommand(() -> robot.shooterFeed.changeFeedPower(-0.01)));
-
-        // Hood fine-tune adjustment
-        c1DPadRight.whenPressed(new InstantCommand(() -> robot.hood.moveBy(0.05)));
-        c1DPadLeft.whenPressed(new InstantCommand(() -> robot.hood.moveBy(-0.05)));
+        // Shooter off/on
+        c1DPadUp.whenPressed(new InstantCommand(() -> robot.shotController.setState(ShotCycleState.IDLE)));
+        c1DPadDown.whenPressed(new InstantCommand(() -> robot.shotController.setState(ShotCycleState.OFF)));
+        // Reset to auto-targeting
+        c1DPadLeft.whenPressed(new InstantCommand(robot.shotController::autoTargetShot));
 
         // Reset odometry heading to 0 degrees
         c1Start.whenPressed(new InstantCommand(() -> robot.odometry.setOdometryHeading(
