@@ -20,7 +20,7 @@ public class NovaPyraUtils {
         s = clamped * Math.sin(angle);
 
         // Return an array of smoothed deadbanded values
-        return new double[]{f, s};
+        return new double[]{f, s, clamped, angle};
     }
 
     public static double deadbandAndSmoothValue(double value, double smoothFactor,
