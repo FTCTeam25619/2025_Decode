@@ -11,15 +11,15 @@ import com.pedropathing.paths.PathChain;
 public class RedNearGoalConstants {
     public Pose redNearWallStart = new Pose(128.587, 114.055);
     public Pose redNearWallToShootCP = new Pose(115.376, 109.431);
-    public Pose redNearWallShoot = new Pose(95.394, 103.009);
+    public Pose redNearWallShoot = new Pose(95.394, 101.009);
     public Pose redNearWallShootToNearIntakeCP = new Pose(80.807, 63.615);
-    public Pose redNearWallNearIntake = new Pose(122.5, 86.532);
+    public Pose redNearWallNearIntake = new Pose(122.5, 87.0);
     public Pose redNearWallShootToMidIntakeCP = new Pose(79.706, 38.514);
-    public Pose redNearWallMidIntake = new Pose(114.0, 62.193);
+    public Pose redNearWallMidIntake = new Pose(114.0, 58.193);
     public Pose redNearWallPark = new Pose(89.394, 114.275);
     public double redNearWallStartHeading = 90.0;
-    public double redNearWallShootHeading = 33.0;
-    public double redNearWallRowIntakeHeading = 180.0;
+    public double redNearWallShootHeading = 42.0;
+    public double redNearWallRowIntakeHeading = 175.0;
     public double redNearWallMidRowIntakeHeading = 190.0;
 
     public PathChain redWallToNearZonePrescore;
