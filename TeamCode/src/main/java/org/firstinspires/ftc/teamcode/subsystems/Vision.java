@@ -10,6 +10,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
+import org.firstinspires.ftc.teamcode.constants.Alliance;
 import org.firstinspires.ftc.teamcode.constants.Constants;
 import org.firstinspires.ftc.teamcode.constants.Devices;
 import org.firstinspires.ftc.teamcode.constants.VisionConstants;
@@ -28,9 +29,9 @@ public class Vision extends SubsystemBase {
     private double distanceToTagCM = 0.0;
     private Position tagPosition = new Position();
 
-    public Vision(HardwareMap hardwareMap, Odometry odometry, Telemetry telemetry) {
+    public Vision(HardwareMap hardwareMap, Odometry odometry, Telemetry telemetry, Alliance alliance) {
         limelightCamera = hardwareMap.get(Limelight3A.class, Devices.Vision.limelightCamera);
-        limelightCamera.pipelineSwitch(0);
+        limelightCamera.pipelineSwitch(alliance == Alliance.BLUE ? 0 : 1);
 
         this.odometry = odometry;
         this.telemetry = telemetry;

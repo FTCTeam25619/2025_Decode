@@ -56,7 +56,7 @@ public class NovaPyraRobot extends Robot {
         intake = new Intake(hardwareMap, NovaPyraRobot.telemetry);
         sensors = new Sensors(hardwareMap, NovaPyraRobot.telemetry);
         odometry = new Odometry(hardwareMap, NovaPyraRobot.telemetry);
-        vision = new Vision(hardwareMap, odometry, NovaPyraRobot.telemetry);
+        vision = new Vision(hardwareMap, odometry, NovaPyraRobot.telemetry, alliance);
         pedroFollower = PedroConstants.createFollower(hardwareMap);
 
         // Orchestrators
