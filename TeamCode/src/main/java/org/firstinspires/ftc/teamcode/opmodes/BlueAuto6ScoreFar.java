@@ -77,7 +77,7 @@ public class BlueAuto6ScoreFar extends CommandOpMode {
 
         alliance = Alliance.BLUE;
 
-        telemetry.addData("Robot Status", "Initializing AutoScorePreloadFar " + alliance.name());
+        telemetry.addData("Robot Status", "Initializing Auto 6 Ball Far " + alliance.name());
         telemetry.update();
 
         // Setup Dashboard if setup for shop debugging
@@ -116,12 +116,12 @@ public class BlueAuto6ScoreFar extends CommandOpMode {
                                 // Score 3
                                 setupFarWallPresetShot(),
                                 prepareShot(),
-                                new FollowPathCommand(follower, paths.blueFarIntakeToFarZoneScore),
+                                new FollowPathCommand(follower, paths.blueFarWallIntakeToFarScore),
                                 new WaitCommand(TimingConstants.waitBeforeShootingMS),
                                 shoot(),
                                 new WaitCommand(TimingConstants.waitForShootingMS),
                                 // Park
-                                new FollowPathCommand(follower, paths.bluePark, false),
+                                new FollowPathCommand(follower, paths.blueFarWallToPark, false),
                                 spinDown()
                         )
                 )
@@ -129,7 +129,7 @@ public class BlueAuto6ScoreFar extends CommandOpMode {
 
 //        readyToShootPreload().whenActive(shoot());
 
-        telemetry.addData("Robot Status", "Initialized AutoScorePreloadFar " + alliance.name());
+        telemetry.addData("Robot Status", "Initialized Auto 6 Ball Far " + alliance.name());
         telemetry.update();
     }
 
