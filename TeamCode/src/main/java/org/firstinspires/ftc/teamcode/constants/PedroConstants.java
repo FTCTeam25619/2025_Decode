@@ -48,7 +48,7 @@ public class PedroConstants {
             .centripetalScaling(0.0012);
 
     public static PathConstraints pathConstraints = new PathConstraints(
-            0.99, 100, 0.6, 1.5);
+            0.99, 100, 0.3, 2.5);
 
     public static Drivetrain createDrivetrain(HardwareMap hardwareMap) {
         if (drivetrain == null) {

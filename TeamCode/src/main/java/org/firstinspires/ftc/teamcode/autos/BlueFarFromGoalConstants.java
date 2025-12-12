@@ -10,16 +10,25 @@ import com.pedropathing.paths.PathChain;
 @Configurable
 public class BlueFarFromGoalConstants {
     public Pose blueFarWallStart = new Pose(56.000, 8.000);
+    public Pose blueFarWallToShootCP = new Pose(56.265, 12.397);
     public Pose blueFarWallShoot = new Pose(56.742, 14.543);
-    public Pose blueFarWallRowIntake = new Pose(24.318, 36.954);
+    public Pose blueFarWallShootToFarIntakeCP = new Pose(65.086, 36.454);
+    public Pose blueFarWallFarIntake = new Pose(18.318, 36.454);
+    public Pose blueFarWallShootToMidIntakeCP = new Pose(65.324, 72.238);
+    public Pose blueFarWallMidIntake = new Pose(30.0, 55.192);
+    public Pose blueFarWallPark = new Pose(56.742, 27.000);
     public double blueFarWallStartHeading = 90.0;
-    public double blueFarWallShootHeading = 110.0;
+    public double blueFarWallFirstShotHeading = 109.5;
+    public double blueFarWallShootHeading = 112.0;
     public double blueFarWallRowIntakeHeading = 355.0;
+    public double blueFarWallMidIntakeHeading = 350.0;
 
     public PathChain blueWallToFarZonePrescore;
     public PathChain blueFarZonePrescoreToFarIntake;
-    public PathChain blueFarIntakeToFarZoneScore;
-    public PathChain bluePark;
+    public PathChain blueFarWallIntakeToFarScore;
+    public PathChain blueFarZoneScoreToMidIntake;
+    public PathChain blueMidWallIntakeToFarScore;
+    public PathChain blueFarWallToPark;
 
     public BlueFarFromGoalConstants(Follower follower) {
         buildPaths(follower);
@@ -31,17 +40,17 @@ public class BlueFarFromGoalConstants {
                 .addPath(
                         new BezierCurve(
                                 blueFarWallStart,
-                                new Pose(56.265, 12.397),
+                                blueFarWallToShootCP,
                                 blueFarWallShoot
                         )
                 )
                 .setLinearHeadingInterpolation(
                         Math.toRadians(blueFarWallStartHeading),
-                        Math.toRadians(blueFarWallShootHeading),
-                        0.7)
+                        Math.toRadians(blueFarWallFirstShotHeading),
+                        0.5)
                 .setVelocityConstraint(25.0)
                 .setTranslationalConstraint(0.5)
-                .setHeadingConstraint(Math.toRadians(2.0))
+                .setHeadingConstraint(Math.toRadians(1.0))
                 .build();
 
         blueFarZonePrescoreToFarIntake = follower
@@ -49,8 +58,8 @@ public class BlueFarFromGoalConstants {
                 .addPath(
                         new BezierCurve(
                                 blueFarWallShoot,
-                                new Pose(65.086, 36.954),
-                                blueFarWallRowIntake
+                                blueFarWallShootToFarIntakeCP,
+                                blueFarWallFarIntake
                         )
                 )
                 .setLinearHeadingInterpolation(
@@ -62,30 +71,66 @@ public class BlueFarFromGoalConstants {
                 .setHeadingConstraint(Math.toRadians(2.0))
                 .build();
 
-        blueFarIntakeToFarZoneScore = follower
+        blueFarWallIntakeToFarScore = follower
                 .pathBuilder()
                 .addPath(
                         new BezierLine(
-                                blueFarWallRowIntake,
+                                blueFarWallFarIntake,
                                 blueFarWallShoot
                         )
                 )
                 .setLinearHeadingInterpolation(
                         Math.toRadians(blueFarWallRowIntakeHeading),
                         Math.toRadians(blueFarWallShootHeading),
-                        0.7)
+                        0.5)
                 .setVelocityConstraint(25.0)
                 .setTranslationalConstraint(0.5)
-                .setHeadingConstraint(Math.toRadians(2.0))
+                .setHeadingConstraint(Math.toRadians(1.0))
                 .setBrakingStart(2.0)
                 .build();
 
-        bluePark = follower
+        blueFarZoneScoreToMidIntake = follower
+                .pathBuilder()
+                .addPath(
+                        new BezierCurve(
+                                blueFarWallShoot,
+                                blueFarWallShootToMidIntakeCP,
+                                blueFarWallMidIntake
+                        )
+                )
+                .setLinearHeadingInterpolation(
+                        Math.toRadians(blueFarWallShootHeading),
+                        Math.toRadians(blueFarWallMidIntakeHeading),
+                        0.5)
+                .setVelocityConstraint(25.0)
+                .setTranslationalConstraint(0.5)
+                .setHeadingConstraint(Math.toRadians(2.0))
+                .build();
+
+        blueMidWallIntakeToFarScore = follower
+                .pathBuilder()
+                .addPath(
+                        new BezierLine(
+                                blueFarWallMidIntake,
+                                blueFarWallShoot
+                        )
+                )
+                .setLinearHeadingInterpolation(
+                        Math.toRadians(blueFarWallRowIntakeHeading),
+                        Math.toRadians(blueFarWallShootHeading),
+                        0.5)
+                .setVelocityConstraint(25.0)
+                .setTranslationalConstraint(0.5)
+                .setHeadingConstraint(Math.toRadians(1.0))
+                .setBrakingStart(2.0)
+                .build();
+
+        blueFarWallToPark = follower
                 .pathBuilder()
                 .addPath(
                         new BezierLine(
                                 blueFarWallShoot,
-                                new Pose(56.742, 27.000)
+                                blueFarWallPark
                         )
                 )
                 .setLinearHeadingInterpolation(
