@@ -13,14 +13,15 @@ public class RedFarFromGoalConstants {
     public Pose redFarWallToShootCP = new Pose(87.735, 12.397);
     public Pose redFarWallShoot = new Pose(87.258, 14.543);
     public Pose redFarWallShootToFarIntakeCP = new Pose(78.914, 36.454);
-    public Pose redFarWallFarIntake = new Pose(119.682, 36.454);
-    public Pose redFarWallShootToMidIntakeCP = new Pose(110.532, 28.183);
-    public Pose redFarWallMidIntake = new Pose(120.25, 59.550);
-    public Pose redFarWallPark = new Pose(87.258, 27.000);
+    public Pose redFarWallFarIntake = new Pose(128.682, 33.454);
+    public Pose redFarWallShootToMidIntakeCP = new Pose(78.676, 72.238);
+    public Pose redFarWallMidIntake = new Pose(115.0, 55.192);
+    public Pose redFarWallPark = new Pose(87.258, 35.000);
     public double redFarWallStartHeading = 90.0;
-    public double redFarWallShootHeading = 70.0;
-    public double redFarWallRowIntakeHeading = 185.0;
-    public double redFarWallMidIntakeHeading = 265;
+    public double redFarWallFirstShotHeading = 68.0;
+    public double redFarWallShootHeading = 67.5;
+    public double redFarWallRowIntakeHeading = 175.0;
+    public double redFarWallMidIntakeHeading = 190.0;
 
     public PathChain redWallToFarZonePrescore;
     public PathChain redFarZonePrescoreToFarIntake;
@@ -45,11 +46,11 @@ public class RedFarFromGoalConstants {
                 )
                 .setLinearHeadingInterpolation(
                         Math.toRadians(redFarWallStartHeading),
-                        Math.toRadians(redFarWallShootHeading),
-                        0.7)
+                        Math.toRadians(redFarWallFirstShotHeading),
+                        0.5)
                 .setVelocityConstraint(25.0)
                 .setTranslationalConstraint(0.5)
-                .setHeadingConstraint(Math.toRadians(2.0))
+                .setHeadingConstraint(Math.toRadians(1.0))
                 .build();
 
         redFarZonePrescoreToFarIntake = follower
@@ -81,10 +82,10 @@ public class RedFarFromGoalConstants {
                 .setLinearHeadingInterpolation(
                         Math.toRadians(redFarWallRowIntakeHeading),
                         Math.toRadians(redFarWallShootHeading),
-                        0.7)
+                        0.5)
                 .setVelocityConstraint(25.0)
                 .setTranslationalConstraint(0.5)
-                .setHeadingConstraint(Math.toRadians(2.0))
+                .setHeadingConstraint(Math.toRadians(1.0))
                 .setBrakingStart(2.0)
                 .build();
 
@@ -117,10 +118,10 @@ public class RedFarFromGoalConstants {
                 .setLinearHeadingInterpolation(
                         Math.toRadians(redFarWallRowIntakeHeading),
                         Math.toRadians(redFarWallShootHeading),
-                        0.7)
+                        0.5)
                 .setVelocityConstraint(25.0)
                 .setTranslationalConstraint(0.5)
-                .setHeadingConstraint(Math.toRadians(2.0))
+                .setHeadingConstraint(Math.toRadians(1.0))
                 .setBrakingStart(2.0)
                 .build();
 

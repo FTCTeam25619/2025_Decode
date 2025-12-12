@@ -13,13 +13,14 @@ public class RedNearGoalConstants {
     public Pose redNearWallToShootCP = new Pose(115.376, 109.431);
     public Pose redNearWallShoot = new Pose(95.394, 103.009);
     public Pose redNearWallShootToNearIntakeCP = new Pose(80.807, 63.615);
-    public Pose redNearWallNearIntake = new Pose(120.661, 86.532);
+    public Pose redNearWallNearIntake = new Pose(122.5, 86.532);
     public Pose redNearWallShootToMidIntakeCP = new Pose(79.706, 38.514);
-    public Pose redNearWallMidIntake = new Pose(118.0, 62.193);
+    public Pose redNearWallMidIntake = new Pose(114.0, 62.193);
     public Pose redNearWallPark = new Pose(89.394, 114.275);
     public double redNearWallStartHeading = 90.0;
-    public double redNearWallShootHeading = 38.0;
-    public double redNearWallRowIntakeHeading = 190;
+    public double redNearWallShootHeading = 33.0;
+    public double redNearWallRowIntakeHeading = 180.0;
+    public double redNearWallMidRowIntakeHeading = 190.0;
 
     public PathChain redWallToNearZonePrescore;
     public PathChain redNearZonePrescoreToNearIntake;
@@ -93,12 +94,12 @@ public class RedNearGoalConstants {
                         new BezierCurve(
                                 redNearWallShoot,
                                 redNearWallShootToMidIntakeCP,
-                                new Pose(22.899, 60.550)
+                                redNearWallMidIntake
                         )
                 )
                 .setLinearHeadingInterpolation(
                         Math.toRadians(redNearWallShootHeading),
-                        Math.toRadians(redNearWallRowIntakeHeading),
+                        Math.toRadians(redNearWallMidRowIntakeHeading),
                         0.4)
                 .setVelocityConstraint(20.0)
                 .setTranslationalConstraint(0.5)
