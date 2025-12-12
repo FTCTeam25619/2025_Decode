@@ -15,7 +15,7 @@ import com.seattlesolvers.solverslib.util.TelemetryData;
 
 import org.firstinspires.ftc.teamcode.constants.PedroConstants;
 
-@Autonomous
+// @Autonomous
 public class PedroAutoSample extends CommandOpMode {
     private Follower follower;
     TelemetryData telemetryData = new TelemetryData(telemetry);
