@@ -104,16 +104,16 @@ public class CompetitionTriggers implements ControllerTriggers {
 
 
         // PRESET SHOTS (fallback / manual)
-        c1A.whenPressed(new InstantCommand(() -> {
+        c1Back.and(c1A).whenActive(new InstantCommand(() -> {
             robot.shotController.setupPresetShot(PresetShot.AtGoal);
         }));
-        c1X.whenPressed(new InstantCommand(() -> {
+        c1Back.and(c1X).whenActive(new InstantCommand(() -> {
             robot.shotController.setupPresetShot(PresetShot.NearZoneMid);
         }));
-        c1B.whenPressed(new InstantCommand(() -> {
+        c1Back.and(c1B).whenActive(new InstantCommand(() -> {
             robot.shotController.setupPresetShot(PresetShot.NearZoneEnd);
         }));
-        c1Y.whenPressed(new InstantCommand(() -> {
+        c1Back.and(c1Y).whenActive(new InstantCommand(() -> {
             robot.shotController.setupPresetShot(PresetShot.FarWall);
         }));
 
