@@ -15,9 +15,11 @@ import org.firstinspires.ftc.teamcode.constants.DriveConstants;
 import org.firstinspires.ftc.teamcode.NovaPyraRobot;
 import org.firstinspires.ftc.teamcode.constants.OdometryConstants;
 import org.firstinspires.ftc.teamcode.constants.VisionConstants;
+import org.firstinspires.ftc.teamcode.lib.panels.PanelsUtils;
 import org.firstinspires.ftc.teamcode.lib.triggers.ControllerTriggers;
 import org.firstinspires.ftc.teamcode.lib.util.BlackboardHelpers;
 import org.firstinspires.ftc.teamcode.lib.util.NovaPyraUtils;
+import org.firstinspires.ftc.teamcode.lib.panels.PanelsUtils.Drawing;
 import org.firstinspires.ftc.teamcode.triggers.CompetitionTriggers;
 import org.firstinspires.ftc.teamcode.triggers.RobotTriggers;
 import org.firstinspires.ftc.teamcode.triggers.TuningTriggers;
@@ -81,6 +83,9 @@ public class Exploration extends CommandOpMode {
     public void initialize_loop() {
         super.initialize_loop();
         // Things that need to run while disabled every cycle
+        if (Constants.DebugModes.ENABLE_PANELS_DASHBOARD) {
+            Drawing.drawVisionAndCurrent(robot.vision, robot.pedroFollower);
+        }
     }
 
     @Override
@@ -142,6 +147,10 @@ public class Exploration extends CommandOpMode {
         telemetry.addData("LL Angle (deg)", robot.vision.angleToTarget());
         telemetry.addData("Is Shooting?", robot.shotController.isShooting());
         telemetry.update();
+
+        if (Constants.DebugModes.ENABLE_PANELS_DASHBOARD) {
+            Drawing.drawVisionAndCurrentAndHistory(robot.vision, robot.pedroFollower);
+        }
     }
 
     @Override
@@ -190,4 +199,5 @@ public class Exploration extends CommandOpMode {
         }
         return Math.abs(robot.vision.angleToTarget()) <= VisionConstants.headingAngleThresholdDeg;
     }
+
 }
