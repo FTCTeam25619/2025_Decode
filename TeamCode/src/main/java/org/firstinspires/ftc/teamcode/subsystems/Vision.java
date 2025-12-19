@@ -120,7 +120,7 @@ public class Vision extends SubsystemBase {
     public Pose getPedroPose() {
         return new Pose(latestPose.getPosition().toUnit(DistanceUnit.INCH).x,
                 latestPose.getPosition().toUnit(DistanceUnit.INCH).y,
-                latestPose.getOrientation().getYaw(AngleUnit.DEGREES),
+                latestPose.getOrientation().getYaw(AngleUnit.RADIANS),
                 InvertedFTCCoordinates.INSTANCE).getAsCoordinateSystem(PedroCoordinates.INSTANCE);
     }
 }
