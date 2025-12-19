@@ -15,7 +15,6 @@ import org.firstinspires.ftc.teamcode.constants.DriveConstants;
 import org.firstinspires.ftc.teamcode.NovaPyraRobot;
 import org.firstinspires.ftc.teamcode.constants.OdometryConstants;
 import org.firstinspires.ftc.teamcode.constants.VisionConstants;
-import org.firstinspires.ftc.teamcode.lib.panels.PanelsUtils;
 import org.firstinspires.ftc.teamcode.lib.triggers.ControllerTriggers;
 import org.firstinspires.ftc.teamcode.lib.util.BlackboardHelpers;
 import org.firstinspires.ftc.teamcode.lib.util.NovaPyraUtils;
@@ -151,7 +150,6 @@ public class Exploration extends CommandOpMode {
         telemetry.update();
 
         if (Constants.DebugModes.ENABLE_PANELS_DASHBOARD) {
-//            telemetry.addData("Test Pose X ", robot.pedroFollower.getPose().getX());
             Drawing.drawVisionAndCurrentAndHistory(robot.vision, robot.pedroFollower);
             Drawing.sendPacket();
         }
@@ -203,5 +201,4 @@ public class Exploration extends CommandOpMode {
         }
         return Math.abs(robot.vision.angleToTarget()) <= VisionConstants.headingAngleThresholdDeg;
     }
-
 }
