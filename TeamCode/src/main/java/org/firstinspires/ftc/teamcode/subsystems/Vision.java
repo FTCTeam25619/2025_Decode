@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import com.pedropathing.ftc.InvertedFTCCoordinates;
 import com.pedropathing.ftc.PoseConverter;
 import com.pedropathing.geometry.CoordinateSystem;
 import com.pedropathing.geometry.PedroCoordinates;
@@ -117,9 +118,9 @@ public class Vision extends SubsystemBase {
     }
 
     public Pose getPedroPose() {
-        return PedroCoordinates.INSTANCE.convertToPedro(new Pose(latestPose.getPosition().toUnit(DistanceUnit.INCH).x,
+        return new Pose(latestPose.getPosition().toUnit(DistanceUnit.INCH).x,
                 latestPose.getPosition().toUnit(DistanceUnit.INCH).y,
-                latestPose.getOrientation().getYaw(AngleUnit.DEGREES))
-                );
+                latestPose.getOrientation().getYaw(AngleUnit.DEGREES),
+                InvertedFTCCoordinates.INSTANCE).getAsCoordinateSystem(PedroCoordinates.INSTANCE);
     }
 }
