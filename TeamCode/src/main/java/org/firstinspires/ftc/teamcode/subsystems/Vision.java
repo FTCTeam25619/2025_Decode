@@ -1,8 +1,6 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.pedropathing.ftc.InvertedFTCCoordinates;
-import com.pedropathing.ftc.PoseConverter;
-import com.pedropathing.geometry.CoordinateSystem;
 import com.pedropathing.geometry.PedroCoordinates;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResult;
@@ -10,8 +8,6 @@ import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
-import com.seattlesolvers.solverslib.geometry.Pose2d;
-import com.seattlesolvers.solverslib.geometry.Rotation2d;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -89,11 +85,6 @@ public class Vision extends SubsystemBase {
 
             // Pick latest vision pose from the best (first returned) tag result
             latestPose = latestResult.getBotpose_MT2();
-            telemetry.addData("Vision Pose X", latestPose.getPosition().x);
-            telemetry.addData("Vision Pose Y", latestPose.getPosition().y);
-            telemetry.addData("Vision Pose Heading", latestPose.getOrientation().getYaw());
-
-
             for (LLResultTypes.FiducialResult fr : latestResult.getFiducialResults()) {
                 if (fr.getFiducialId() == targetTagID) {
                     seeingTarget = true;

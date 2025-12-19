@@ -27,6 +27,10 @@ public class PanelsUtils {
                 "", "#4CAF50", 1.0
         );
 
+        public static final Style pathLook = new Style(
+                "", "#c700ff", 1.0
+        );
+
         /**
          * This prepares Panels Field for using Pedro Offsets
          */
@@ -109,6 +113,8 @@ public class PanelsUtils {
             panelsField.line(points[1][0], points[1][1]);
         }
 
+        public static void drawPath(Path path) { drawPath(path, pathLook);}
+
         /**
          * This draws all the Paths in a PathChain with a
          * specified look.
@@ -121,6 +127,8 @@ public class PanelsUtils {
                 drawPath(pathChain.getPath(i), style);
             }
         }
+
+        public static void drawPath(PathChain pathChain) { drawPath(pathChain, pathLook); }
 
         /**
          * This draws the pose history of the robot.
