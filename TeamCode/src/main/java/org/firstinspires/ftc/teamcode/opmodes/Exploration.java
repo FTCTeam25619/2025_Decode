@@ -44,6 +44,8 @@ public class Exploration extends CommandOpMode {
         // Setup Dashboard if setup for shop debugging
         if (Constants.DebugModes.ENABLE_PANELS_DASHBOARD) {
             telemetry = new JoinedTelemetry(PanelsTelemetry.INSTANCE.getFtcTelemetry(), telemetry);
+            Drawing.init();
+            Drawing.sendPacket();
         }
 
         robot = new NovaPyraRobot(hardwareMap, telemetry, alliance);
@@ -149,7 +151,9 @@ public class Exploration extends CommandOpMode {
         telemetry.update();
 
         if (Constants.DebugModes.ENABLE_PANELS_DASHBOARD) {
+//            telemetry.addData("Test Pose X ", robot.pedroFollower.getPose().getX());
             Drawing.drawVisionAndCurrentAndHistory(robot.vision, robot.pedroFollower);
+            Drawing.sendPacket();
         }
     }
 

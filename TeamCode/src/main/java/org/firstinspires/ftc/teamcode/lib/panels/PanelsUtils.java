@@ -18,13 +18,13 @@ public class PanelsUtils {
         private static final FieldManager panelsField = PanelsField.INSTANCE.getField();
 
         public static final Style robotLook = new Style(
-                "", "#3F51B5", 0.0
+                "", "#3F51B5", 3.0
         );
         public static final Style visionLook = new Style(
-                "", "#ff5050", 0.0
+                "", "#ff5050", 3.0
         );
         public static final Style historyLook = new Style(
-                "", "#4CAF50", 0.0
+                "", "#4CAF50", 1.0
         );
 
         /**
@@ -152,7 +152,7 @@ public class PanelsUtils {
 
         public static void drawVisionAndCurrent(Vision vision, Follower follower) {
             try {
-                Drawing.drawRobot(vision.getPedroPose(), Drawing.visionLook);
+                        Drawing.drawRobot(vision.getPedroPose(), Drawing.visionLook);
                 drawCurrent(follower);
             } catch (Exception e) {
                 throw new RuntimeException("Drawing Vision failed " + e);
