@@ -22,6 +22,7 @@ import org.firstinspires.ftc.teamcode.constants.Alliance;
 import org.firstinspires.ftc.teamcode.constants.Constants;
 import org.firstinspires.ftc.teamcode.lib.orchestration.PresetShot;
 import org.firstinspires.ftc.teamcode.lib.orchestration.ShotCycleState;
+import org.firstinspires.ftc.teamcode.lib.panels.PanelsUtils;
 import org.firstinspires.ftc.teamcode.lib.triggers.SupplierTrigger;
 import org.firstinspires.ftc.teamcode.lib.util.BlackboardHelpers;
 import org.firstinspires.ftc.teamcode.triggers.RobotTriggers;
@@ -84,6 +85,8 @@ public class BlueAuto9ScoreFar extends CommandOpMode {
         if (Constants.DebugModes.ENABLE_PANELS_DASHBOARD) {
             telemetry = new JoinedTelemetry(PanelsTelemetry.INSTANCE.getFtcTelemetry(), telemetry);
             this.telemetryData = new TelemetryData(telemetry);
+            PanelsUtils.Drawing.init();
+            PanelsUtils.Drawing.sendPacket();
         }
 
         this.robot = new NovaPyraRobot(hardwareMap, telemetry, alliance);
@@ -144,6 +147,16 @@ public class BlueAuto9ScoreFar extends CommandOpMode {
         telemetry.update();
     }
 
+    public void initialize_loop() {
+        super.initialize_loop();
+        // Things that need to run while disabled every cycle
+        if (Constants.DebugModes.ENABLE_PANELS_DASHBOARD) {
+            PanelsUtils.Drawing.drawVisionAndCurrent(robot.vision, robot.pedroFollower);
+            drawPaths();
+            PanelsUtils.Drawing.sendPacket();
+        }
+    }
+
     @Override
     public void run() {
         super.run();
@@ -156,6 +169,12 @@ public class BlueAuto9ScoreFar extends CommandOpMode {
             telemetry.addData("Follower heading error", follower.getHeadingError());
         }
 
+        if (Constants.DebugModes.ENABLE_PANELS_DASHBOARD) {
+            PanelsUtils.Drawing.drawVisionAndCurrentAndHistory(robot.vision, robot.pedroFollower);
+            drawPaths();
+            PanelsUtils.Drawing.sendPacket();
+        }
+
         telemetryData.addData("X", follower.getPose().getX());
         telemetryData.addData("Y", follower.getPose().getY());
         telemetryData.addData("Heading", follower.getPose().getHeading());
@@ -166,5 +185,14 @@ public class BlueAuto9ScoreFar extends CommandOpMode {
     public void end() {
         super.end();
         BlackboardHelpers.setAutoEndPose(blackboard, follower.getPose());
+    }
+
+    private void drawPaths() {
+        PanelsUtils.Drawing.drawPath(paths.blueWallToFarZonePrescore);
+        PanelsUtils.Drawing.drawPath(paths.blueFarZonePrescoreToFarIntake);
+        PanelsUtils.Drawing.drawPath(paths.blueFarWallIntakeToFarScore);
+        PanelsUtils.Drawing.drawPath(paths.blueFarZoneScoreToMidIntake);
+        PanelsUtils.Drawing.drawPath(paths.blueMidWallIntakeToFarScore);
+        PanelsUtils.Drawing.drawPath(paths.blueFarWallToPark);
     }
 }
