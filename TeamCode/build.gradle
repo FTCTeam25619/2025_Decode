@@ -63,10 +63,5 @@ dependencies {
     implementation 'com.pedropathing:telemetry:1.0.0'
 
     // Panels Dashboard
-    // Temporary fix for crashes due to limelightproxy plugin
-    // See: https://github.com/ftcontrol/ftcontrol-panels/issues/12
-    implementation "com.bylazar:fullpanels:1.0.11"
-//    implementation('com.bylazar:fullpanels:1.0.11') {
-//        exclude group: "com.bylazar", module: "limelightproxy"
-//    }
+    implementation "com.bylazar:fullpanels:1.0.12"
 }
