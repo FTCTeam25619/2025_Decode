@@ -108,7 +108,7 @@ public class PanelsUtils {
                 }
             }
 
-            panelsField.setStyle(style);
+//            panelsField.setStyle(style);
             panelsField.moveCursor(points[0][0], points[0][1]);
             panelsField.line(points[1][0], points[1][1]);
         }
