@@ -72,6 +72,10 @@ public class Odometry extends SubsystemBase {
         return this.odometry.getHeading(AngleUnit.DEGREES);
     }
 
+    public double getHeadingRadians() {
+        return this.odometry.getHeading(AngleUnit.RADIANS);
+    }
+
     public double getHeadingField() {
         return Math.toRadians(this.odometry.getHeading(AngleUnit.DEGREES));
     }
