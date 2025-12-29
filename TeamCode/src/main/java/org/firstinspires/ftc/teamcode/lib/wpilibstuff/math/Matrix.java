@@ -7,12 +7,9 @@ package org.firstinspires.ftc.teamcode.lib.wpilibstuff.math;
 //import edu.wpi.first.math.jni.EigenJNI;
 import java.util.Objects;
 import org.ejml.MatrixDimensionException;
-import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.dense.row.MatrixFeatures_DDRM;
 import org.ejml.dense.row.NormOps_DDRM;
-import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
-import org.ejml.interfaces.decomposition.CholeskyDecomposition_F64;
 import org.ejml.simple.SimpleMatrix;
 import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.numbers.N1;
 

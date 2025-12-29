@@ -10,7 +10,6 @@ package org.firstinspires.ftc.teamcode.pedroPathing;
 // import com.fasterxml.jackson.annotation.JsonCreator;
 // import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 // import com.fasterxml.jackson.annotation.JsonProperty;
-import com.qualcomm.hardware.bosch.BNO055IMU;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.MathUtil;

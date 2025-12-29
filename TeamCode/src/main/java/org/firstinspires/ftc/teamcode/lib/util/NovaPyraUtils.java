@@ -2,8 +2,6 @@ package org.firstinspires.ftc.teamcode.lib.util;
 
 import com.seattlesolvers.solverslib.util.MathUtils;
 
-import java.lang.Math;
-
 public class NovaPyraUtils {
     public static double[] deadbandAndSmooth(double forward, double strafe, double smoothFactor,
                                       double deadband, double inverseDeadband) {
