@@ -1,13 +1,17 @@
 package org.firstinspires.ftc.teamcode.triggers;
 
+import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.button.GamepadButton;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
 import org.firstinspires.ftc.teamcode.NovaPyraRobot;
+import org.firstinspires.ftc.teamcode.constants.LiftConstants;
 import org.firstinspires.ftc.teamcode.lib.triggers.ControllerTriggers;
 import org.firstinspires.ftc.teamcode.lib.triggers.LeftStickY;
 import org.firstinspires.ftc.teamcode.lib.triggers.RightStickY;
+
+import kotlin.time.Instant;
 
 public class TuningTriggers implements ControllerTriggers {
     private final NovaPyraRobot robot;
@@ -46,8 +50,17 @@ public class TuningTriggers implements ControllerTriggers {
         GamepadButton c2B = new GamepadButton(controller2, GamepadKeys.Button.B);
         GamepadButton c2X = new GamepadButton(controller2, GamepadKeys.Button.X);
         GamepadButton c2Y = new GamepadButton(controller2, GamepadKeys.Button.Y);
+        GamepadButton c2DPadUp = new GamepadButton(controller2, GamepadKeys.Button.DPAD_UP);
+        GamepadButton c2DPadDown = new GamepadButton(controller2, GamepadKeys.Button.DPAD_DOWN);
         GamepadButton c2LeftBumper = new GamepadButton(controller2, GamepadKeys.Button.LEFT_BUMPER);
         GamepadButton c2Back = new GamepadButton(controller2, GamepadKeys.Button.BACK);
         GamepadButton c2Start = new GamepadButton(controller2, GamepadKeys.Button.START);
+        // Tune lift servo
+        c2A.whenPressed(new InstantCommand(robot.lift::setTestPosition));
+        c2X.whenPressed(new InstantCommand(robot.lift::reset));
+        c2B.whenPressed(new InstantCommand(robot.lift::engage));
+        c2Y.whenPressed(new InstantCommand(robot.lift::disengage));
+        c2DPadUp.whenPressed(new InstantCommand(() -> robot.lift.moveBy(LiftConstants.Control.incrementSize)));
+        c2DPadDown.whenPressed(new InstantCommand(() -> robot.lift.moveBy(-LiftConstants.Control.incrementSize)));
     }
 }
