@@ -9,7 +9,7 @@ public class Devices {
     }
 
     public static final class Lift {
-        public static final String liftMotor = "lift_motor";
+        public static final String liftServo = "servo_lift";
     }
 
     public static final class Indicators {
