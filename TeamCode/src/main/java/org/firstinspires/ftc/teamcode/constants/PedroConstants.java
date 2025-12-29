@@ -14,6 +14,9 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.pedroPathing.PoseEstFollower;
+import org.firstinspires.ftc.teamcode.pedroPathing.PoseEstFollowerBuilder;
+import org.firstinspires.ftc.teamcode.subsystems.Vision;
 
 public class PedroConstants {
     public static MecanumConstants mecanumConstants = new MecanumConstants()
@@ -62,6 +65,15 @@ public class PedroConstants {
                 .pathConstraints(pathConstraints)
                 .setDrivetrain(createDrivetrain(hardwareMap))
                 .pinpointLocalizer(localizerConstants)
+                .build();
+    }
+
+    public static PoseEstFollower createPoseEstFollower(HardwareMap hardwareMap, Vision vision) {
+        return new PoseEstFollowerBuilder(followerConstants, hardwareMap)
+                .pathConstraints(pathConstraints)
+                .setDrivetrain(createDrivetrain(hardwareMap))
+                .pinpointLocalizer(localizerConstants)
+                .setVision(vision)
                 .build();
     }
 }
