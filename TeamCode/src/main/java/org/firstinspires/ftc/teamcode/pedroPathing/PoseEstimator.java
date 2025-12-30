@@ -6,14 +6,18 @@ import com.pedropathing.localization.PoseTracker;
 import com.pedropathing.math.MathFunctions;
 import com.pedropathing.math.Vector;
 
+import org.firstinspires.ftc.teamcode.constants.DriveConstants;
+import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.MathUtil;
 import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.Matrix;
 import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.Nat;
+import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.VecBuilder;
 import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.interpolation.TimeInterpolatableBuffer;
 import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.numbers.N1;
 import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.numbers.N3;
 import org.firstinspires.ftc.teamcode.subsystems.Vision;
 
 import java.util.NavigableMap;
+import java.util.Optional;
 import java.util.TreeMap;
 
 public class PoseEstimator extends PoseTracker {
@@ -59,8 +63,7 @@ public class PoseEstimator extends PoseTracker {
     // been no vision measurements after the last reset
     private final NavigableMap<Double, VisionUpdate> m_visionUpdates = new TreeMap<>();
 
-    private InterpPose m_poseEstimate;
-
+    private Pose m_poseEstimate;    // The vision updated pose -- with vision compensation applied to the raw pose + offsets
 
 
     /**
@@ -79,6 +82,9 @@ public class PoseEstimator extends PoseTracker {
 //        } catch (InterruptedException ignored) {
 //            System.out.println("PoseTracker: resetIMU() interrupted");
 //        }
+        setOdometryMeasurementStdDevs(DriveConstants.PoseEstimator.stateStdDevs);
+        setVisionMeasurementStdDevs(DriveConstants.PoseEstimator.visionStdDevs);
+        updatePoseEstimate();
     }
 
 
@@ -97,6 +103,116 @@ public class PoseEstimator extends PoseTracker {
         previousPoseTime = currentPoseTime;
         currentPoseTime = System.nanoTime();
         localizer.update();
+
+        m_odometryPoseBuffer.addSample(System.nanoTime(), new InterpPose(applyOffset(getRawPose())));
+        updatePoseEstimate();
+    }
+
+
+    /**
+     * Adds a vision measurement to the Kalman Filter. This will correct the odometry pose estimate
+     * while still accounting for measurement noise.
+     *
+     * <p>This method can be called as infrequently as you want, as long as you are calling {@link
+     * PoseEstimator#update} every loop.
+     *
+     * <p>To promote stability of the pose estimate and make it robust to bad vision data, we
+     * recommend only adding vision measurements that are already within one meter or so of the
+     * current pose estimate.
+     *
+     * @param visionRobotPoseMeters The pose of the robot as measured by the vision camera.
+     * @param timestampSeconds The timestamp of the vision measurement in seconds. Note that if you
+     *     don't use your own time source by calling {@link
+     *     PoseEstimator#updateWithTime(double,Rotation2d,Object)} then you must use a timestamp with
+     *     an epoch since FPGA startup (i.e., the epoch of this timestamp is the same epoch as {@link
+     *     edu.wpi.first.wpilibj.Timer#getFPGATimestamp()}.) This means that you should use {@link
+     *     edu.wpi.first.wpilibj.Timer#getFPGATimestamp()} as your time source or sync the epochs.
+     */
+    public void addVisionMeasurement(Pose visionRobotPoseMeters, long timestampNanoseconds) {
+        double timestampSeconds = timestampNanoseconds / 1.0E9;
+        InterpPose visionInterpPose = new InterpPose(visionRobotPoseMeters);
+        // Step 0: If this measurement is old enough to be outside the pose buffer's timespan, skip.
+        if (m_odometryPoseBuffer.getInternalBuffer().isEmpty()
+                || m_odometryPoseBuffer.getInternalBuffer().lastKey() - kBufferDuration
+                > timestampSeconds) {
+            return;
+        }
+
+        // Step 1: Clean up any old entries
+        cleanUpVisionUpdates();
+
+        // Step 2: Get the pose measured by odometry at the moment the vision measurement was made.
+        InterpPose odometrySample = m_odometryPoseBuffer.getSample(timestampSeconds).get();
+
+        if (odometrySample == null)//.isEmpty()) {
+        {
+            return;
+        }
+
+        // Step 3: Get the vision-compensated pose estimate at the moment the vision measurement was
+        // made.
+        InterpPose visionSample = sampleAt(timestampSeconds).get();
+
+        if (visionSample == null) //.isEmpty()) {
+        {
+            return;
+        }
+
+        // Step 4: Measure the twist between the old pose estimate and the vision pose.
+        Twist twist = visionSample.log(visionInterpPose);
+
+        // Step 5: We should not trust the twist entirely, so instead we scale this twist by a Kalman
+        // gain matrix representing how much we trust vision measurements compared to our current pose.
+        Matrix k_times_twist = m_visionK.times(VecBuilder.fill(twist.dx, twist.dy, twist.dtheta));
+
+        // Step 6: Convert back to Twist2d.
+        Twist scaledTwist =
+                new Twist(k_times_twist.get(0, 0), k_times_twist.get(1, 0), k_times_twist.get(2, 0));
+
+        // Step 7: Calculate and record the vision update.
+        VisionUpdate visionUpdate = new VisionUpdate(visionSample.exp(scaledTwist), odometrySample);
+        m_visionUpdates.put(timestampSeconds, visionUpdate);
+
+        // Step 8: Remove later vision measurements. (Matches previous behavior)
+        m_visionUpdates.tailMap(timestampSeconds, false).entrySet().clear();
+
+        // Step 9: Update latest pose estimate. Since we cleared all updates after this vision update,
+        // it's guaranteed to be the latest vision update.
+        m_poseEstimate = visionUpdate.compensate(getPose());
+    }
+
+    /**
+     * Adds a vision measurement to the Kalman Filter. This will correct the odometry pose estimate
+     * while still accounting for measurement noise.
+     *
+     * <p>This method can be called as infrequently as you want, as long as you are calling {@link
+     * PoseEstimator#update} every loop.
+     *
+     * <p>To promote stability of the pose estimate and make it robust to bad vision data, we
+     * recommend only adding vision measurements that are already within one meter or so of the
+     * current pose estimate.
+     *
+     * <p>Note that the vision measurement standard deviations passed into this method will continue
+     * to apply to future measurements until a subsequent call to {@link
+     * PoseEstimator#setVisionMeasurementStdDevs(Matrix)} or this method.
+     *
+     * @param visionRobotPoseMeters The pose of the robot as measured by the vision camera.
+     * @param timestampSeconds The timestamp of the vision measurement in seconds. Note that if you
+     *     don't use your own time source by calling {@link #updateWithTime}, then you must use a
+     *     timestamp with an epoch since FPGA startup (i.e., the epoch of this timestamp is the same
+     *     epoch as {@link edu.wpi.first.wpilibj.Timer#getFPGATimestamp()}). This means that you
+     *     should use {@link edu.wpi.first.wpilibj.Timer#getFPGATimestamp()} as your time source in
+     *     this case.
+     * @param visionMeasurementStdDevs Standard deviations of the vision pose measurement (x position
+     *     in meters, y position in meters, and heading in radians). Increase these numbers to trust
+     *     the vision pose measurement less.
+     */
+    public void addVisionMeasurement(
+            Pose visionRobotPoseMeters,
+            long timestampNanoseconds,
+            Matrix<N3, N1> visionMeasurementStdDevs) {
+        setVisionMeasurementStdDevs(visionMeasurementStdDevs);
+        addVisionMeasurement(visionRobotPoseMeters, timestampNanoseconds);
     }
 
     /**
@@ -115,6 +231,9 @@ public class PoseEstimator extends PoseTracker {
         previousPoseTime = System.nanoTime();
         currentPoseTime = System.nanoTime();
         localizer.setStartPose(set);
+        m_odometryPoseBuffer.clear();
+        m_visionUpdates.clear();
+        updatePoseEstimate();
     }
 
     /**
@@ -130,6 +249,9 @@ public class PoseEstimator extends PoseTracker {
         setXOffset(set.getX() - currentPose.getX());
         setYOffset(set.getY() - currentPose.getY());
         setHeadingOffset(MathFunctions.getTurnDirection(currentPose.getHeading(), set.getHeading()) * MathFunctions.getSmallestAngleDifference(currentPose.getHeading(), set.getHeading()));
+        m_odometryPoseBuffer.clear();
+        m_visionUpdates.clear();
+        updatePoseEstimate();
     }
 
     /**
@@ -140,6 +262,9 @@ public class PoseEstimator extends PoseTracker {
     @Override
     public void setXOffset(double offset) {
         xOffset = offset;
+        m_odometryPoseBuffer.clear();
+        m_visionUpdates.clear();
+        updatePoseEstimate();
     }
 
     /**
@@ -150,6 +275,9 @@ public class PoseEstimator extends PoseTracker {
     @Override
     public void setYOffset(double offset) {
         yOffset = offset;
+        m_odometryPoseBuffer.clear();
+        m_visionUpdates.clear();
+        updatePoseEstimate();
     }
 
     /**
@@ -160,6 +288,9 @@ public class PoseEstimator extends PoseTracker {
     @Override
     public void setHeadingOffset(double offset) {
         headingOffset = offset;
+        m_odometryPoseBuffer.clear();
+        m_visionUpdates.clear();
+        updatePoseEstimate();
     }
 
     /**
@@ -212,6 +343,9 @@ public class PoseEstimator extends PoseTracker {
         setXOffset(0);
         setYOffset(0);
         setHeadingOffset(0);
+        m_odometryPoseBuffer.clear();
+        m_visionUpdates.clear();
+        updatePoseEstimate();
     }
 
     /**
@@ -231,6 +365,16 @@ public class PoseEstimator extends PoseTracker {
                     localizer.getPose().getCoordinateSystem());
         }
         return applyOffset(currentPose).getPose();
+    }
+
+    /**
+     * Return the Estimated Pose including vision compensation
+     *
+     */
+
+    public Pose getVisionUpdatedPose() {
+        updatePoseEstimate();
+        return m_poseEstimate;
     }
 
     /**
@@ -261,6 +405,9 @@ public class PoseEstimator extends PoseTracker {
     public void setPose(Pose set) {
         resetOffset();
         localizer.setPose(set);
+        m_odometryPoseBuffer.clear();
+        m_visionUpdates.clear();
+        updatePoseEstimate();
     }
 
     /**
@@ -332,6 +479,9 @@ public class PoseEstimator extends PoseTracker {
         if (Double.isNaN(getIMUHeadingEstimate()) || Double.isInfinite(getIMUHeadingEstimate())) {
             localizer.setPose(new Pose(getPose().getX(), getPose().getY(), getNormalizedIMUHeading() + startingPose.getHeading()));
         }
+        m_odometryPoseBuffer.clear();
+        m_visionUpdates.clear();
+        updatePoseEstimate();
     }
 
     /**
@@ -344,6 +494,9 @@ public class PoseEstimator extends PoseTracker {
         if (Double.isNaN(getIMUHeadingEstimate()) || Double.isInfinite(getIMUHeadingEstimate())) {
             setCurrentPoseWithOffset(new Pose(getPose().getX(), getPose().getY(), getNormalizedIMUHeading() + startingPose.getHeading()));
         }
+        m_odometryPoseBuffer.clear();
+        m_visionUpdates.clear();
+        updatePoseEstimate();
     }
 
     /**
@@ -395,6 +548,8 @@ public class PoseEstimator extends PoseTracker {
     @Override
     public void resetIMU() throws InterruptedException {
         localizer.resetIMU();
+        m_odometryPoseBuffer.clear();
+        m_visionUpdates.clear();
     }
 
     @Override
@@ -409,6 +564,115 @@ public class PoseEstimator extends PoseTracker {
                 ", yOffset=" + getYOffset() +
                 ", headingOffset=" + getHeadingOffset() +
                 '}';
+    }
+
+
+    /**
+     * Sets the pose estimator's trust of odometry measurements.
+     *
+     * @param odometryMeasurementStdDevs Standard deviations of the odometry measurements. Increase these
+     *     numbers to trust global measurements from odometry less. This matrix is in the form [x, y,
+     *     theta]ᵀ, with units in meters and radians.
+     */
+    public final void setOdometryMeasurementStdDevs(Matrix<N3, N1> odometryMeasurementStdDevs) {
+        for (int i = 0; i < 3; ++i) {
+            m_q.set(i, 0, odometryMeasurementStdDevs.get(i, 0) * odometryMeasurementStdDevs.get(i, 0));
+        }
+
+    }
+
+    /**
+     * Sets the pose estimator's trust of global measurements. This might be used to change trust in
+     * vision measurements after the autonomous period, or to change trust as distance to a vision
+     * target increases.
+     *
+     * @param visionMeasurementStdDevs Standard deviations of the vision measurements. Increase these
+     *     numbers to trust global measurements from vision less. This matrix is in the form [x, y,
+     *     theta]ᵀ, with units in meters and radians.
+     */
+    public final void setVisionMeasurementStdDevs(Matrix<N3, N1> visionMeasurementStdDevs) {
+        double[] r = new double[3];
+        for (int i = 0; i < 3; ++i) {
+            r[i] = visionMeasurementStdDevs.get(i, 0) * visionMeasurementStdDevs.get(i, 0);
+        }
+
+        // Solve for closed form Kalman gain for continuous Kalman filter with A = 0
+        // and C = I. See wpimath/algorithms.md.
+        for (int row = 0; row < 3; ++row) {
+            if (m_q.get(row, 0) == 0.0) {
+                m_visionK.set(row, row, 0.0);
+            } else {
+                m_visionK.set(
+                        row, row, m_q.get(row, 0) / (m_q.get(row, 0) + Math.sqrt(m_q.get(row, 0) * r[row])));
+            }
+        }
+    }
+
+    /**
+     * Return the pose at a given timestamp, if the buffer is not empty.
+     *
+     * @param timestampSeconds The pose's timestamp in seconds.
+     * @return The pose at the given timestamp (or Optional.empty() if the buffer is empty).
+     */
+    public Optional<InterpPose> sampleAt(double timestampSeconds) {
+        // Step 0: If there are no odometry updates to sample, skip.
+        if (m_odometryPoseBuffer.getInternalBuffer().isEmpty()) {
+            return Optional.empty();
+        }
+
+        // Step 1: Make sure timestamp matches the sample from the odometry pose buffer. (When sampling,
+        // the buffer will always use a timestamp between the first and last timestamps)
+        double oldestOdometryTimestamp = m_odometryPoseBuffer.getInternalBuffer().firstKey();
+        double newestOdometryTimestamp = m_odometryPoseBuffer.getInternalBuffer().lastKey();
+        timestampSeconds =
+                MathUtil.clamp(timestampSeconds, oldestOdometryTimestamp, newestOdometryTimestamp);
+
+        // Step 2: If there are no applicable vision updates, use the odometry-only information.
+        if (m_visionUpdates.isEmpty() || timestampSeconds < m_visionUpdates.firstKey()) {
+            return m_odometryPoseBuffer.getSample(timestampSeconds);
+        }
+
+        // Step 3: Get the latest vision update from before or at the timestamp to sample at.
+        double floorTimestamp = m_visionUpdates.floorKey(timestampSeconds);
+        VisionUpdate visionUpdate = m_visionUpdates.get(floorTimestamp);
+
+        // Step 4: Get the pose measured by odometry at the time of the sample.
+        Optional<InterpPose> odometryEstimate = m_odometryPoseBuffer.getSample(timestampSeconds);
+
+        // Step 5: Apply the vision compensation to the odometry pose.
+        return odometryEstimate.map(odometryPose -> visionUpdate.compensate(odometryPose));
+    }
+
+
+    /** Removes stale vision updates that won't affect sampling. */
+    private void cleanUpVisionUpdates() {
+        // Step 0: If there are no odometry samples, skip.
+        if (m_odometryPoseBuffer.getInternalBuffer().isEmpty()) {
+            return;
+        }
+
+        // Step 1: Find the oldest timestamp that needs a vision update.
+        double oldestOdometryTimestamp = m_odometryPoseBuffer.getInternalBuffer().firstKey();
+
+        // Step 2: If there are no vision updates before that timestamp, skip.
+        if (m_visionUpdates.isEmpty() || oldestOdometryTimestamp < m_visionUpdates.firstKey()) {
+            return;
+        }
+
+        // Step 3: Find the newest vision update timestamp before or at the oldest timestamp.
+        double newestNeededVisionUpdateTimestamp = m_visionUpdates.floorKey(oldestOdometryTimestamp);
+
+        // Step 4: Remove all entries strictly before the newest timestamp we need.
+        m_visionUpdates.headMap(newestNeededVisionUpdateTimestamp, false).clear();
+    }
+
+    private void updatePoseEstimate() {
+        if (!DriveConstants.PoseEstimator.useVisionPoseEstimate || m_visionUpdates.isEmpty()) {
+            m_poseEstimate = getPose();
+        } else {
+            VisionUpdate visionUpdate = m_visionUpdates.get(m_visionUpdates.lastKey());
+            m_poseEstimate = visionUpdate.compensate(getPose());
+        }
     }
 
     private static final class VisionUpdate {
@@ -440,9 +704,13 @@ public class PoseEstimator extends PoseTracker {
             InterpPose delta = pose.minus(this.odometryPose);
             return this.visionPose.plus(delta);
         }
+
+        public Pose compensate(Pose pose) {
+            Pose delta = pose.minus(this.odometryPose.getPose());
+            return this.visionPose.getPose().plus(delta);
+        }
     }
 
 
 
 }
-
