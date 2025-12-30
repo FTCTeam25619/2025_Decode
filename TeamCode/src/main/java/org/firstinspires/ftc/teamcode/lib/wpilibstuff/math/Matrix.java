@@ -4,7 +4,6 @@
 
 package org.firstinspires.ftc.teamcode.lib.wpilibstuff.math;
 
-//import edu.wpi.first.math.jni.EigenJNI;
 import java.util.Objects;
 import org.ejml.MatrixDimensionException;
 import org.ejml.dense.row.CommonOps_DDRM;
@@ -349,77 +348,6 @@ public class Matrix<R extends Num, C extends Num>
   }
 
   /**
-   * Solves the least-squares problem Ax=B using a QR decomposition with full pivoting, where this
-   * matrix is A.
-   *
-   * @param <R2> Number of rows in B.
-   * @param <C2> Number of columns in B.
-   * @param other The B matrix.
-   * @return The solution matrix.
-   */
-//  public final <R2 extends Num, C2 extends Num> Matrix<C, C2> solveFullPivHouseholderQr(
-//      Matrix<R2, C2> other) {
-//    Matrix<C, C2> solution = new Matrix<>(new SimpleMatrix(this.getNumCols(), other.getNumCols()));
-//    EigenJNI.solveFullPivHouseholderQr(
-//        this.getData(),
-//        this.getNumRows(),
-//        this.getNumCols(),
-//        other.getData(),
-//        other.getNumRows(),
-//        other.getNumCols(),
-//        solution.getData());
-//    return solution;
-//  }
-
-  /**
-   * Computes the matrix exponential using Eigen's solver. This method only works for square
-   * matrices, and will otherwise throw an {@link MatrixDimensionException}.
-   *
-   * @return The exponential of A.
-   */
-//  public final Matrix<R, C> exp() {
-//    if (this.getNumRows() != this.getNumCols()) {
-//      throw new MatrixDimensionException(
-//          "Non-square matrices cannot be exponentiated! "
-//              + "This matrix is "
-//              + this.getNumRows()
-//              + " x "
-//              + this.getNumCols());
-//    }
-//    Matrix<R, C> toReturn = new Matrix<>(new SimpleMatrix(this.getNumRows(), this.getNumCols()));
-//    EigenJNI.exp(
-//        this.m_storage.getDDRM().getData(),
-//        this.getNumRows(),
-//        toReturn.m_storage.getDDRM().getData());
-//    return toReturn;
-//  }
-
-  /**
-   * Computes the matrix power using Eigen's solver. This method only works for square matrices, and
-   * will otherwise throw an {@link MatrixDimensionException}.
-   *
-   * @param exponent The exponent.
-   * @return The exponential of A.
-   */
-//  public final Matrix<R, C> pow(double exponent) {
-//    if (this.getNumRows() != this.getNumCols()) {
-//      throw new MatrixDimensionException(
-//          "Non-square matrices cannot be raised to a power! "
-//              + "This matrix is "
-//              + this.getNumRows()
-//              + " x "
-//              + this.getNumCols());
-//    }
-//    Matrix<R, C> toReturn = new Matrix<>(new SimpleMatrix(this.getNumRows(), this.getNumCols()));
-//    EigenJNI.pow(
-//        this.m_storage.getDDRM().getData(),
-//        this.getNumRows(),
-//        exponent,
-//        toReturn.m_storage.getDDRM().getData());
-//    return toReturn;
-//  }
-
-  /**
    * Returns the determinant of this matrix.
    *
    * @return The determinant of this matrix.
@@ -583,38 +511,6 @@ public class Matrix<R extends Num, C extends Num>
   }
 
   /**
-   * Decompose "this" matrix using Cholesky Decomposition. If the "this" matrix is zeros, it will
-   * return the zero matrix.
-   *
-   * @param lowerTriangular Whether we want to decompose to the lower triangular Cholesky matrix.
-   * @return The decomposed matrix.
-   * @throws RuntimeException if the matrix could not be decomposed(i.e. is not positive
-   *     semidefinite).
-   */
-//  public Matrix<R, C> lltDecompose(boolean lowerTriangular) {
-//    SimpleMatrix temp = m_storage.copy();
-//
-//    CholeskyDecomposition_F64<DMatrixRMaj> chol =
-//        DecompositionFactory_DDRM.chol(temp.getNumRows(), lowerTriangular);
-//    if (!chol.decompose(temp.getMatrix())) {
-//      // check that the input is not all zeros -- if they are, we special case and return all
-//      // zeros.
-//      var matData = temp.getDDRM().data;
-//      var isZeros = true;
-//      for (double matDatum : matData) {
-//        isZeros &= Math.abs(matDatum) < 1e-6;
-//      }
-//      if (isZeros) {
-//        return new Matrix<>(new SimpleMatrix(temp.getNumRows(), temp.getNumCols()));
-//      }
-//
-//      throw new RuntimeException("Cholesky decomposition failed! Input matrix:\n" + m_storage);
-//    }
-//
-//    return new Matrix<>(SimpleMatrix.wrap(chol.getT(null)));
-//  }
-
-  /**
    * Returns the row major data of this matrix as a double array.
    *
    * @return The row major data of this matrix as a double array.
@@ -698,71 +594,14 @@ public class Matrix<R extends Num, C extends Num>
         this.m_storage.getDDRM(), other.m_storage.getDDRM(), tolerance);
   }
 
-  /**
-   * Performs an inplace Cholesky rank update (or downdate).
-   *
-   * <p>If this matrix contains L where A = LLᵀ before the update, it will contain L where LLᵀ = A +
-   * σvvᵀ after the update.
-   *
-   * @param v Vector to use for the update.
-   * @param sigma Sigma to use for the update.
-   * @param lowerTriangular Whether this matrix is lower triangular.
-   */
-//  public void rankUpdate(Matrix<R, N1> v, double sigma, boolean lowerTriangular) {
-//    EigenJNI.rankUpdate(this.getData(), this.getNumRows(), v.getData(), sigma, lowerTriangular);
-//  }
-
   @Override
   public String toString() {
     return m_storage.toString();
   }
-
-  /**
-   * Checks if an object is equal to this {@link Matrix}.
-   *
-   * <p>a<sub>ij</sub> == b<sub>ij</sub>
-   *
-   * @param other The Object to check against this {@link Matrix}.
-   * @return true if the object supplied is a {@link Matrix} and is equal to this matrix.
-   */
-//  @Override
-//  public boolean equals(Object other) {
-//    return this == other
-//        || other instanceof Matrix<?, ?> matrix
-//            && !MatrixFeatures_DDRM.hasUncountable(matrix.m_storage.getDDRM())
-//            && MatrixFeatures_DDRM.isEquals(this.m_storage.getDDRM(), matrix.m_storage.getDDRM());
-//  }
 
   @Override
   public int hashCode() {
     return Objects.hash(m_storage);
   }
 
-  /**
-   * Creates an implementation of the {@link Protobuf} interface for matrices.
-   *
-   * @param <R> The number of rows of the matrices this serializer processes.
-   * @param <C> The number of cols of the matrices this serializer processes.
-   * @param rows The number of rows of the matrices this serializer processes.
-   * @param cols The number of cols of the matrices this serializer processes.
-   * @return The protobuf implementation.
-   */
-  //public static <R extends Num, C extends Num> MatrixProto<R, C> getProto(
-  //    Nat<R> rows, Nat<C> cols) {
-  //  return new MatrixProto<>(rows, cols);
-  //}
-
-  /**
-   * Creates an implementation of the {@link Struct} interfaces for matrices.
-   *
-   * @param <R> The number of rows of the matrices this serializer processes.
-   * @param <C> The number of cols of the matrices this serializer processes.
-   * @param rows The number of rows of the matrices this serializer processes.
-   * @param cols The number of cols of the matrices this serializer processes.
-   * @return The struct implementation.
-   */
-  //public static <R extends Num, C extends Num> MatrixStruct<R, C> getStruct(
-  //    Nat<R> rows, Nat<C> cols) {
-  //  return new MatrixStruct<>(rows, cols);
-  //}
 }

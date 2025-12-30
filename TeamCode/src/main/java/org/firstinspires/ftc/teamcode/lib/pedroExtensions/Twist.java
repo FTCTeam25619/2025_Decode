@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package org.firstinspires.ftc.teamcode.pedroPathing;
+package org.firstinspires.ftc.teamcode.lib.pedroExtensions;
 
 // import edu.wpi.first.math.geometry.proto.Twist2dProto;
 // import edu.wpi.first.math.geometry.struct.Twist2dStruct;
@@ -17,7 +17,6 @@ import java.util.Objects;
  * <p>A Twist can be used to represent a difference between two poses.
  */
 public class Twist
-// implements ProtobufSerializable, StructSerializable 
 {
   /** Linear "dx" component. */
   public double dx;
@@ -67,10 +66,4 @@ public class Twist
   public int hashCode() {
     return Objects.hash(dx, dy, dtheta);
   }
-
-  /** Twist2d protobuf for serialization. */
-  // public static final Twist2dProto proto = new Twist2dProto();
-
-  /** Twist2d struct for serialization. */
-  // public static final Twist2dStruct struct = new Twist2dStruct();
 }

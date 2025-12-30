@@ -8,7 +8,7 @@
  * declared class Pose as final.  Arrrgh!
  */
 
-package org.firstinspires.ftc.teamcode.pedroPathing;
+package org.firstinspires.ftc.teamcode.lib.pedroExtensions;
 
 import com.pedropathing.geometry.CoordinateSystem;
 import com.pedropathing.geometry.FuturePose;

@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package org.firstinspires.ftc.teamcode.pedroPathing;
+package org.firstinspires.ftc.teamcode.lib.pedroExtensions;
 
 //import static edu.wpi.first.units.Units.Radians;
 
@@ -11,7 +11,8 @@ package org.firstinspires.ftc.teamcode.pedroPathing;
 // import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 // import com.fasterxml.jackson.annotation.JsonProperty;
 // import edu.wpi.first.math.MathSharedStore;
-import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.MathUtil;
+import com.seattlesolvers.solverslib.util.MathUtils;
+
 import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.interpolation.Interpolatable;
 
 // import edu.wpi.first.math.geometry.proto.Rotation2dProto;
@@ -130,15 +131,6 @@ public class Rotation
   }
 
   /**
-   * Constructs a Rotation2d with the given angle.
-   *
-   * @param angle The angle of the rotation.
-   */
-//  public Rotation2d(Measure<Angle> angle) {
-//    this(angle.in(Radians));
-//  }
-
-  /**
    * Constructs and returns a Rotation2d with the given radian value.
    *
    * @param radians The value of the angle in radians.
@@ -157,16 +149,6 @@ public class Rotation
   public static Rotation fromDegrees(double degrees) {
     return new Rotation(Math.toRadians(degrees));
   }
-
-  /**
-   * Constructs and returns a Rotation2d with the given number of rotations.
-   *
-   * @param rotations The value of the angle in rotations.
-   * @return The rotation object with the desired angle value.
-   */
-//  public static Rotation2d fromRotations(double rotations) {
-//    return new Rotation2d(Units.rotationsToRadians(rotations));
-//  }
 
   /**
    * Adds two rotations together, with the result being bounded between -pi and pi.
@@ -243,14 +225,6 @@ public class Rotation
         m_cos * other.m_cos - m_sin * other.m_sin, m_cos * other.m_sin + m_sin * other.m_cos);
   }
 
-  /**
-   * Returns the measure of the Rotation2d.
-   *
-   * @return The measure of the Rotation2d.
-   */
-//  public Measure<Angle> getMeasure() {
-//    return Radians.of(getRadians());
-//  }
 
   /**
    * Returns the radian value of the Rotation2d.
@@ -324,12 +298,6 @@ public class Rotation
 
   @Override
   public Rotation interpolate(Rotation endValue, double t) {
-    return plus(endValue.minus(this).times(MathUtil.clamp(t, 0, 1)));
+    return plus(endValue.minus(this).times(MathUtils.clamp(t, 0, 1)));
   }
-
-  /** Rotation2d protobuf for serialization. */
-  // public static final Rotation2dProto proto = new Rotation2dProto();
-
-  /** Rotation2d struct for serialization. */
-  // public static final Rotation2dStruct struct = new Rotation2dStruct();
 }

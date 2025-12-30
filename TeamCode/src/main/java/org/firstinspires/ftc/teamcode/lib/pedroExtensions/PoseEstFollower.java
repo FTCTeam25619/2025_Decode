@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.pedroPathing;
+package org.firstinspires.ftc.teamcode.lib.pedroExtensions;
 
 import com.pedropathing.Drivetrain;
 import com.pedropathing.follower.Follower;
@@ -7,14 +7,15 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.localization.Localizer;
 import com.pedropathing.paths.PathConstraints;
 
+import org.firstinspires.ftc.teamcode.constants.DriveConstants;
 import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.Matrix;
 import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.numbers.N1;
 import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.numbers.N3;
-import org.firstinspires.ftc.teamcode.subsystems.Vision;
 
 public class PoseEstFollower extends Follower {
 
-    private Vision vision;
+    // This gives us an enhanced PoseEstimator reference to use in addition to the standard PoseTracker
+    // reference in the base class to maintain backward compatibility.
     private final PoseEstimator poseEstimator;
 
 
@@ -25,12 +26,11 @@ public class PoseEstFollower extends Follower {
      * @param drivetrain Drivetrain to use
      * @param pathConstraints PathConstraints to use
      */
-    public PoseEstFollower(FollowerConstants constants, Localizer localizer, Drivetrain drivetrain, PathConstraints pathConstraints, Vision vision) {
+    public PoseEstFollower(FollowerConstants constants, Localizer localizer, Drivetrain drivetrain, PathConstraints pathConstraints) {
         super(constants, localizer, drivetrain, pathConstraints);
-        this.vision = vision;
 
         // Replace the standard PoseTracker object w/ enhanced PoseTracker that implements vision updates
-        poseTracker = poseEstimator = new PoseEstimator(localizer, vision);
+        poseTracker = poseEstimator = new PoseEstimator(localizer);
     }
 
     /**
@@ -39,8 +39,8 @@ public class PoseEstFollower extends Follower {
      * @param localizer Localizer to use
      * @param drivetrain Drivetrain to use
      */
-    public PoseEstFollower(FollowerConstants constants, Localizer localizer, Drivetrain drivetrain, Vision vision) {
-        this(constants, localizer, drivetrain, PathConstraints.defaultConstraints, vision);
+    public PoseEstFollower(FollowerConstants constants, Localizer localizer, Drivetrain drivetrain) {
+        this(constants, localizer, drivetrain, PathConstraints.defaultConstraints);
     }
 
     public void addVisionUpdate(Pose visionPose, long visionTimestampNanoseconds) {
@@ -53,12 +53,14 @@ public class PoseEstFollower extends Follower {
         poseEstimator.addVisionMeasurement(visonPose, visionTimeStampNanoseconds, visionStdDevs);
     }
 
-    public PoseEstimator getPoseEstimator() {
-        return poseEstimator;
+    @Override
+    public Pose getPose() {
+        if (DriveConstants.PoseEstimator.useVisionPoseEstimate) {
+            return poseEstimator.getVisionUpdatedPose();
+        }
+        return super.getPose();
     }
 
-    public Pose getVisionUpdatedPose() {
-        return poseEstimator.getVisionUpdatedPose();
-    }
+    public Pose getUncorrectedPose() { return super.getPose(); }
 
 }

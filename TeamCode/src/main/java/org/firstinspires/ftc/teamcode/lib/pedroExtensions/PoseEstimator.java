@@ -1,13 +1,13 @@
-package org.firstinspires.ftc.teamcode.pedroPathing;
+package org.firstinspires.ftc.teamcode.lib.pedroExtensions;
 
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.localization.Localizer;
 import com.pedropathing.localization.PoseTracker;
 import com.pedropathing.math.MathFunctions;
 import com.pedropathing.math.Vector;
+import com.seattlesolvers.solverslib.util.MathUtils;
 
 import org.firstinspires.ftc.teamcode.constants.DriveConstants;
-import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.MathUtil;
 import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.Matrix;
 import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.Nat;
 import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.VecBuilder;
@@ -21,7 +21,6 @@ import java.util.Optional;
 import java.util.TreeMap;
 
 public class PoseEstimator extends PoseTracker {
-    private Vision vision;
 
     /**
      * Have to shadow all the instance variables since they are private and we can't access
@@ -71,10 +70,9 @@ public class PoseEstimator extends PoseTracker {
      *
      * @param localizer the Localizer
      */
-    public PoseEstimator(Localizer localizer, Vision vision) {
+    public PoseEstimator(Localizer localizer) {
         super(localizer);
         this.localizer = localizer;
-        this.vision = vision;
 
 //        This is commented out as its function is performed by the superclass constructor
 //        try {
@@ -329,7 +327,7 @@ public class PoseEstimator extends PoseTracker {
      * @param pose The pose to be offset.
      * @return This returns a new Pose with the offset applied.
      */
-    public InterpPose applyOffset(InterpPose pose) {
+    private InterpPose applyOffset(InterpPose pose) {
         return new InterpPose(pose.getX()+xOffset, pose.getY()+yOffset, pose.getHeading()+headingOffset);
     }
 
@@ -614,7 +612,7 @@ public class PoseEstimator extends PoseTracker {
      * @param timestampSeconds The pose's timestamp in seconds.
      * @return The pose at the given timestamp (or Optional.empty() if the buffer is empty).
      */
-    public Optional<InterpPose> sampleAt(double timestampSeconds) {
+    private Optional<InterpPose> sampleAt(double timestampSeconds) {
         // Step 0: If there are no odometry updates to sample, skip.
         if (m_odometryPoseBuffer.getInternalBuffer().isEmpty()) {
             return Optional.empty();
@@ -625,7 +623,7 @@ public class PoseEstimator extends PoseTracker {
         double oldestOdometryTimestamp = m_odometryPoseBuffer.getInternalBuffer().firstKey();
         double newestOdometryTimestamp = m_odometryPoseBuffer.getInternalBuffer().lastKey();
         timestampSeconds =
-                MathUtil.clamp(timestampSeconds, oldestOdometryTimestamp, newestOdometryTimestamp);
+                MathUtils.clamp(timestampSeconds, oldestOdometryTimestamp, newestOdometryTimestamp);
 
         // Step 2: If there are no applicable vision updates, use the odometry-only information.
         if (m_visionUpdates.isEmpty() || timestampSeconds < m_visionUpdates.firstKey()) {

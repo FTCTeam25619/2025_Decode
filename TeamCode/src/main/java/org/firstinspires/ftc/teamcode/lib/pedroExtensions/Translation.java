@@ -2,28 +2,15 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package org.firstinspires.ftc.teamcode.pedroPathing;
-
-//import static edu.wpi.first.units.Units.Meters;
-
-// import com.fasterxml.jackson.annotation.JsonAutoDetect;
-// import com.fasterxml.jackson.annotation.JsonCreator;
-// import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-// import com.fasterxml.jackson.annotation.JsonProperty;
+package org.firstinspires.ftc.teamcode.lib.pedroExtensions;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.MathUtil;
+import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.WPILibMathUtil;
 import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.VecBuilder;
 import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.Vector;
 import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.interpolation.Interpolatable;
 import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.numbers.N2;
 
-// import edu.wpi.first.math.geometry.proto.Translation2dProto;
-// import edu.wpi.first.math.geometry.struct.Translation2dStruct;
-//import edu.wpi.first.units.Distance;
-//import edu.wpi.first.units.Measure;
-// import edu.wpi.first.util.protobuf.ProtobufSerializable;
-// import edu.wpi.first.util.struct.StructSerializable;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -62,11 +49,8 @@ public class Translation
    * @param x The x component of the translation.
    * @param y The y component of the translation.
    */
-  // @JsonCreator
   public Translation(
-      // @JsonProperty(required = true, value = "x") 
       double x,
-      // @JsonProperty(required = true, value = "y") 
       double y) {
     m_x = x;
     m_y = y;
@@ -85,16 +69,6 @@ public class Translation
     m_y = distance * Math.sin(angle);
   }
 
-  /**
-   * Constructs a Translation2d with the X and Y components equal to the provided values. The X and
-   * Y components will be converted to and tracked as meters.
-   *
-   * @param x The x component of the translation.
-   * @param y The y component of the translation.
-   */
-//  public Translation2d(Measure<Distance> x, Measure<Distance> y) {
-//    this(x.in(Meters), y.in(Meters));
-//  }
 
   /**
    * Constructs a Translation2d from the provided translation vector's X and Y components. The
@@ -299,13 +273,7 @@ public class Translation
   @Override
   public Translation interpolate(Translation endValue, double t) {
     return new Translation(
-        MathUtil.interpolate(this.getX(), endValue.getX(), t),
-        MathUtil.interpolate(this.getY(), endValue.getY(), t));
+        WPILibMathUtil.interpolate(this.getX(), endValue.getX(), t),
+        WPILibMathUtil.interpolate(this.getY(), endValue.getY(), t));
   }
-
-  /** Translation2d protobuf for serialization. */
-  // public static final Translation2dProto proto = new Translation2dProto();
-
-  /** Translation2d struct for serialization. */
-  // public static final Translation2dStruct struct = new Translation2dStruct();
 }

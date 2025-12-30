@@ -7,7 +7,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.constants.PedroConstants;
 import org.firstinspires.ftc.teamcode.lib.orchestration.ShotController;
 import org.firstinspires.ftc.teamcode.constants.Alliance;
-import org.firstinspires.ftc.teamcode.pedroPathing.PoseEstFollower;
+import org.firstinspires.ftc.teamcode.lib.pedroExtensions.PoseEstFollower;
 import org.firstinspires.ftc.teamcode.subsystems.FeedStop;
 import org.firstinspires.ftc.teamcode.subsystems.Hood;
 import org.firstinspires.ftc.teamcode.subsystems.IndicatorLights;
@@ -57,7 +57,7 @@ public class NovaPyraRobot extends Robot {
         sensors = new Sensors(hardwareMap, NovaPyraRobot.telemetry);
         odometry = new Odometry(hardwareMap, NovaPyraRobot.telemetry);
         vision = new Vision(hardwareMap, odometry, NovaPyraRobot.telemetry, alliance);
-        pedroFollower = PedroConstants.createPoseEstFollower(hardwareMap, vision);
+        pedroFollower = PedroConstants.createPoseEstFollower(hardwareMap);
 
         // Orchestrators
         shotController = new ShotController(this, NovaPyraRobot.telemetry);

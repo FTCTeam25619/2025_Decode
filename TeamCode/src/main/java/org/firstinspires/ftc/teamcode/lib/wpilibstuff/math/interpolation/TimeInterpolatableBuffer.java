@@ -4,7 +4,7 @@
 
 package org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.interpolation;
 
-import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.MathUtil;
+import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.WPILibMathUtil;
 
 import java.util.NavigableMap;
 import java.util.Optional;
@@ -60,7 +60,7 @@ public final class TimeInterpolatableBuffer<T> {
    * @return The new TimeInterpolatableBuffer.
    */
   public static TimeInterpolatableBuffer<Double> createDoubleBuffer(double historySizeSeconds) {
-    return new TimeInterpolatableBuffer<>(MathUtil::interpolate, historySizeSeconds);
+    return new TimeInterpolatableBuffer<>(WPILibMathUtil::interpolate, historySizeSeconds);
   }
 
   /**

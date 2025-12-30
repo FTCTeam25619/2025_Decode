@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.pedroPathing;
+package org.firstinspires.ftc.teamcode.lib.pedroExtensions;
 
 import com.pedropathing.Drivetrain;
 import com.pedropathing.follower.FollowerConstants;
@@ -21,8 +21,6 @@ import com.pedropathing.localization.Localizer;
 import com.pedropathing.paths.PathConstraints;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import org.firstinspires.ftc.teamcode.subsystems.Vision;
-
 public class PoseEstFollowerBuilder extends FollowerBuilder {
 
     private final FollowerConstants constants;
@@ -30,7 +28,7 @@ public class PoseEstFollowerBuilder extends FollowerBuilder {
     private final HardwareMap hardwareMap;
     private Localizer localizer;
     private Drivetrain drivetrain;
-    private Vision vision;
+
     public PoseEstFollowerBuilder(FollowerConstants constants, HardwareMap hardwareMap) {
         super(constants, hardwareMap);
         this.constants = constants;
@@ -91,14 +89,9 @@ public class PoseEstFollowerBuilder extends FollowerBuilder {
         return this;
     }
 
-    public PoseEstFollowerBuilder setVision(Vision vision) {
-        this.vision = vision;
-        return this;
-    }
-
     @Override
     public PoseEstFollower build() {
-        return new PoseEstFollower(constants, localizer, drivetrain, constraints, vision);
+        return new PoseEstFollower(constants, localizer, drivetrain, constraints);
     }
 
 }
