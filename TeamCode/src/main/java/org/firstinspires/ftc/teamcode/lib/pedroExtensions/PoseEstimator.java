@@ -93,6 +93,7 @@ public class PoseEstimator extends PoseTracker {
      */
     @Override
     public void update() {
+        super.update();
         previousVelocity = getVelocity();
         previousPose = new InterpPose(applyOffset(getRawPose()));
         currentPose = null;
@@ -100,7 +101,7 @@ public class PoseEstimator extends PoseTracker {
         currentAcceleration = null;
         previousPoseTime = currentPoseTime;
         currentPoseTime = System.nanoTime();
-        localizer.update();
+//        localizer.update();    // Don't run this as the superclass is updating the hardware for us
 
         m_odometryPoseBuffer.addSample(System.nanoTime(), new InterpPose(applyOffset(getRawPose())));
         updatePoseEstimate();
@@ -220,6 +221,7 @@ public class PoseEstimator extends PoseTracker {
      */
     @Override
     public void setStartingPose(Pose set) {
+        super.setStartingPose(set);
 
         startingPose = new InterpPose(currentPose.getX(),
                 currentPose.getY(),
@@ -228,7 +230,7 @@ public class PoseEstimator extends PoseTracker {
         previousPose = startingPose;
         previousPoseTime = System.nanoTime();
         currentPoseTime = System.nanoTime();
-        localizer.setStartPose(set);
+//        localizer.setStartPose(set);
         m_odometryPoseBuffer.clear();
         m_visionUpdates.clear();
         updatePoseEstimate();
@@ -243,6 +245,8 @@ public class PoseEstimator extends PoseTracker {
      */
     @Override
     public void setCurrentPoseWithOffset(Pose set) {
+        super.setCurrentPoseWithOffset(set);
+
         Pose currentPose = getRawPose();
         setXOffset(set.getX() - currentPose.getX());
         setYOffset(set.getY() - currentPose.getY());
@@ -259,6 +263,8 @@ public class PoseEstimator extends PoseTracker {
      */
     @Override
     public void setXOffset(double offset) {
+        super.setXOffset(offset);
+
         xOffset = offset;
         m_odometryPoseBuffer.clear();
         m_visionUpdates.clear();
@@ -272,6 +278,8 @@ public class PoseEstimator extends PoseTracker {
      */
     @Override
     public void setYOffset(double offset) {
+        super.setYOffset(offset);
+
         yOffset = offset;
         m_odometryPoseBuffer.clear();
         m_visionUpdates.clear();
@@ -285,6 +293,8 @@ public class PoseEstimator extends PoseTracker {
      */
     @Override
     public void setHeadingOffset(double offset) {
+        super.setHeadingOffset(offset);
+
         headingOffset = offset;
         m_odometryPoseBuffer.clear();
         m_visionUpdates.clear();
@@ -338,6 +348,8 @@ public class PoseEstimator extends PoseTracker {
      */
     @Override
     public void resetOffset() {
+        super.resetOffset();
+
         setXOffset(0);
         setYOffset(0);
         setHeadingOffset(0);
@@ -401,8 +413,9 @@ public class PoseEstimator extends PoseTracker {
      */
     @Override
     public void setPose(Pose set) {
+        super.setPose(set);
         resetOffset();
-        localizer.setPose(set);
+//        localizer.setPose(set);
         m_odometryPoseBuffer.clear();
         m_visionUpdates.clear();
         updatePoseEstimate();
@@ -474,9 +487,10 @@ public class PoseEstimator extends PoseTracker {
      */
     @Override
     public void resetHeadingToIMU() {
-        if (Double.isNaN(getIMUHeadingEstimate()) || Double.isInfinite(getIMUHeadingEstimate())) {
-            localizer.setPose(new Pose(getPose().getX(), getPose().getY(), getNormalizedIMUHeading() + startingPose.getHeading()));
-        }
+        super.resetHeadingToIMU();
+//        if (Double.isNaN(getIMUHeadingEstimate()) || Double.isInfinite(getIMUHeadingEstimate())) {
+//            localizer.setPose(new Pose(getPose().getX(), getPose().getY(), getNormalizedIMUHeading() + startingPose.getHeading()));
+//        }
         m_odometryPoseBuffer.clear();
         m_visionUpdates.clear();
         updatePoseEstimate();
@@ -489,6 +503,7 @@ public class PoseEstimator extends PoseTracker {
      */
     @Override
     public void resetHeadingToIMUWithOffsets() {
+        super.resetHeadingToIMUWithOffsets();
         if (Double.isNaN(getIMUHeadingEstimate()) || Double.isInfinite(getIMUHeadingEstimate())) {
             setCurrentPoseWithOffset(new Pose(getPose().getX(), getPose().getY(), getNormalizedIMUHeading() + startingPose.getHeading()));
         }
@@ -545,7 +560,8 @@ public class PoseEstimator extends PoseTracker {
      */
     @Override
     public void resetIMU() throws InterruptedException {
-        localizer.resetIMU();
+        super.resetIMU();
+//        localizer.resetIMU();
         m_odometryPoseBuffer.clear();
         m_visionUpdates.clear();
     }

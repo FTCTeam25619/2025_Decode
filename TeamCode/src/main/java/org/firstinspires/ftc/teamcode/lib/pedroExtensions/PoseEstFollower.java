@@ -30,7 +30,7 @@ public class PoseEstFollower extends Follower {
         super(constants, localizer, drivetrain, pathConstraints);
 
         // Replace the standard PoseTracker object w/ enhanced PoseTracker that implements vision updates
-        poseTracker = poseEstimator = new PoseEstimator(localizer);
+        poseEstimator = new PoseEstimator(localizer);
     }
 
     /**
