@@ -9,7 +9,8 @@ public class Devices {
     }
 
     public static final class Lift {
-        public static final String liftServo = "servo_lift";
+        public static final String liftServoLeft = "servo_lift_left";
+        public static final String liftServoRight = "servo_lift_right";
     }
 
     public static final class Indicators {

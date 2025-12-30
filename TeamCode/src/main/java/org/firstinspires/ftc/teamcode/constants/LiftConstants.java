@@ -14,10 +14,18 @@ public class LiftConstants {
 
     @Configurable
     public static class Limits {
-        // The angle in degrees where the Lift reaches its minimum hard stop
-        public static double liftHardStopMin = 25.0;
-        // The angle in degrees where the Lift reaches its maximum hard stop
-        public static double liftHardStopMax = 295.0;
+        public static class LeftServo {
+            // The angle in degrees where the Lift left servo reaches its minimum hard stop
+            public static double hardStopMin = 25.0;
+            // The angle in degrees where the Lift right servo reaches its maximum hard stop
+            public static double hardStopMax = 295.0;
+        }
+        public static class RightServo {
+            // The angle in degrees where the Lift left servo reaches its minimum hard stop
+            public static double hardStopMin = 25.0;
+            // The angle in degrees where the Lift right servo reaches its maximum hard stop
+            public static double hardStopMax = 295.0;
+        }
     }
 
     @Configurable
@@ -27,10 +35,23 @@ public class LiftConstants {
 
     @Configurable
     public static class Positions {
-        public static double engagedDegrees = 30.0;
-        public static double disengagedDegrees = 290.0;
-        public static double middleOfRange = (Limits.liftHardStopMin + Limits.liftHardStopMax) / 2.0;
-        public static double testPositionDegrees =
-                (Limits.liftHardStopMin + Limits.liftHardStopMax) / 2.0;
+        public static class LeftServo {
+            public static double engagedDegrees = 30.0;
+            public static double disengagedDegrees = 290.0;
+            public static double middleOfRange =
+                    (Limits.LeftServo.hardStopMin + Limits.LeftServo.hardStopMax) / 2.0;
+            public static double testPositionDegrees =
+                    (Limits.LeftServo.hardStopMin + Limits.LeftServo.hardStopMax) / 2.0;
+
+        }
+        public static class RightServo {
+            public static double engagedDegrees = 30.0;
+            public static double disengagedDegrees = 290.0;
+            public static double middleOfRange =
+                    (Limits.RightServo.hardStopMin + Limits.RightServo.hardStopMax) / 2.0;
+            public static double testPositionDegrees =
+                    (Limits.RightServo.hardStopMin + Limits.RightServo.hardStopMax) / 2.0;
+
+        }
     }
 }
