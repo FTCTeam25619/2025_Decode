@@ -3,14 +3,19 @@ package org.firstinspires.ftc.teamcode.pedroPathing;
 import com.pedropathing.Drivetrain;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.follower.FollowerConstants;
+import com.pedropathing.geometry.Pose;
 import com.pedropathing.localization.Localizer;
 import com.pedropathing.paths.PathConstraints;
 
+import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.Matrix;
+import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.numbers.N1;
+import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.numbers.N3;
 import org.firstinspires.ftc.teamcode.subsystems.Vision;
 
 public class PoseEstFollower extends Follower {
 
     private Vision vision;
+    private final PoseEstimator poseEstimator;
 
 
     /**
@@ -25,7 +30,7 @@ public class PoseEstFollower extends Follower {
         this.vision = vision;
 
         // Replace the standard PoseTracker object w/ enhanced PoseTracker that implements vision updates
-        poseTracker = new PoseEstimator(localizer, vision);
+        poseTracker = poseEstimator = new PoseEstimator(localizer, vision);
     }
 
     /**
@@ -38,7 +43,22 @@ public class PoseEstFollower extends Follower {
         this(constants, localizer, drivetrain, PathConstraints.defaultConstraints, vision);
     }
 
-    public PoseEstFollower(FollowerConstants constants, Localizer localizer, Drivetrain drivetrain, PathConstraints pathConstraints) {
-        super(constants, localizer, drivetrain, pathConstraints);
+    public void addVisionUpdate(Pose visionPose, long visionTimestampNanoseconds) {
+        poseEstimator.addVisionMeasurement(visionPose, visionTimestampNanoseconds);
     }
+
+    public void addVisionUpdate(Pose visonPose,
+                                long visionTimeStampNanoseconds,
+                                Matrix<N3, N1> visionStdDevs) {
+        poseEstimator.addVisionMeasurement(visonPose, visionTimeStampNanoseconds, visionStdDevs);
+    }
+
+    public PoseEstimator getPoseEstimator() {
+        return poseEstimator;
+    }
+
+    public Pose getVisionUpdatedPose() {
+        return poseEstimator.getVisionUpdatedPose();
+    }
+
 }
