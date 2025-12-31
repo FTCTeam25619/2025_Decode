@@ -144,6 +144,9 @@ public class Exploration extends CommandOpMode {
         telemetry.addData("X", robot.pedroFollower.getPose().getX());
         telemetry.addData("Y", robot.pedroFollower.getPose().getY());
         telemetry.addData("Heading", robot.pedroFollower.getPose().getHeading());
+        telemetry.addData("Old X", robot.pedroFollower.getUncorrectedPose().getX());
+        telemetry.addData("Old Y", robot.pedroFollower.getUncorrectedPose().getY());
+        telemetry.addData("Old Heading", robot.pedroFollower.getUncorrectedPose().getHeading());
         telemetry.addData("LL Seeing Target", robot.vision.isSeeingTarget());
         telemetry.addData("LL Angle (deg)", robot.vision.angleToTarget());
         telemetry.addData("Is Shooting?", robot.shotController.isShooting());
