@@ -5,11 +5,11 @@ import com.bylazar.telemetry.JoinedTelemetry;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.pedropathing.geometry.Pose;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
+import com.seattlesolvers.solverslib.controller.PIDController;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 import com.seattlesolvers.solverslib.util.MathUtils;
 
-import org.firstinspires.ftc.robotcore.external.Const;
 import org.firstinspires.ftc.teamcode.constants.Alliance;
 import org.firstinspires.ftc.teamcode.constants.Constants;
 import org.firstinspires.ftc.teamcode.constants.DriveConstants;
@@ -31,10 +31,18 @@ public class Exploration extends CommandOpMode {
     public GamepadEx controller2;
     private ControllerTriggers controllerMappings;
     private RobotTriggers robotTriggers;
+    private PIDController headingController;
+    private PIDController secondaryHeadingController;
 
     public Exploration(Alliance allianceSetting) {
         super();
         alliance = allianceSetting;
+        headingController = new PIDController(DriveConstants.HeadingControl.kPHeadingCorrection,
+                DriveConstants.HeadingControl.kIHeadingCorrection,
+                DriveConstants.HeadingControl.kDHeadingCorrection);
+        secondaryHeadingController = new PIDController(DriveConstants.HeadingControl.kPSecondaryHeadingCorrection,
+                DriveConstants.HeadingControl.kISecondaryHeadingCorrection,
+                DriveConstants.HeadingControl.kDSecondaryHeadingCorrection);
     }
 
     @Override
@@ -121,6 +129,8 @@ public class Exploration extends CommandOpMode {
             rotateAxis = calculateAutoAimRotation(robot.vision.angleToTarget());
         } else {
             rotateAxis /= DriveConstants.Joysticks.rotateScalingFactor;
+            headingController.reset();
+            secondaryHeadingController.reset();
         }
 
         // ----------------------------------------------------
@@ -166,10 +176,14 @@ public class Exploration extends CommandOpMode {
      * @return
      */
     public double calculateAutoAimRotation(double angleToTarget) {
-        double rotatePower = angleToTarget *
-                ((Math.abs(angleToTarget) >= DriveConstants.HeadingControl.kPSecondaryHeadingThreshold) ?
-                        DriveConstants.HeadingControl.kPHeadingCorrection :
-                        DriveConstants.HeadingControl.kPSecondaryHeadingCorrection);
+        double rotatePower = 0.0;
+        if (Math.abs(angleToTarget) >= DriveConstants.HeadingControl.SecondaryHeadingThreshold) {
+            rotatePower = headingController.calculate(angleToTarget);
+            secondaryHeadingController.reset();
+        } else {
+            rotatePower = secondaryHeadingController.calculate(angleToTarget);
+            headingController.reset();
+        }
 
         if (rotatePower >= 1.0E-3) {
              rotatePower += DriveConstants.HeadingControl.kFHeadingCorrection;
