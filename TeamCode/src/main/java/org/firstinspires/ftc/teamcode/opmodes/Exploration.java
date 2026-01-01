@@ -9,6 +9,7 @@ import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 import com.seattlesolvers.solverslib.util.MathUtils;
 
+import org.firstinspires.ftc.robotcore.external.Const;
 import org.firstinspires.ftc.teamcode.constants.Alliance;
 import org.firstinspires.ftc.teamcode.constants.Constants;
 import org.firstinspires.ftc.teamcode.constants.DriveConstants;
@@ -115,20 +116,9 @@ public class Exploration extends CommandOpMode {
         // ----------------------------------------------------
 
         // Automatic aiming during PREPARE_SHOT / READY_TO_SHOOT / SHOOTING / RECOVERY
-        if (robot.shotController.isShooting() && robot.vision.isSeeingTarget()) {
-            double headingErrorDeg = robot.vision.angleToTarget();
-            rotateAxis = MathUtils.clamp(
-                    -DriveConstants.HeadingControl.kPHeadingCorrection * headingErrorDeg,
-                    -DriveConstants.HeadingControl.correctionOutputClamp,
-                    DriveConstants.HeadingControl.correctionOutputClamp
-            );
-        }
-        // --- AIM ASSIST BUTTON (only when NOT preparing shot or shooting) ---
-        else if (controller1.getButton(GamepadKeys.Button.RIGHT_STICK_BUTTON) && robot.vision.isSeeingTarget()) {
-            rotateAxis = MathUtils.clamp(
-                    -DriveConstants.HeadingControl.kPHeadingCorrection * robot.vision.angleToTarget(),
-                    -DriveConstants.HeadingControl.correctionOutputClamp,
-                    DriveConstants.HeadingControl.correctionOutputClamp);
+        if ((robot.shotController.isShooting() || controller1.getButton(GamepadKeys.Button.RIGHT_STICK_BUTTON))
+                && robot.vision.isSeeingTarget()) {
+            rotateAxis = calculateAutoAimRotation(robot.vision.angleToTarget());
         } else {
             rotateAxis /= DriveConstants.Joysticks.rotateScalingFactor;
         }
@@ -170,25 +160,27 @@ public class Exploration extends CommandOpMode {
     // --- AUTO AIM HELPERS (Limelight-only for now) ---
 
     /**
-     * One step of auto-aim:
-     * - If Limelight sees the tag, use tx (angleToTarget) to rotate.
-     * - If no target, do nothing (no odometry backup for now).
-     * This ONLY sets teleOpDrive rotation; follower.update() is called elsewhere.
+     * Calculates the drive heading input for aiming correctly at target based on input angle
+     *
+     * @param angleToTarget
+     * @return
      */
-    public void autoAimStep() {
-        double rotateAxis = 0.0;
+    public double calculateAutoAimRotation(double angleToTarget) {
+        double rotatePower = angleToTarget *
+                ((Math.abs(angleToTarget) >= DriveConstants.HeadingControl.kPSecondaryHeadingThreshold) ?
+                        DriveConstants.HeadingControl.kPHeadingCorrection :
+                        DriveConstants.HeadingControl.kPSecondaryHeadingCorrection);
 
-        if (robot.vision.isSeeingTarget()) {
-            double headingErrorDeg = robot.vision.angleToTarget();
-            rotateAxis = MathUtils.clamp(
-                    -DriveConstants.HeadingControl.kPHeadingCorrection * headingErrorDeg,
-                    -DriveConstants.HeadingControl.correctionOutputClamp,
-                    DriveConstants.HeadingControl.correctionOutputClamp
-            );
+        if (rotatePower >= 1.0E-3) {
+             rotatePower += DriveConstants.HeadingControl.kFHeadingCorrection;
+        } else if (rotatePower <= -1.0E-3) {
+            rotatePower -= DriveConstants.HeadingControl.kFHeadingCorrection;
+        } else {
+            rotatePower = 0.0;
         }
 
-        // No translation while lining up – just rotate (if rotateAxis == 0, this is a no-op)
-        robot.pedroFollower.setTeleOpDrive(0.0, 0.0, rotateAxis, false);
+        return MathUtils.clamp(rotatePower, -DriveConstants.HeadingControl.correctionOutputClamp,
+            DriveConstants.HeadingControl.correctionOutputClamp);
     }
 
     /**
@@ -201,4 +193,7 @@ public class Exploration extends CommandOpMode {
         }
         return Math.abs(robot.vision.angleToTarget()) <= VisionConstants.headingAngleThresholdDeg;
     }
+
+
+
 }

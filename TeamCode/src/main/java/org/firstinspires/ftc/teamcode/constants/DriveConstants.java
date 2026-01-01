@@ -17,7 +17,10 @@ public class DriveConstants {
 
     @Configurable
     public static class HeadingControl {
-        public static double kPHeadingCorrection = 0.018;
+        public static double kPHeadingCorrection = 0.015;
         public static double correctionOutputClamp = 0.6;
+        public static double kFHeadingCorrection = 0.03;
+        public static double kPSecondaryHeadingCorrection = 0.03;
+        public static double kPSecondaryHeadingThreshold = 5.0;
     }
 }
