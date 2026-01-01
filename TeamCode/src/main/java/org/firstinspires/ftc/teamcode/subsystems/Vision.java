@@ -1,5 +1,11 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import static org.firstinspires.ftc.teamcode.constants.Constants.ConversionFactors.METERS_TO_FEET;
+
+import com.pedropathing.ftc.FTCCoordinates;
+import com.pedropathing.ftc.InvertedFTCCoordinates;
+import com.pedropathing.geometry.PedroCoordinates;
+import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
@@ -7,9 +13,11 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.constants.Alliance;
 import org.firstinspires.ftc.teamcode.constants.Constants;
 import org.firstinspires.ftc.teamcode.constants.Devices;
@@ -22,7 +30,8 @@ public class Vision extends SubsystemBase {
 
     private LLResult latestResult;
     private LLResultTypes.FiducialResult latestTargetingTagResult;
-    private Pose3D latestPose;
+    private Pose3D latestPose = new Pose3D(new Position(),
+            new YawPitchRollAngles(AngleUnit.DEGREES, 0.0, 0.0, 0.0, 0));
     private int targetTagID;
     private boolean seeingTarget = false;
     private double angleToTargetDeg = 0.0;
@@ -39,7 +48,7 @@ public class Vision extends SubsystemBase {
 
     @Override
     public void periodic() {
-        limelightCamera.updateRobotOrientation(odometry.getHeading());
+        limelightCamera.updateRobotOrientation(odometry.getHeading()+90.0);
         updateFromLimelight();
 
         if (Constants.DebugModes.Telemetry.DEBUG_VISION) {
@@ -48,6 +57,13 @@ public class Vision extends SubsystemBase {
             telemetry.addData("Vision: Target Tag", targetTagID);
             telemetry.addData("Vision: Angle to Target (deg)", angleToTargetDeg);
             telemetry.addData("Vision: Dist to Tag (cm)", distanceToTagCM);
+
+            telemetry.addData("Vision: X (in)", latestPose.getPosition().x * METERS_TO_FEET * 12.0);
+            telemetry.addData("Vision: Y (in)", latestPose.getPosition().y * METERS_TO_FEET * 12.0);
+            telemetry.addData("Vision: H (deg)", latestPose.getOrientation().getYaw(AngleUnit.DEGREES));
+
+            telemetry.addData("Vision: Pedro X (in)", getPedroPose().getX());
+            telemetry.addData("Vision: Pedro Y (in)", getPedroPose().getY());
         }
     }
 
@@ -76,6 +92,9 @@ public class Vision extends SubsystemBase {
         latestResult = limelightCamera.getLatestResult();
         if (latestResult.isValid()) {
             angleToTargetDeg = latestResult.getTx();
+
+            // Pick latest vision pose from the best (first returned) tag result
+            latestPose = latestResult.getBotpose_MT2();
             for (LLResultTypes.FiducialResult fr : latestResult.getFiducialResults()) {
                 if (fr.getFiducialId() == targetTagID) {
                     seeingTarget = true;
@@ -97,5 +116,13 @@ public class Vision extends SubsystemBase {
 
     public double angleToTarget() {
         return angleToTargetDeg;
+    }
+
+    public Pose getPedroPose() {
+        return new Pose(
+                latestPose.getPosition().toUnit(DistanceUnit.INCH).y + 72.0,
+                -latestPose.getPosition().toUnit(DistanceUnit.INCH).x + 72.0,
+                odometry.getHeadingRadians(),
+                PedroCoordinates.INSTANCE);
     }
 }
