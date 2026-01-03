@@ -4,23 +4,10 @@
 
 package org.firstinspires.ftc.teamcode.lib.pedroExtensions;
 
-//import static edu.wpi.first.units.Units.Radians;
-
-// import com.fasterxml.jackson.annotation.JsonAutoDetect;
-// import com.fasterxml.jackson.annotation.JsonCreator;
-// import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-// import com.fasterxml.jackson.annotation.JsonProperty;
-// import edu.wpi.first.math.MathSharedStore;
 import com.seattlesolvers.solverslib.util.MathUtils;
 
 import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.interpolation.Interpolatable;
 
-// import edu.wpi.first.math.geometry.proto.Rotation2dProto;
-// import edu.wpi.first.math.geometry.struct.Rotation2dStruct;
-//import edu.wpi.first.units.Angle;
-//import edu.wpi.first.units.Measure;
-// import edu.wpi.first.util.protobuf.ProtobufSerializable;
-// import edu.wpi.first.util.struct.StructSerializable;
 import java.util.Objects;
 
 /**

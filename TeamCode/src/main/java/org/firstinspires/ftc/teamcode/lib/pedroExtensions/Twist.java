@@ -4,10 +4,6 @@
 
 package org.firstinspires.ftc.teamcode.lib.pedroExtensions;
 
-// import edu.wpi.first.math.geometry.proto.Twist2dProto;
-// import edu.wpi.first.math.geometry.struct.Twist2dStruct;
-// import edu.wpi.first.util.protobuf.ProtobufSerializable;
-// import edu.wpi.first.util.struct.StructSerializable;
 import java.util.Objects;
 
 /**

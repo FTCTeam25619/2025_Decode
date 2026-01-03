@@ -9,13 +9,7 @@ import com.seattlesolvers.solverslib.util.MathUtils;
 
 import org.firstinspires.ftc.teamcode.NovaPyraRobot;
 import org.firstinspires.ftc.teamcode.constants.DriveConstants;
-import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.Matrix;
-import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.Nat;
-import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.VecBuilder;
 import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.interpolation.TimeInterpolatableBuffer;
-import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.numbers.N1;
-import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.numbers.N3;
-import org.firstinspires.ftc.teamcode.subsystems.Vision;
 
 import java.util.NavigableMap;
 import java.util.Optional;
@@ -51,10 +45,10 @@ public class PoseEstimator extends PoseTracker {
     private long previousPoseTime;
     private long currentPoseTime;
 
-    private int[] exitCounter = {0,0,0,0,0};
+//    private int[] exitCounter = {0,0,0,0,0};
 
-    private final Matrix<N3, N1> m_q = new Matrix<>(Nat.N3(), Nat.N1());
-    private final Matrix<N3, N3> m_visionK = new Matrix<>(Nat.N3(), Nat.N3());
+    private final double[] m_q = new double[3];
+    private final double[] m_visionK = new double[3];
 
     private static final double kBufferDuration = 1.5;
     // Maps timestamps to odometry-only pose estimates
@@ -123,12 +117,11 @@ public class PoseEstimator extends PoseTracker {
      * current pose estimate.
      *
      * @param visionRobotPoseMeters The pose of the robot as measured by the vision camera.
-     * @param timestampSeconds The timestamp of the vision measurement in seconds. Note that if you
+     * @param timestampNanoseconds The timestamp of the vision measurement in seconds. Note that if you
      *     don't use your own time source by calling {@link
-     *     PoseEstimator#updateWithTime(double,Rotation2d,Object)} then you must use a timestamp with
-     *     an epoch since FPGA startup (i.e., the epoch of this timestamp is the same epoch as {@link
-     *     edu.wpi.first.wpilibj.Timer#getFPGATimestamp()}.) This means that you should use {@link
-     *     edu.wpi.first.wpilibj.Timer#getFPGATimestamp()} as your time source or sync the epochs.
+     *     PoseEstimator#addVisionMeasurement(Pose, long)} then you must use a timestamp with
+     *     an epoch since FPGA startup (i.e., the epoch of this timestamp is the same epoch as
+     *     System.nanotime().) This means that you should use System.nanoTime() as your time source or sync the epochs.
      */
     public void addVisionMeasurement(Pose visionRobotPoseMeters, long timestampNanoseconds) {
         double timestampSeconds = timestampNanoseconds / 1.0E9;
@@ -192,9 +185,9 @@ public class PoseEstimator extends PoseTracker {
 //        NovaPyraRobot.telemetry.addData("ostddev theta", DriveConstants.PoseEstimator.stateStdDevs.get(2,0));
 
         Twist scaledTwist = new Twist (
-                twist.dx * m_visionK.get(0,0),
-                twist.dy * m_visionK.get(1,1),
-                twist.dtheta * m_visionK.get(2,2));
+                twist.dx * m_visionK[0],
+                twist.dy * m_visionK[1],
+                twist.dtheta * m_visionK[2]);
 
         NovaPyraRobot.telemetry.addData("Post Kalman x", scaledTwist.dx);
         NovaPyraRobot.telemetry.addData("Post Kalman y", scaledTwist.dy);
@@ -235,14 +228,14 @@ public class PoseEstimator extends PoseTracker {
      *
      * <p>Note that the vision measurement standard deviations passed into this method will continue
      * to apply to future measurements until a subsequent call to {@link
-     * PoseEstimator#setVisionMeasurementStdDevs(Matrix)} or this method.
+     * PoseEstimator#setVisionMeasurementStdDevs(double[])} or this method.
      *
      * @param visionRobotPoseMeters The pose of the robot as measured by the vision camera.
-     * @param timestampSeconds The timestamp of the vision measurement in seconds. Note that if you
-     *     don't use your own time source by calling {@link #updateWithTime}, then you must use a
+     * @param timestampNanoseconds The timestamp of the vision measurement in seconds. Note that if you
+     *     don't use your own time source by calling addVisionMeasurement, then you must use a
      *     timestamp with an epoch since FPGA startup (i.e., the epoch of this timestamp is the same
-     *     epoch as {@link edu.wpi.first.wpilibj.Timer#getFPGATimestamp()}). This means that you
-     *     should use {@link edu.wpi.first.wpilibj.Timer#getFPGATimestamp()} as your time source in
+     *     epoch as System.nanoTime()). This means that you
+     *     should use System.nanoTime() as your time source in
      *     this case.
      * @param visionMeasurementStdDevs Standard deviations of the vision pose measurement (x position
      *     in meters, y position in meters, and heading in radians). Increase these numbers to trust
@@ -251,7 +244,7 @@ public class PoseEstimator extends PoseTracker {
     public void addVisionMeasurement(
             Pose visionRobotPoseMeters,
             long timestampNanoseconds,
-            Matrix<N3, N1> visionMeasurementStdDevs) {
+            double[] visionMeasurementStdDevs) {
         setVisionMeasurementStdDevs(visionMeasurementStdDevs);
         addVisionMeasurement(visionRobotPoseMeters, timestampNanoseconds);
     }
@@ -630,9 +623,9 @@ public class PoseEstimator extends PoseTracker {
      *     numbers to trust global measurements from odometry less. This matrix is in the form [x, y,
      *     theta]ᵀ, with units in meters and radians.
      */
-    public final void setOdometryMeasurementStdDevs(Matrix<N3, N1> odometryMeasurementStdDevs) {
+    public final void setOdometryMeasurementStdDevs(double[] odometryMeasurementStdDevs) {
         for (int i = 0; i < 3; ++i) {
-            m_q.set(i, 0, odometryMeasurementStdDevs.get(i, 0) * odometryMeasurementStdDevs.get(i, 0));
+            m_q[i] = odometryMeasurementStdDevs[i] * odometryMeasurementStdDevs[i];
         }
 
     }
@@ -646,20 +639,19 @@ public class PoseEstimator extends PoseTracker {
      *     numbers to trust global measurements from vision less. This matrix is in the form [x, y,
      *     theta]ᵀ, with units in meters and radians.
      */
-    public final void setVisionMeasurementStdDevs(Matrix<N3, N1> visionMeasurementStdDevs) {
+    public final void setVisionMeasurementStdDevs(double[] visionMeasurementStdDevs) {
         double[] r = new double[3];
         for (int i = 0; i < 3; ++i) {
-            r[i] = visionMeasurementStdDevs.get(i, 0) * visionMeasurementStdDevs.get(i, 0);
+            r[i] = visionMeasurementStdDevs[i] * visionMeasurementStdDevs[i];
         }
 
         // Solve for closed form Kalman gain for continuous Kalman filter with A = 0
         // and C = I. See wpimath/algorithms.md.
         for (int row = 0; row < 3; ++row) {
-            if (m_q.get(row, 0) == 0.0) {
-                m_visionK.set(row, row, 0.0);
+            if (m_q[row] == 0.0) {
+                m_visionK[row] = 0.0;
             } else {
-                m_visionK.set(
-                        row, row, m_q.get(row, 0) / (m_q.get(row, 0) + Math.sqrt(m_q.get(row, 0) * r[row])));
+                m_visionK[row] = m_q[row] / (m_q[row] + Math.sqrt(m_q[row] * r[row]));
             }
         }
     }

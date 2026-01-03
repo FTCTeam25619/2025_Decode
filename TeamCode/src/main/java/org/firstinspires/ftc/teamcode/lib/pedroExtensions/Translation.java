@@ -6,10 +6,7 @@ package org.firstinspires.ftc.teamcode.lib.pedroExtensions;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.WPILibMathUtil;
-import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.VecBuilder;
-import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.Vector;
 import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.interpolation.Interpolatable;
-import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.numbers.N2;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -71,16 +68,6 @@ public class Translation
 
 
   /**
-   * Constructs a Translation2d from the provided translation vector's X and Y components. The
-   * values are assumed to be in meters.
-   *
-   * @param vector The translation vector to represent.
-   */
-  public Translation(Vector<N2> vector) {
-    this(vector.get(0), vector.get(1));
-  }
-
-  /**
    * Calculates the distance between two translations in 2D space.
    *
    * <p>The distance between translations is defined as √((x₂−x₁)²+(y₂−y₁)²).
@@ -110,24 +97,6 @@ public class Translation
   // @JsonProperty
   public double getY() {
     return m_y;
-  }
-
-  /**
-   * Returns a vector representation of this translation.
-   *
-   * @return A Vector representation of this translation.
-   */
-  public Vector<N2> toVector() {
-    return VecBuilder.fill(m_x, m_y);
-  }
-
-  /**
-   * Returns the norm, or distance from the origin to the translation.
-   *
-   * @return The norm of the translation.
-   */
-  public double getNorm() {
-    return Math.hypot(m_x, m_y);
   }
 
   /**

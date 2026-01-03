@@ -9,9 +9,6 @@ import com.pedropathing.paths.PathConstraints;
 import com.pedropathing.util.PoseHistory;
 
 import org.firstinspires.ftc.teamcode.constants.DriveConstants;
-import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.Matrix;
-import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.numbers.N1;
-import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.numbers.N3;
 
 public class PoseEstFollower extends Follower {
 
@@ -55,7 +52,7 @@ public class PoseEstFollower extends Follower {
 
     public void addVisionUpdate(Pose visonPose,
                                 long visionTimeStampNanoseconds,
-                                Matrix<N3, N1> visionStdDevs) {
+                                double[] visionStdDevs) {
         poseEstimator.addVisionMeasurement(visonPose, visionTimeStampNanoseconds, visionStdDevs);
     }
 
