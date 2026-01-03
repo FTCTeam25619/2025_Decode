@@ -11,6 +11,7 @@ import org.ejml.dense.row.MatrixFeatures_DDRM;
 import org.ejml.dense.row.NormOps_DDRM;
 import org.ejml.simple.SimpleMatrix;
 import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.numbers.N1;
+import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.numbers.N3;
 
 /**
  * A shape-safe wrapper over Efficient Java Matrix Library (EJML) matrices.
@@ -604,4 +605,13 @@ public class Matrix<R extends Num, C extends Num>
     return Objects.hash(m_storage);
   }
 
+
+  public static Matrix<N3, N1> fillMatrix(double d0, double d1, double d2) {
+      Matrix <N3, N1> matrix = new Matrix<>(Nat.N3(),Nat.N1());
+      matrix.set(0,0, d0);
+      matrix.set(1,0, d1);
+      matrix.set(2,0,d2);
+      return matrix;
+  }
 }
+
