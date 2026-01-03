@@ -123,4 +123,8 @@ public class Vision extends SubsystemBase {
                 odometry.getHeadingRadians(),
                 PedroCoordinates.INSTANCE);
     }
+
+    public boolean isPoseValid() {
+        return latestResult.isValid();
+    }
 }

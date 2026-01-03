@@ -7,6 +7,7 @@ import com.pedropathing.math.MathFunctions;
 import com.pedropathing.math.Vector;
 import com.seattlesolvers.solverslib.util.MathUtils;
 
+import org.firstinspires.ftc.teamcode.NovaPyraRobot;
 import org.firstinspires.ftc.teamcode.constants.DriveConstants;
 import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.Matrix;
 import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.Nat;
@@ -49,6 +50,8 @@ public class PoseEstimator extends PoseTracker {
 
     private long previousPoseTime;
     private long currentPoseTime;
+
+    private int[] exitCounter = {0,0,0,0,0};
 
     private final Matrix<N3, N1> m_q = new Matrix<>(Nat.N3(), Nat.N1());
     private final Matrix<N3, N3> m_visionK = new Matrix<>(Nat.N3(), Nat.N3());
@@ -93,7 +96,7 @@ public class PoseEstimator extends PoseTracker {
      */
     @Override
     public void update() {
-        super.update();
+//        super.update();
         previousVelocity = getVelocity();
         previousPose = new InterpPose(applyOffset(getRawPose()));
         currentPose = null;
@@ -101,9 +104,9 @@ public class PoseEstimator extends PoseTracker {
         currentAcceleration = null;
         previousPoseTime = currentPoseTime;
         currentPoseTime = System.nanoTime();
-//        localizer.update();    // Don't run this as the superclass is updating the hardware for us
+        localizer.update();    // Don't run this as the superclass is updating the hardware for us
 
-        m_odometryPoseBuffer.addSample(System.nanoTime(), new InterpPose(applyOffset(getRawPose())));
+        m_odometryPoseBuffer.addSample(System.nanoTime() / 1.0E9, new InterpPose(applyOffset(getRawPose())));
         updatePoseEstimate();
     }
 
@@ -131,9 +134,13 @@ public class PoseEstimator extends PoseTracker {
         double timestampSeconds = timestampNanoseconds / 1.0E9;
         InterpPose visionInterpPose = new InterpPose(visionRobotPoseMeters);
         // Step 0: If this measurement is old enough to be outside the pose buffer's timespan, skip.
+//        NovaPyraRobot.telemetry.addData("exit0 IntBufIsEmpty", m_odometryPoseBuffer.getInternalBuffer().isEmpty());
+//        NovaPyraRobot.telemetry.addData("exit0 age", m_odometryPoseBuffer.getInternalBuffer().lastKey() - timestampSeconds);
+
         if (m_odometryPoseBuffer.getInternalBuffer().isEmpty()
                 || m_odometryPoseBuffer.getInternalBuffer().lastKey() - kBufferDuration
                 > timestampSeconds) {
+//            NovaPyraRobot.telemetry.addData("exit 0", ++exitCounter[0]);
             return;
         }
 
@@ -145,6 +152,7 @@ public class PoseEstimator extends PoseTracker {
 
         if (odometrySample == null)//.isEmpty()) {
         {
+//            NovaPyraRobot.telemetry.addData("exit 1", ++exitCounter[1]);
             return;
         }
 
@@ -154,21 +162,51 @@ public class PoseEstimator extends PoseTracker {
 
         if (visionSample == null) //.isEmpty()) {
         {
+//            NovaPyraRobot.telemetry.addData("exit 2", ++exitCounter[2]);
             return;
         }
 
         // Step 4: Measure the twist between the old pose estimate and the vision pose.
         Twist twist = visionSample.log(visionInterpPose);
+//        NovaPyraRobot.telemetry.addData("Pre Log x", visionInterpPose.getX());
+//        NovaPyraRobot.telemetry.addData("Pre Log y", visionInterpPose.getY());
+//        NovaPyraRobot.telemetry.addData("Post Log x", twist.dx);
+//        NovaPyraRobot.telemetry.addData("Post Log y", twist.dy);
+//        NovaPyraRobot.telemetry.addData("Post Log theta", twist.dtheta);
+
+
 
         // Step 5: We should not trust the twist entirely, so instead we scale this twist by a Kalman
         // gain matrix representing how much we trust vision measurements compared to our current pose.
-        Matrix k_times_twist = m_visionK.times(VecBuilder.fill(twist.dx, twist.dy, twist.dtheta));
+//        Matrix k_times_twist = m_visionK.times(VecBuilder.fill(twist.dx, twist.dy, twist.dtheta));
 
         // Step 6: Convert back to Twist2d.
-        Twist scaledTwist =
-                new Twist(k_times_twist.get(0, 0), k_times_twist.get(1, 0), k_times_twist.get(2, 0));
+//        Twist scaledTwist =
+//                new Twist(k_times_twist.get(0, 0), k_times_twist.get(1, 0), k_times_twist.get(2, 0));
+
+//        NovaPyraRobot.telemetry.addData("visionk x", m_visionK.get(0,0));
+//        NovaPyraRobot.telemetry.addData("visionk y", m_visionK.get(1,1));
+//        NovaPyraRobot.telemetry.addData("visionk theta", m_visionK.get(2,2));
+//        NovaPyraRobot.telemetry.addData("ostddev x", DriveConstants.PoseEstimator.stateStdDevs.get(0,0));
+//        NovaPyraRobot.telemetry.addData("ostddev y", DriveConstants.PoseEstimator.stateStdDevs.get(1,0));
+//        NovaPyraRobot.telemetry.addData("ostddev theta", DriveConstants.PoseEstimator.stateStdDevs.get(2,0));
+
+        Twist scaledTwist = new Twist (
+                twist.dx * m_visionK.get(0,0),
+                twist.dy * m_visionK.get(1,1),
+                twist.dtheta * m_visionK.get(2,2));
+
+        NovaPyraRobot.telemetry.addData("Post Kalman x", scaledTwist.dx);
+        NovaPyraRobot.telemetry.addData("Post Kalman y", scaledTwist.dy);
+        NovaPyraRobot.telemetry.addData("Post Kalman theta", scaledTwist.dtheta);
+
 
         // Step 7: Calculate and record the vision update.
+        InterpPose expPose = visionSample.exp(scaledTwist);
+//        NovaPyraRobot.telemetry.addData("Pre Exp x", visionSample.getX());
+//        NovaPyraRobot.telemetry.addData("Pre Exp y", visionSample.getY());
+//        NovaPyraRobot.telemetry.addData("Post Exp x", expPose.getX());
+//        NovaPyraRobot.telemetry.addData("Post Exp y", expPose.getY());
         VisionUpdate visionUpdate = new VisionUpdate(visionSample.exp(scaledTwist), odometrySample);
         m_visionUpdates.put(timestampSeconds, visionUpdate);
 
@@ -178,6 +216,10 @@ public class PoseEstimator extends PoseTracker {
         // Step 9: Update latest pose estimate. Since we cleared all updates after this vision update,
         // it's guaranteed to be the latest vision update.
         m_poseEstimate = visionUpdate.compensate(getPose());
+
+//        NovaPyraRobot.telemetry.addData("VisionUpdate size", m_visionUpdates.size());
+//        NovaPyraRobot.telemetry.addData("exit 3", ++exitCounter[3]);
+
     }
 
     /**
@@ -221,7 +263,7 @@ public class PoseEstimator extends PoseTracker {
      */
     @Override
     public void setStartingPose(Pose set) {
-        super.setStartingPose(set);
+//        super.setStartingPose(set);
 
         startingPose = new InterpPose(currentPose.getX(),
                 currentPose.getY(),
@@ -230,7 +272,7 @@ public class PoseEstimator extends PoseTracker {
         previousPose = startingPose;
         previousPoseTime = System.nanoTime();
         currentPoseTime = System.nanoTime();
-//        localizer.setStartPose(set);
+        localizer.setStartPose(set);
         m_odometryPoseBuffer.clear();
         m_visionUpdates.clear();
         updatePoseEstimate();
@@ -245,7 +287,7 @@ public class PoseEstimator extends PoseTracker {
      */
     @Override
     public void setCurrentPoseWithOffset(Pose set) {
-        super.setCurrentPoseWithOffset(set);
+//        super.setCurrentPoseWithOffset(set);
 
         Pose currentPose = getRawPose();
         setXOffset(set.getX() - currentPose.getX());
@@ -263,7 +305,7 @@ public class PoseEstimator extends PoseTracker {
      */
     @Override
     public void setXOffset(double offset) {
-        super.setXOffset(offset);
+//        super.setXOffset(offset);
 
         xOffset = offset;
         m_odometryPoseBuffer.clear();
@@ -278,7 +320,7 @@ public class PoseEstimator extends PoseTracker {
      */
     @Override
     public void setYOffset(double offset) {
-        super.setYOffset(offset);
+//        super.setYOffset(offset);
 
         yOffset = offset;
         m_odometryPoseBuffer.clear();
@@ -293,7 +335,7 @@ public class PoseEstimator extends PoseTracker {
      */
     @Override
     public void setHeadingOffset(double offset) {
-        super.setHeadingOffset(offset);
+//        super.setHeadingOffset(offset);
 
         headingOffset = offset;
         m_odometryPoseBuffer.clear();
@@ -348,7 +390,7 @@ public class PoseEstimator extends PoseTracker {
      */
     @Override
     public void resetOffset() {
-        super.resetOffset();
+//        super.resetOffset();
 
         setXOffset(0);
         setYOffset(0);
@@ -413,9 +455,9 @@ public class PoseEstimator extends PoseTracker {
      */
     @Override
     public void setPose(Pose set) {
-        super.setPose(set);
+//        super.setPose(set);
         resetOffset();
-//        localizer.setPose(set);
+        localizer.setPose(set);
         m_odometryPoseBuffer.clear();
         m_visionUpdates.clear();
         updatePoseEstimate();
@@ -487,10 +529,10 @@ public class PoseEstimator extends PoseTracker {
      */
     @Override
     public void resetHeadingToIMU() {
-        super.resetHeadingToIMU();
-//        if (Double.isNaN(getIMUHeadingEstimate()) || Double.isInfinite(getIMUHeadingEstimate())) {
-//            localizer.setPose(new Pose(getPose().getX(), getPose().getY(), getNormalizedIMUHeading() + startingPose.getHeading()));
-//        }
+//        super.resetHeadingToIMU();
+        if (Double.isNaN(getIMUHeadingEstimate()) || Double.isInfinite(getIMUHeadingEstimate())) {
+            localizer.setPose(new Pose(getPose().getX(), getPose().getY(), getNormalizedIMUHeading() + startingPose.getHeading()));
+        }
         m_odometryPoseBuffer.clear();
         m_visionUpdates.clear();
         updatePoseEstimate();
@@ -503,7 +545,7 @@ public class PoseEstimator extends PoseTracker {
      */
     @Override
     public void resetHeadingToIMUWithOffsets() {
-        super.resetHeadingToIMUWithOffsets();
+//        super.resetHeadingToIMUWithOffsets();
         if (Double.isNaN(getIMUHeadingEstimate()) || Double.isInfinite(getIMUHeadingEstimate())) {
             setCurrentPoseWithOffset(new Pose(getPose().getX(), getPose().getY(), getNormalizedIMUHeading() + startingPose.getHeading()));
         }
@@ -560,8 +602,8 @@ public class PoseEstimator extends PoseTracker {
      */
     @Override
     public void resetIMU() throws InterruptedException {
-        super.resetIMU();
-//        localizer.resetIMU();
+//        super.resetIMU();
+        localizer.resetIMU();
         m_odometryPoseBuffer.clear();
         m_visionUpdates.clear();
     }
@@ -721,6 +763,10 @@ public class PoseEstimator extends PoseTracker {
 
         public Pose compensate(Pose pose) {
             Pose delta = pose.minus(this.odometryPose.getPose());
+//            NovaPyraRobot.telemetry.addData("VU vision x", this.visionPose.getX());
+//            NovaPyraRobot.telemetry.addData("VU odom x", pose.getX());
+//            NovaPyraRobot.telemetry.addData("VU vision y", this.visionPose.getY());
+//            NovaPyraRobot.telemetry.addData("VU odom y", pose.getY());
             return this.visionPose.getPose().plus(delta);
         }
     }
