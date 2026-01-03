@@ -1,6 +1,10 @@
 package org.firstinspires.ftc.teamcode.constants;
 
 public class Devices {
+    public static final class Power {
+        public static final String currentSensor = "current_sensor";
+    }
+
     public static final class Drivetrain {
         public static final String driveMotorFrontLeft = "drive_motor_front_left";
         public static final String driveMotorFrontRight = "drive_motor_front_right";
