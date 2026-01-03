@@ -217,7 +217,4 @@ public class Exploration extends CommandOpMode {
         }
         return Math.abs(robot.vision.angleToTarget()) <= VisionConstants.headingAngleThresholdDeg;
     }
-
-
-
 }
