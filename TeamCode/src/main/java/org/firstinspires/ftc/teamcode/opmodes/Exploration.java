@@ -139,11 +139,24 @@ public class Exploration extends CommandOpMode {
         robot.pedroFollower.setTeleOpDrive(driveAxes[0], driveAxes[1], rotateAxis, false,
                 Math.toRadians(OdometryConstants.DefaultStartPose.allianceDriveHeadingOffset(alliance)));
         robot.pedroFollower.update();
+
+        /**
+         * Update the odometry with vision sample if valid
+         */
+        if (robot.vision.isPoseValid()) {
+            robot.pedroFollower.addVisionUpdate(robot.vision.getPedroPose(),
+                    System.nanoTime() - robot.vision.getVisionLatencyNS());
+        }
+
+
         robot.shotController.updateState();
 
         telemetry.addData("X", robot.pedroFollower.getPose().getX());
         telemetry.addData("Y", robot.pedroFollower.getPose().getY());
         telemetry.addData("Heading", robot.pedroFollower.getPose().getHeading());
+        telemetry.addData("Old X", robot.pedroFollower.getUncorrectedPose().getX());
+        telemetry.addData("Old Y", robot.pedroFollower.getUncorrectedPose().getY());
+        telemetry.addData("Old Heading", robot.pedroFollower.getUncorrectedPose().getHeading());
         telemetry.addData("LL Seeing Target", robot.vision.isSeeingTarget());
         telemetry.addData("LL Angle (deg)", robot.vision.angleToTarget());
         telemetry.addData("Is Shooting?", robot.shotController.isShooting());

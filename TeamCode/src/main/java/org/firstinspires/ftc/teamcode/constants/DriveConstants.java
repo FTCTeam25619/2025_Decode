@@ -27,4 +27,12 @@ public class DriveConstants {
         public static double kDSecondaryHeadingCorrection = 0.0;
         public static double SecondaryHeadingThreshold = 5.0;
     }
+
+    @Configurable
+    public static class PoseEstimator {
+        public static boolean useVisionPoseEstimate = true;  // If enabled apply vision updates to pose
+        public static double[] stateStdDevs = {0.05, 0.05, 0.0};
+        public static double[] visionStdDevs = {0.1, 0.1, 0.5};
+        public static double maxSlewRateDPS = 360.0;
+    }
 }
