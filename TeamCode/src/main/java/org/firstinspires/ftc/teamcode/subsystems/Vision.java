@@ -2,8 +2,6 @@ package org.firstinspires.ftc.teamcode.subsystems;
 
 import static org.firstinspires.ftc.teamcode.constants.Constants.ConversionFactors.METERS_TO_FEET;
 
-import com.pedropathing.ftc.FTCCoordinates;
-import com.pedropathing.ftc.InvertedFTCCoordinates;
 import com.pedropathing.geometry.PedroCoordinates;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResult;
@@ -124,5 +122,13 @@ public class Vision extends SubsystemBase {
                 -latestPose.getPosition().toUnit(DistanceUnit.INCH).x + 72.0,
                 odometry.getHeadingRadians(),
                 PedroCoordinates.INSTANCE);
+    }
+
+    public double getVisionLatencyNS() {
+        return 1.0E6 * (latestResult.getTargetingLatency() + latestResult.getCaptureLatency());
+    }
+
+    public boolean isPoseValid() {
+        return latestResult.isValid();
     }
 }
