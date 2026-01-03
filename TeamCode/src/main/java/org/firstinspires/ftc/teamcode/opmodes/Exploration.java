@@ -145,7 +145,7 @@ public class Exploration extends CommandOpMode {
          */
         if (robot.vision.isPoseValid()) {
             robot.pedroFollower.addVisionUpdate(robot.vision.getPedroPose(),
-                    System.nanoTime());
+                    System.nanoTime() - robot.vision.getVisionLatencyNS());
         }
 
 

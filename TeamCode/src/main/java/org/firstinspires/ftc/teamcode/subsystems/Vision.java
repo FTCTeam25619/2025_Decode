@@ -124,6 +124,10 @@ public class Vision extends SubsystemBase {
                 PedroCoordinates.INSTANCE);
     }
 
+    public double getVisionLatencyNS() {
+        return 1.0E6 * (latestResult.getTargetingLatency() + latestResult.getCaptureLatency());
+    }
+
     public boolean isPoseValid() {
         return latestResult.isValid();
     }

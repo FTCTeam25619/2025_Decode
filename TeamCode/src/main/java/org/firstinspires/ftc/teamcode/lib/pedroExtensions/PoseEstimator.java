@@ -119,11 +119,11 @@ public class PoseEstimator extends PoseTracker {
      * @param visionRobotPoseMeters The pose of the robot as measured by the vision camera.
      * @param timestampNanoseconds The timestamp of the vision measurement in seconds. Note that if you
      *     don't use your own time source by calling {@link
-     *     PoseEstimator#addVisionMeasurement(Pose, long)} then you must use a timestamp with
+     *     PoseEstimator#addVisionMeasurement(Pose, double)} then you must use a timestamp with
      *     an epoch since FPGA startup (i.e., the epoch of this timestamp is the same epoch as
      *     System.nanotime().) This means that you should use System.nanoTime() as your time source or sync the epochs.
      */
-    public void addVisionMeasurement(Pose visionRobotPoseMeters, long timestampNanoseconds) {
+    public void addVisionMeasurement(Pose visionRobotPoseMeters, double timestampNanoseconds) {
         double timestampSeconds = timestampNanoseconds / 1.0E9;
         InterpPose visionInterpPose = new InterpPose(visionRobotPoseMeters);
         // Step 0: If this measurement is old enough to be outside the pose buffer's timespan, skip.
@@ -243,7 +243,7 @@ public class PoseEstimator extends PoseTracker {
      */
     public void addVisionMeasurement(
             Pose visionRobotPoseMeters,
-            long timestampNanoseconds,
+            double timestampNanoseconds,
             double[] visionMeasurementStdDevs) {
         setVisionMeasurementStdDevs(visionMeasurementStdDevs);
         addVisionMeasurement(visionRobotPoseMeters, timestampNanoseconds);

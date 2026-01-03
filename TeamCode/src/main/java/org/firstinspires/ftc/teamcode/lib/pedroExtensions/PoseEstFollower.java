@@ -46,12 +46,12 @@ public class PoseEstFollower extends Follower {
         this(constants, localizer, drivetrain, PathConstraints.defaultConstraints);
     }
 
-    public void addVisionUpdate(Pose visionPose, long visionTimestampNanoseconds) {
+    public void addVisionUpdate(Pose visionPose, double visionTimestampNanoseconds) {
         poseEstimator.addVisionMeasurement(visionPose, visionTimestampNanoseconds);
     }
 
     public void addVisionUpdate(Pose visonPose,
-                                long visionTimeStampNanoseconds,
+                                double visionTimeStampNanoseconds,
                                 double[] visionStdDevs) {
         poseEstimator.addVisionMeasurement(visonPose, visionTimeStampNanoseconds, visionStdDevs);
     }
