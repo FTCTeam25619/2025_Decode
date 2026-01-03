@@ -5,7 +5,7 @@
 package org.firstinspires.ftc.teamcode.lib.pedroExtensions;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.WPILibMathUtil;
+import org.firstinspires.ftc.teamcode.lib.util.NovaPyraUtils;
 import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.interpolation.Interpolatable;
 
 import java.util.Collections;
@@ -242,7 +242,7 @@ public class Translation
   @Override
   public Translation interpolate(Translation endValue, double t) {
     return new Translation(
-        WPILibMathUtil.interpolate(this.getX(), endValue.getX(), t),
-        WPILibMathUtil.interpolate(this.getY(), endValue.getY(), t));
+        NovaPyraUtils.interpolate(this.getX(), endValue.getX(), t),
+        NovaPyraUtils.interpolate(this.getY(), endValue.getY(), t));
   }
 }

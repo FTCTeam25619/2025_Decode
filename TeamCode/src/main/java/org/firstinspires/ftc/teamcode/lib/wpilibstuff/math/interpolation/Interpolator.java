@@ -5,7 +5,7 @@
 package org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.interpolation;
 
 
-import org.firstinspires.ftc.teamcode.lib.wpilibstuff.math.WPILibMathUtil;
+import org.firstinspires.ftc.teamcode.lib.util.NovaPyraUtils;
 
 /**
  * An interpolation function that returns a value interpolated between an upper and lower bound.
@@ -31,6 +31,6 @@ public interface Interpolator<T> {
    * @return Interpolator for Double.
    */
   static Interpolator<Double> forDouble() {
-    return WPILibMathUtil::interpolate;
+    return NovaPyraUtils::interpolate;
   }
 }
