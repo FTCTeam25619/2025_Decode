@@ -73,10 +73,7 @@ public class PoseEstFollower extends Follower {
 
     @Override
     public Pose getPose() {
-        if (DriveConstants.PoseEstimator.useVisionPoseEstimate) {
-            return poseEstimator.getVisionUpdatedPose();
-        }
-        return super.getPose();
+        return poseEstimator.getPose();
     }
 
     public Pose getUncorrectedPose() { return super.getPose(); }

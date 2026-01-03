@@ -208,7 +208,7 @@ public class PoseEstimator extends PoseTracker {
 
         // Step 9: Update latest pose estimate. Since we cleared all updates after this vision update,
         // it's guaranteed to be the latest vision update.
-        m_poseEstimate = visionUpdate.compensate(getPose());
+        m_poseEstimate = visionUpdate.compensate(getUncorrectedPose());
 
 //        NovaPyraRobot.telemetry.addData("VisionUpdate size", m_visionUpdates.size());
 //        NovaPyraRobot.telemetry.addData("exit 3", ++exitCounter[3]);
@@ -400,8 +400,7 @@ public class PoseEstimator extends PoseTracker {
      *
      * @return returns the current pose.
      */
-    @Override
-    public Pose getPose() {
+    public Pose getUncorrectedPose() {
         if (currentPose == null) {
             currentPose = new InterpPose(
                     localizer.getPose().getX(),
@@ -420,6 +419,14 @@ public class PoseEstimator extends PoseTracker {
     public Pose getVisionUpdatedPose() {
         updatePoseEstimate();
         return m_poseEstimate;
+    }
+
+    @Override
+    public Pose getPose() {
+        if (DriveConstants.PoseEstimator.useVisionPoseEstimate) {
+            return getVisionUpdatedPose();
+        }
+        return getUncorrectedPose();
     }
 
     /**
@@ -473,7 +480,7 @@ public class PoseEstimator extends PoseTracker {
      */
     @Override
     public Pose getDeltaPose() {
-        Pose returnPose = getPose();
+        Pose returnPose = getUncorrectedPose();
         return returnPose.minus(previousPose.getPose());
     }
 
@@ -524,7 +531,7 @@ public class PoseEstimator extends PoseTracker {
     public void resetHeadingToIMU() {
 //        super.resetHeadingToIMU();
         if (Double.isNaN(getIMUHeadingEstimate()) || Double.isInfinite(getIMUHeadingEstimate())) {
-            localizer.setPose(new Pose(getPose().getX(), getPose().getY(), getNormalizedIMUHeading() + startingPose.getHeading()));
+            localizer.setPose(new Pose(getUncorrectedPose().getX(), getUncorrectedPose().getY(), getNormalizedIMUHeading() + startingPose.getHeading()));
         }
         m_odometryPoseBuffer.clear();
         m_visionUpdates.clear();
@@ -540,7 +547,7 @@ public class PoseEstimator extends PoseTracker {
     public void resetHeadingToIMUWithOffsets() {
 //        super.resetHeadingToIMUWithOffsets();
         if (Double.isNaN(getIMUHeadingEstimate()) || Double.isInfinite(getIMUHeadingEstimate())) {
-            setCurrentPoseWithOffset(new Pose(getPose().getX(), getPose().getY(), getNormalizedIMUHeading() + startingPose.getHeading()));
+            setCurrentPoseWithOffset(new Pose(getUncorrectedPose().getX(), getUncorrectedPose().getY(), getNormalizedIMUHeading() + startingPose.getHeading()));
         }
         m_odometryPoseBuffer.clear();
         m_visionUpdates.clear();
@@ -604,7 +611,7 @@ public class PoseEstimator extends PoseTracker {
     @Override
     public String debugString() {
         return "PoseTracker{" +
-                "currentPose=" + getPose() +
+                "currentPose=" + getUncorrectedPose() +
                 ", previousPose=" + getPreviousPose() +
                 ", currentVelocity=" + getVelocity() +
                 ", previousVelocity=" + previousVelocity +
@@ -716,10 +723,10 @@ public class PoseEstimator extends PoseTracker {
 
     private void updatePoseEstimate() {
         if (!DriveConstants.PoseEstimator.useVisionPoseEstimate || m_visionUpdates.isEmpty()) {
-            m_poseEstimate = getPose();
+            m_poseEstimate = getUncorrectedPose();
         } else {
             VisionUpdate visionUpdate = m_visionUpdates.get(m_visionUpdates.lastKey());
-            m_poseEstimate = visionUpdate.compensate(getPose());
+            m_poseEstimate = visionUpdate.compensate(getUncorrectedPose());
         }
     }
 
