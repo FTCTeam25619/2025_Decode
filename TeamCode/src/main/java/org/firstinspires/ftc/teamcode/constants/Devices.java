@@ -13,6 +13,7 @@ public class Devices {
     }
 
     public static final class Indicators {
+        public static final String indicatorLight0 = "indicator_light_0";
         public static final String indicatorLight1 = "indicator_light_1";
         public static final String indicatorLight2 = "indicator_light_2";
         public static final String indicatorLight3 = "indicator_light_3";
