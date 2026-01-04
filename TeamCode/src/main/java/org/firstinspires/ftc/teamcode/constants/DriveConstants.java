@@ -17,8 +17,23 @@ public class DriveConstants {
 
     @Configurable
     public static class HeadingControl {
-        public static double kPHeadingCorrection = 0.018;
+        @Configurable
+        public static class PrimaryPID {
+
+            public static double kPHeadingCorrection = 0.015;
+            public static double kIHeadingCorrection = 0.0;
+            public static double kDHeadingCorrection = 0.0025;
+        }
+        @Configurable
+        public static class SecondaryPID {
+
+            public static double kPSecondaryHeadingCorrection = 0.01;
+            public static double kISecondaryHeadingCorrection = 0.1;
+            public static double kDSecondaryHeadingCorrection = 0.001;
+        }
         public static double correctionOutputClamp = 0.6;
+        public static double kFHeadingCorrection = 0.025;
+        public static double SecondaryHeadingThreshold = 3.5;
     }
 
     @Configurable
