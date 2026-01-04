@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.constants;
 
 import com.bylazar.configurables.annotations.Configurable;
+import com.pedropathing.geometry.Pose;
 
 @Configurable
 public class VisionConstants {
@@ -19,16 +20,18 @@ public class VisionConstants {
     public static double headingAngleThresholdDeg = 1.0;
 
     public enum AprilTags {
-        BlueGoal(20),
-        RedGoal(24),
-        PatternGPP(21),
-        PatternPGP(22),
-        PatternPPG(23);
+        BlueGoal(20, new Pose(126.316, 129.047, 0.0)),
+        RedGoal(24, new Pose(15.032, 129.047, 0.0)),
+        PatternGPP(21, new Pose(0.0, 0.0, 0.0)),
+        PatternPGP(22, new Pose(0.0, 0.0, 0.0)),
+        PatternPPG(23, new Pose(0.0, 0.0, 0.0));
 
         public final int id;
+        public final Pose pose;
 
-        private AprilTags(int tagID) {
+        private AprilTags(int tagID, Pose tagCoords) {
             id = tagID;
+            pose = tagCoords;
         }
     }
 }
