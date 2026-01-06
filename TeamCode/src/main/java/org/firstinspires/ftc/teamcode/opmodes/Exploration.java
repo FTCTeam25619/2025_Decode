@@ -214,7 +214,7 @@ public class Exploration extends CommandOpMode {
 
     public double calculateAutoAimFromOdometry() {
         // Subtract current robot pose from target pose, returning the positive vector to target
-        Pose delta = robot.vision.getTargetTagPose().minus(robot.pedroFollower.getPose());
+        Pose delta = robot.pedroFollower.getPose().minus(robot.vision.getTargetTagPose());
         // Calculate the difference in heading between the robot heading and the positive vector to target
         double angleToTagHeadingRad = -1.0 * Pose.cartesianToPolar(delta.getX(), delta.getY())[1] -
                 robot.pedroFollower.getPose().getHeading();  // Negate to match sign provide dby LL tx
