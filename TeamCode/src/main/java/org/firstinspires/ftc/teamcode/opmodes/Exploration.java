@@ -216,8 +216,8 @@ public class Exploration extends CommandOpMode {
         // Subtract current robot pose from target pose, returning the positive vector to target
         Pose delta = robot.vision.getTargetTagPose().minus(robot.pedroFollower.getPose());
         // Calculate the difference in heading between the robot heading and the positive vector to target
-        double angleToTagHeadingRad = Pose.cartesianToPolar(delta.getX(), delta.getY())[1] -
-                robot.pedroFollower.getPose().getHeading();
+        double angleToTagHeadingRad = -1.0 * Pose.cartesianToPolar(delta.getX(), delta.getY())[1] -
+                robot.pedroFollower.getPose().getHeading();  // Negate to match sign provide dby LL tx
         // Normalize the angle adjustment to heading
         double normalizedAngleRad = MathFunctions.normalizeAngle(angleToTagHeadingRad) - Math.PI;
         // Call the normal PID calculator for auto-aim rotation
