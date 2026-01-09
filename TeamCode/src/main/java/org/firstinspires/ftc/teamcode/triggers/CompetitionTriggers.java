@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.triggers;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.RepeatCommand;
 import com.seattlesolvers.solverslib.command.button.GamepadButton;
-import com.seattlesolvers.solverslib.command.button.Trigger;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
