@@ -9,6 +9,7 @@ import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.NovaPyraRobot;
+import org.firstinspires.ftc.teamcode.constants.FeedStopConstants;
 import org.firstinspires.ftc.teamcode.constants.OdometryConstants;
 import org.firstinspires.ftc.teamcode.lib.orchestration.PresetShot;
 import org.firstinspires.ftc.teamcode.lib.orchestration.ShotCycleState;
@@ -155,5 +156,12 @@ public class CompetitionTriggers implements ControllerTriggers {
         GamepadButton c1Start = new GamepadButton(controller1, GamepadKeys.Button.START);
 
         // Map controller 2 buttons to commands
+        c2A.whenActive(new InstantCommand(robot.feedStop::setTestPosition));
+
+        c2LeftBumper.whenActive(new InstantCommand(robot.feedStop::disengage));
+        c2RightBumper.whenActive(new InstantCommand(robot.feedStop::engage));
+
+        c2DPadRight.whenActive(new InstantCommand(() -> robot.feedStop.moveBy(FeedStopConstants.Control.incrementSize)));
+        c2DPadLeft.whenActive(new InstantCommand(() -> robot.feedStop.moveBy(-FeedStopConstants.Control.incrementSize)));
     }
 }
