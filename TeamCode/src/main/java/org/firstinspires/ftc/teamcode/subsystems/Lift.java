@@ -51,7 +51,7 @@ public class Lift extends SubsystemBase {
 
         // TODO: Check these inversions
         liftServoLeft.setInverted(false);
-        liftServoRight.setInverted(true);
+        liftServoRight.setInverted(false);
 
         this.telemetry = telemetry;
     }
