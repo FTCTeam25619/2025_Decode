@@ -2,8 +2,6 @@ package org.firstinspires.ftc.teamcode.lib.util;
 
 import com.seattlesolvers.solverslib.util.MathUtils;
 
-import java.lang.Math;
-
 public class NovaPyraUtils {
     public static double[] deadbandAndSmooth(double forward, double strafe, double smoothFactor,
                                       double deadband, double inverseDeadband) {
@@ -39,5 +37,17 @@ public class NovaPyraUtils {
 
         double smoothed = smoothingFactor * Math.pow(value, 3.0) + ((1.0 - smoothingFactor) * value);
         return (smoothed > 0.0 ? 1.0 : -1.0 ) * inverseDeadband + (1.0 - inverseDeadband) * smoothed;
+    }
+
+    /**
+     * Perform linear interpolation between two values.
+     *
+     * @param startValue The value to start at.
+     * @param endValue   The value to end at.
+     * @param t          How far between the two values to interpolate. This is clamped to [0, 1].
+     * @return The interpolated value.
+     */
+    public static double interpolate(double startValue, double endValue, double t) {
+        return startValue + (endValue - startValue) * MathUtils.clamp(t, 0, 1);
     }
 }

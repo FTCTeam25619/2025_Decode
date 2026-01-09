@@ -5,6 +5,7 @@ import com.bylazar.telemetry.JoinedTelemetry;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.pedropathing.geometry.Pose;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
+import com.seattlesolvers.solverslib.controller.PIDController;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 import com.seattlesolvers.solverslib.util.MathUtils;
@@ -30,10 +31,18 @@ public class Exploration extends CommandOpMode {
     public GamepadEx controller2;
     private ControllerTriggers controllerMappings;
     private RobotTriggers robotTriggers;
+    private PIDController headingController;
+    private PIDController secondaryHeadingController;
 
     public Exploration(Alliance allianceSetting) {
         super();
         alliance = allianceSetting;
+        headingController = new PIDController(DriveConstants.HeadingControl.PrimaryPID.kPHeadingCorrection,
+                DriveConstants.HeadingControl.PrimaryPID.kIHeadingCorrection,
+                DriveConstants.HeadingControl.PrimaryPID.kDHeadingCorrection);
+        secondaryHeadingController = new PIDController(DriveConstants.HeadingControl.SecondaryPID.kPSecondaryHeadingCorrection,
+                DriveConstants.HeadingControl.SecondaryPID.kISecondaryHeadingCorrection,
+                DriveConstants.HeadingControl.SecondaryPID.kDSecondaryHeadingCorrection);
     }
 
     @Override
@@ -115,22 +124,13 @@ public class Exploration extends CommandOpMode {
         // ----------------------------------------------------
 
         // Automatic aiming during PREPARE_SHOT / READY_TO_SHOOT / SHOOTING / RECOVERY
-        if (robot.shotController.isShooting() && robot.vision.isSeeingTarget()) {
-            double headingErrorDeg = robot.vision.angleToTarget();
-            rotateAxis = MathUtils.clamp(
-                    -DriveConstants.HeadingControl.kPHeadingCorrection * headingErrorDeg,
-                    -DriveConstants.HeadingControl.correctionOutputClamp,
-                    DriveConstants.HeadingControl.correctionOutputClamp
-            );
-        }
-        // --- AIM ASSIST BUTTON (only when NOT preparing shot or shooting) ---
-        else if (controller1.getButton(GamepadKeys.Button.RIGHT_STICK_BUTTON) && robot.vision.isSeeingTarget()) {
-            rotateAxis = MathUtils.clamp(
-                    -DriveConstants.HeadingControl.kPHeadingCorrection * robot.vision.angleToTarget(),
-                    -DriveConstants.HeadingControl.correctionOutputClamp,
-                    DriveConstants.HeadingControl.correctionOutputClamp);
+        if ((robot.shotController.isShooting() || controller1.getButton(GamepadKeys.Button.RIGHT_STICK_BUTTON))
+                && robot.vision.isSeeingTarget()) {
+            rotateAxis = calculateAutoAimRotation(robot.vision.angleToTarget());
         } else {
             rotateAxis /= DriveConstants.Joysticks.rotateScalingFactor;
+            headingController.reset();
+            secondaryHeadingController.reset();
         }
 
         // ----------------------------------------------------
@@ -139,6 +139,16 @@ public class Exploration extends CommandOpMode {
         robot.pedroFollower.setTeleOpDrive(driveAxes[0], driveAxes[1], rotateAxis, false,
                 Math.toRadians(OdometryConstants.DefaultStartPose.allianceDriveHeadingOffset(alliance)));
         robot.pedroFollower.update();
+
+        /**
+         * Update the odometry with vision sample if valid
+         */
+        if (robot.vision.isPoseValid()) {
+            robot.pedroFollower.addVisionUpdate(robot.vision.getPedroPose(),
+                    System.nanoTime() - robot.vision.getVisionLatencyNS());
+        }
+
+
         robot.shotController.updateState();
 
         telemetry.addData("X", robot.pedroFollower.getPose().getX());
@@ -170,25 +180,31 @@ public class Exploration extends CommandOpMode {
     // --- AUTO AIM HELPERS (Limelight-only for now) ---
 
     /**
-     * One step of auto-aim:
-     * - If Limelight sees the tag, use tx (angleToTarget) to rotate.
-     * - If no target, do nothing (no odometry backup for now).
-     * This ONLY sets teleOpDrive rotation; follower.update() is called elsewhere.
+     * Calculates the drive heading input for aiming correctly at target based on input angle
+     *
+     * @param angleToTarget
+     * @return
      */
-    public void autoAimStep() {
-        double rotateAxis = 0.0;
-
-        if (robot.vision.isSeeingTarget()) {
-            double headingErrorDeg = robot.vision.angleToTarget();
-            rotateAxis = MathUtils.clamp(
-                    -DriveConstants.HeadingControl.kPHeadingCorrection * headingErrorDeg,
-                    -DriveConstants.HeadingControl.correctionOutputClamp,
-                    DriveConstants.HeadingControl.correctionOutputClamp
-            );
+    public double calculateAutoAimRotation(double angleToTarget) {
+        double rotatePower = 0.0;
+        if (Math.abs(angleToTarget) >= DriveConstants.HeadingControl.SecondaryHeadingThreshold) {
+            rotatePower = headingController.calculate(angleToTarget);
+            secondaryHeadingController.reset();
+        } else {
+            rotatePower = secondaryHeadingController.calculate(angleToTarget);
+            headingController.reset();
         }
 
-        // No translation while lining up – just rotate (if rotateAxis == 0, this is a no-op)
-        robot.pedroFollower.setTeleOpDrive(0.0, 0.0, rotateAxis, false);
+        if (rotatePower >= 1.0E-3) {
+             rotatePower += DriveConstants.HeadingControl.kFHeadingCorrection;
+        } else if (rotatePower <= -1.0E-3) {
+            rotatePower -= DriveConstants.HeadingControl.kFHeadingCorrection;
+        } else {
+            rotatePower = 0.0;
+        }
+
+        return MathUtils.clamp(rotatePower, -DriveConstants.HeadingControl.correctionOutputClamp,
+            DriveConstants.HeadingControl.correctionOutputClamp);
     }
 
     /**

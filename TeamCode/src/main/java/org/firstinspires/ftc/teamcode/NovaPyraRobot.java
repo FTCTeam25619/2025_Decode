@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.pedropathing.follower.Follower;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.command.Robot;
 
@@ -8,6 +7,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.constants.PedroConstants;
 import org.firstinspires.ftc.teamcode.lib.orchestration.ShotController;
 import org.firstinspires.ftc.teamcode.constants.Alliance;
+import org.firstinspires.ftc.teamcode.lib.pedroExtensions.PoseEstFollower;
 import org.firstinspires.ftc.teamcode.subsystems.FeedStop;
 import org.firstinspires.ftc.teamcode.subsystems.Hood;
 import org.firstinspires.ftc.teamcode.subsystems.IndicatorLights;
@@ -39,7 +39,7 @@ public class NovaPyraRobot extends Robot {
     public final IndicatorLights indicatorLights;
     public final Vision vision;
     public final ShotController shotController;
-    public final Follower pedroFollower;
+    public final PoseEstFollower pedroFollower;
     public final Alliance alliance;
 
     public NovaPyraRobot(HardwareMap hardwareMap, Telemetry telemetry, Alliance alliance) {
@@ -60,7 +60,7 @@ public class NovaPyraRobot extends Robot {
         sensors = new Sensors(hardwareMap, NovaPyraRobot.telemetry);
         odometry = new Odometry(hardwareMap, NovaPyraRobot.telemetry);
         vision = new Vision(hardwareMap, odometry, NovaPyraRobot.telemetry, alliance);
-        pedroFollower = PedroConstants.createFollower(hardwareMap);
+        pedroFollower = PedroConstants.createPoseEstFollower(hardwareMap);
 
         // Orchestrators
         shotController = new ShotController(this, NovaPyraRobot.telemetry);
