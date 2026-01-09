@@ -121,11 +121,11 @@ public class Exploration extends CommandOpMode {
         );
 
         // ----------------------------------------------------
-        // AUTO-AIM LOGIC (Limelight-only, no odom backup)
+        // AUTO-AIM LOGIC (Limelight with odom backup)
         // ----------------------------------------------------
 
-        // Automatic aiming during PREPARE_SHOT / READY_TO_SHOOT / SHOOTING / RECOVERY
-        if (robot.shotController.isShooting() || controller1.getButton(GamepadKeys.Button.RIGHT_STICK_BUTTON)) {
+        // Automatic aiming during PREPARE_SHOT / READY_TO_SHOOT
+        if (robot.shotController.doAutoHeading() || controller1.getButton(GamepadKeys.Button.RIGHT_STICK_BUTTON)) {
             if (robot.vision.isSeeingTarget()) {
                 rotateAxis = calculateAutoAimRotation(robot.vision.angleToTarget());
             } else if (DriveConstants.PoseEstimator.useVisionPoseEstimate) {
