@@ -9,8 +9,6 @@ import org.firstinspires.ftc.teamcode.lib.triggers.ControllerTriggers;
 import org.firstinspires.ftc.teamcode.lib.triggers.LeftStickY;
 import org.firstinspires.ftc.teamcode.lib.triggers.RightStickY;
 
-import kotlin.time.Instant;
-
 public class TuningTriggers implements ControllerTriggers {
     private final NovaPyraRobot robot;
     private final GamepadEx controller1;
