@@ -46,6 +46,8 @@ public class TuningTriggers implements ControllerTriggers {
         GamepadButton c2B = new GamepadButton(controller2, GamepadKeys.Button.B);
         GamepadButton c2X = new GamepadButton(controller2, GamepadKeys.Button.X);
         GamepadButton c2Y = new GamepadButton(controller2, GamepadKeys.Button.Y);
+        GamepadButton c2DPadUp = new GamepadButton(controller2, GamepadKeys.Button.DPAD_UP);
+        GamepadButton c2DPadDown = new GamepadButton(controller2, GamepadKeys.Button.DPAD_DOWN);
         GamepadButton c2LeftBumper = new GamepadButton(controller2, GamepadKeys.Button.LEFT_BUMPER);
         GamepadButton c2Back = new GamepadButton(controller2, GamepadKeys.Button.BACK);
         GamepadButton c2Start = new GamepadButton(controller2, GamepadKeys.Button.START);
