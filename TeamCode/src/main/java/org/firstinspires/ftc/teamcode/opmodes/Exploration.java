@@ -4,6 +4,7 @@ package org.firstinspires.ftc.teamcode.opmodes;
 import com.bylazar.telemetry.JoinedTelemetry;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.pedropathing.geometry.Pose;
+import com.pedropathing.math.MathFunctions;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.controller.PIDController;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
@@ -120,13 +121,17 @@ public class Exploration extends CommandOpMode {
         );
 
         // ----------------------------------------------------
-        // AUTO-AIM LOGIC (Limelight-only, no odom backup)
+        // AUTO-AIM LOGIC (Limelight with odom backup)
         // ----------------------------------------------------
 
-        // Automatic aiming during PREPARE_SHOT / READY_TO_SHOOT / SHOOTING / RECOVERY
-        if ((robot.shotController.isShooting() || controller1.getButton(GamepadKeys.Button.RIGHT_STICK_BUTTON))
-                && robot.vision.isSeeingTarget()) {
-            rotateAxis = calculateAutoAimRotation(robot.vision.angleToTarget());
+        // Automatic aiming during PREPARE_SHOT / READY_TO_SHOOT
+        if (robot.shotController.doAutoHeading() || controller1.getButton(GamepadKeys.Button.RIGHT_STICK_BUTTON)) {
+            if (robot.vision.isSeeingTarget()) {
+                rotateAxis = calculateAutoAimRotation(robot.vision.angleToTarget());
+            } else if (DriveConstants.PoseEstimator.useVisionPoseEstimate) {
+                // calculate vector based on odometry
+                rotateAxis = calculateAutoAimFromOdometry();
+            }
         } else {
             rotateAxis /= DriveConstants.Joysticks.rotateScalingFactor;
             headingController.reset();
@@ -205,6 +210,18 @@ public class Exploration extends CommandOpMode {
 
         return MathUtils.clamp(rotatePower, -DriveConstants.HeadingControl.correctionOutputClamp,
             DriveConstants.HeadingControl.correctionOutputClamp);
+    }
+
+    public double calculateAutoAimFromOdometry() {
+        // Subtract current robot pose from target pose, returning the positive vector to target
+        Pose delta = robot.pedroFollower.getPose().minus(robot.vision.getTargetTagPose());
+        // Calculate the difference in heading between the robot heading and the positive vector to target
+        double angleToTagHeadingRad = -1.0 * Pose.cartesianToPolar(delta.getX(), delta.getY())[1] -
+                robot.pedroFollower.getPose().getHeading();  // Negate to match sign provide dby LL tx
+        // Normalize the angle adjustment to heading
+        double normalizedAngleRad = MathFunctions.normalizeAngle(angleToTagHeadingRad) - Math.PI;
+        // Call the normal PID calculator for auto-aim rotation
+        return calculateAutoAimRotation(Math.toDegrees(normalizedAngleRad));
     }
 
     /**

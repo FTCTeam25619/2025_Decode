@@ -395,6 +395,11 @@ public class ShotController {
         return this._presetShotModeTrigger;
     }
 
+    public boolean doAutoHeading() {
+        return this.currentState == ShotCycleState.PREPARE_SHOT ||
+                this.currentState == ShotCycleState.READY_TO_SHOOT;
+    }
+
     public boolean isShooting() {
         return this.currentState == ShotCycleState.PREPARE_SHOT ||
                 this.currentState == ShotCycleState.READY_TO_SHOOT ||

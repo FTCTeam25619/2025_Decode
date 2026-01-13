@@ -31,6 +31,7 @@ public class Vision extends SubsystemBase {
     private Pose3D latestPose = new Pose3D(new Position(),
             new YawPitchRollAngles(AngleUnit.DEGREES, 0.0, 0.0, 0.0, 0));
     private int targetTagID;
+    private VisionConstants.AprilTags targetTag;
     private boolean seeingTarget = false;
     private double angleToTargetDeg = 0.0;
     private double distanceToTagCM = 0.0;
@@ -75,6 +76,11 @@ public class Vision extends SubsystemBase {
 
     public void setTargetingTag(VisionConstants.AprilTags tag) {
         targetTagID = tag.id;
+        targetTag = tag;
+    }
+
+    public Pose getTargetTagPose() {
+        return targetTag.pose;
     }
 
     public boolean isSeeingTarget() {
