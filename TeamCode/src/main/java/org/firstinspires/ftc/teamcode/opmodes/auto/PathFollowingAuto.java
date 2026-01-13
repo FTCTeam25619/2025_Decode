@@ -23,12 +23,12 @@ import org.firstinspires.ftc.teamcode.lib.util.BlackboardHelpers;
 import org.firstinspires.ftc.teamcode.triggers.RobotTriggers;
 
 public abstract class PathFollowingAuto extends CommandOpMode {
-    private NovaPyraRobot robot;
-    private RobotTriggers robotTriggers;
-    private Follower follower;
+    protected NovaPyraRobot robot;
+    protected RobotTriggers robotTriggers;
+    protected Follower follower;
     protected TelemetryData telemetryData;
-    private Alliance alliance;
-    private String autoName;
+    protected Alliance alliance;
+    protected String autoName;
 
     public PathFollowingAuto(String autoName, Alliance allianceSetting) {
         super();
@@ -44,37 +44,37 @@ public abstract class PathFollowingAuto extends CommandOpMode {
     }
 
     // Mechanism commands - replace these with your actual subsystem commands
-    private InstantCommand setupFarWallPresetShot() {
+    protected InstantCommand setupFarWallPresetShot() {
         return new InstantCommand(() -> {
             robot.shotController.setupPresetShot(PresetShot.FarWall);
         });
     }
 
-    private InstantCommand intake() {
+    protected InstantCommand intake() {
         return new InstantCommand(() -> {
             robot.shotController.setState(ShotCycleState.INTAKE);
         });
     }
 
-    private InstantCommand prepareShot() {
+    protected InstantCommand prepareShot() {
         return new InstantCommand(() -> {
             robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
         });
     }
 
-    private InstantCommand shoot() {
+    protected InstantCommand shoot() {
         return new InstantCommand(() -> {
             robot.shotController.setState(ShotCycleState.SHOOTING);
         });
     }
 
-    private InstantCommand spinDown() {
+    protected InstantCommand spinDown() {
         return new InstantCommand(() -> {
             robot.shotController.setState(ShotCycleState.OFF);
         });
     }
 
-    private Trigger readyToShootPreload() {
+    protected Trigger readyToShootPreload() {
         return new SupplierTrigger(() -> (!follower.isBusy()) && robot.shotController.readyToShoot());
     }
 
