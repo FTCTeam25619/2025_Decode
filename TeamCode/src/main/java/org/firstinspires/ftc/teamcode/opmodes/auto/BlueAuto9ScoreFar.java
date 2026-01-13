@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opmodes;
+package org.firstinspires.ftc.teamcode.opmodes.auto;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.JoinedTelemetry;
@@ -27,9 +27,9 @@ import org.firstinspires.ftc.teamcode.lib.triggers.SupplierTrigger;
 import org.firstinspires.ftc.teamcode.lib.util.BlackboardHelpers;
 import org.firstinspires.ftc.teamcode.triggers.RobotTriggers;
 
-@Autonomous(name = "Blue 6-Score Far Wall", group = "Autonomous")
+@Autonomous(name = "Blue 9-Score Far Wall", group = "Autonomous")
 @Configurable // Panels
-public class BlueAuto6ScoreFar extends CommandOpMode {
+public class BlueAuto9ScoreFar extends CommandOpMode {
     private NovaPyraRobot robot;
     private RobotTriggers robotTriggers;
     private Follower follower;
@@ -78,7 +78,7 @@ public class BlueAuto6ScoreFar extends CommandOpMode {
 
         alliance = Alliance.BLUE;
 
-        telemetry.addData("Robot Status", "Initializing Auto 6 Ball Far " + alliance.name());
+        telemetry.addData("Robot Status", "Initializing Auto 9 Ball Far " + alliance.name());
         telemetry.update();
 
         // Setup Dashboard if setup for shop debugging
@@ -123,6 +123,17 @@ public class BlueAuto6ScoreFar extends CommandOpMode {
                                 new WaitCommand(TimingConstants.waitBeforeShootingMS),
                                 shoot(),
                                 new WaitCommand(TimingConstants.waitForShootingMS),
+                                // Intake 3 from from mid row
+                                intake(),
+                                new FollowPathCommand(follower, paths.blueFarZoneScoreToMidIntake),
+                                new WaitCommand(TimingConstants.waitForIntakeMS),
+                                // Score 3
+                                setupFarWallPresetShot(),
+                                prepareShot(),
+                                new FollowPathCommand(follower, paths.blueMidWallIntakeToFarScore),
+                                new WaitCommand(TimingConstants.waitBeforeShootingMS),
+                                shoot(),
+                                new WaitCommand(TimingConstants.waitForShootingMS),
                                 // Park
                                 new FollowPathCommand(follower, paths.blueFarWallToPark, false),
                                 spinDown()
@@ -132,7 +143,7 @@ public class BlueAuto6ScoreFar extends CommandOpMode {
 
 //        readyToShootPreload().whenActive(shoot());
 
-        telemetry.addData("Robot Status", "Initialized Auto 6 Ball Far " + alliance.name());
+        telemetry.addData("Robot Status", "Initialized Auto 9 Ball Far " + alliance.name());
         telemetry.update();
     }
 
@@ -180,6 +191,8 @@ public class BlueAuto6ScoreFar extends CommandOpMode {
         PanelsUtils.Drawing.drawPath(paths.blueWallToFarZonePrescore);
         PanelsUtils.Drawing.drawPath(paths.blueFarZonePrescoreToFarIntake);
         PanelsUtils.Drawing.drawPath(paths.blueFarWallIntakeToFarScore);
+        PanelsUtils.Drawing.drawPath(paths.blueFarZoneScoreToMidIntake);
+        PanelsUtils.Drawing.drawPath(paths.blueMidWallIntakeToFarScore);
         PanelsUtils.Drawing.drawPath(paths.blueFarWallToPark);
     }
 }

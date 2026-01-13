@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opmodes;
+package org.firstinspires.ftc.teamcode.opmodes.auto;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.JoinedTelemetry;
@@ -26,9 +26,9 @@ import org.firstinspires.ftc.teamcode.lib.triggers.SupplierTrigger;
 import org.firstinspires.ftc.teamcode.lib.util.BlackboardHelpers;
 import org.firstinspires.ftc.teamcode.triggers.RobotTriggers;
 
-@Autonomous(name = "Red 6-Score Near Goal", group = "Autonomous")
+@Autonomous(name = "Red 9-Score Near Goal", group = "Autonomous")
 @Configurable // Panels
-public class RedAuto6ScoreNear extends CommandOpMode {
+public class RedAuto9ScoreNear extends CommandOpMode {
     private NovaPyraRobot robot;
     private RobotTriggers robotTriggers;
     private Follower follower;
@@ -117,6 +117,17 @@ public class RedAuto6ScoreNear extends CommandOpMode {
                                 setupNearWallPresetShot(),
                                 prepareShot(),
                                 new FollowPathCommand(follower, paths.redNearWallIntakeToNearScore),
+                                new WaitCommand(TimingConstants.waitBeforeShootingMS),
+                                shoot(),
+                                new WaitCommand(TimingConstants.waitForShootingMS),
+                                // Intake 3 from from mid row
+                                intake(),
+                                new FollowPathCommand(follower, paths.redNearZoneScoreToMidIntake),
+                                new WaitCommand(TimingConstants.waitForIntakeMS),
+                                // Score 3
+                                setupNearWallPresetShot(),
+                                prepareShot(),
+                                new FollowPathCommand(follower, paths.redMidWallIntakeToNearScore),
                                 new WaitCommand(TimingConstants.waitBeforeShootingMS),
                                 shoot(),
                                 new WaitCommand(TimingConstants.waitForShootingMS),

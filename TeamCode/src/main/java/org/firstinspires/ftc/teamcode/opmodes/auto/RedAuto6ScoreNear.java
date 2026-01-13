@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opmodes;
+package org.firstinspires.ftc.teamcode.opmodes.auto;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.JoinedTelemetry;
@@ -16,7 +16,7 @@ import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 import com.seattlesolvers.solverslib.util.TelemetryData;
 
 import org.firstinspires.ftc.teamcode.NovaPyraRobot;
-import org.firstinspires.ftc.teamcode.autos.RedFarFromGoalConstants;
+import org.firstinspires.ftc.teamcode.autos.RedNearGoalConstants;
 import org.firstinspires.ftc.teamcode.autos.TimingConstants;
 import org.firstinspires.ftc.teamcode.constants.Alliance;
 import org.firstinspires.ftc.teamcode.constants.Constants;
@@ -26,20 +26,20 @@ import org.firstinspires.ftc.teamcode.lib.triggers.SupplierTrigger;
 import org.firstinspires.ftc.teamcode.lib.util.BlackboardHelpers;
 import org.firstinspires.ftc.teamcode.triggers.RobotTriggers;
 
-@Autonomous(name = "Red 9-Score Far Wall", group = "Autonomous")
+@Autonomous(name = "Red 6-Score Near Goal", group = "Autonomous")
 @Configurable // Panels
-public class RedAuto9ScoreFar extends CommandOpMode {
+public class RedAuto6ScoreNear extends CommandOpMode {
     private NovaPyraRobot robot;
     private RobotTriggers robotTriggers;
     private Follower follower;
-    private RedFarFromGoalConstants paths;
+    private RedNearGoalConstants paths;
     protected TelemetryData telemetryData;
     private Alliance alliance;
 
     // Mechanism commands - replace these with your actual subsystem commands
-    private InstantCommand setupFarWallPresetShot() {
+    private InstantCommand setupNearWallPresetShot() {
         return new InstantCommand(() -> {
-            robot.shotController.setupPresetShot(PresetShot.FarWall);
+            robot.shotController.setupPresetShot(PresetShot.NearZoneMid);
         });
     }
 
@@ -77,7 +77,7 @@ public class RedAuto9ScoreFar extends CommandOpMode {
 
         alliance = Alliance.RED;
 
-        telemetry.addData("Robot Status", "Initializing Auto 9 Ball Far " + alliance.name());
+        telemetry.addData("Robot Status", "Initializing Auto 9 Ball Near " + alliance.name());
         telemetry.update();
 
         // Setup Dashboard if setup for shop debugging
@@ -91,10 +91,10 @@ public class RedAuto9ScoreFar extends CommandOpMode {
         this.robotTriggers.setupNonControllerTriggers();
 
         this.follower = robot.pedroFollower;
-        this.paths = new RedFarFromGoalConstants(follower);
+        this.paths = new RedNearGoalConstants(follower);
 
         // Initialize follower
-        follower.setStartingPose(paths.redFarWallStart.withHeading(Math.toRadians(paths.redFarWallStartHeading)));
+        follower.setStartingPose(paths.redNearWallStart.withHeading(Math.toRadians(paths.redNearWallStartHeading)));
         BlackboardHelpers.setAutoEndPose(blackboard, follower.getPose());
 
         // Schedule the autonomous sequence
@@ -103,36 +103,25 @@ public class RedAuto9ScoreFar extends CommandOpMode {
                         new RunCommand(follower::update),
                         new SequentialCommandGroup(
                                 // Score preload
-                                setupFarWallPresetShot(),
+                                setupNearWallPresetShot(),
                                 prepareShot(),
-                                new FollowPathCommand(follower, paths.redWallToFarZonePrescore),
+                                new FollowPathCommand(follower, paths.redWallToNearZonePrescore),
                                 new WaitCommand(TimingConstants.waitBeforeShootingMS),
                                 shoot(),
                                 new WaitCommand(TimingConstants.waitForShootingMS),
                                 // Intake 3 from row closest to far wall from goal
                                 intake(),
-                                new FollowPathCommand(follower, paths.redFarZonePrescoreToFarIntake),
+                                new FollowPathCommand(follower, paths.redNearZonePrescoreToNearIntake),
                                 new WaitCommand(TimingConstants.waitForIntakeMS),
                                 // Score 3
-                                setupFarWallPresetShot(),
+                                setupNearWallPresetShot(),
                                 prepareShot(),
-                                new FollowPathCommand(follower, paths.redFarWallIntakeToFarScore),
-                                new WaitCommand(TimingConstants.waitBeforeShootingMS),
-                                shoot(),
-                                new WaitCommand(TimingConstants.waitForShootingMS),
-                                // Intake 3 from from mid row
-                                intake(),
-                                new FollowPathCommand(follower, paths.redFarZoneScoreToMidIntake),
-                                new WaitCommand(TimingConstants.waitForIntakeMS),
-                                // Score 3
-                                setupFarWallPresetShot(),
-                                prepareShot(),
-                                new FollowPathCommand(follower, paths.redMidWallIntakeToFarScore),
+                                new FollowPathCommand(follower, paths.redNearWallIntakeToNearScore),
                                 new WaitCommand(TimingConstants.waitBeforeShootingMS),
                                 shoot(),
                                 new WaitCommand(TimingConstants.waitForShootingMS),
                                 // Park
-                                new FollowPathCommand(follower, paths.redFarWallToPark, false),
+                                new FollowPathCommand(follower, paths.redNearWallToPark, false),
                                 spinDown()
                         )
                 )
@@ -140,7 +129,7 @@ public class RedAuto9ScoreFar extends CommandOpMode {
 
 //        readyToShootPreload().whenActive(shoot());
 
-        telemetry.addData("Robot Status", "Initialized Auto 9 Ball Far " + alliance.name());
+        telemetry.addData("Robot Status", "Initialized Auto 9 Ball Near " + alliance.name());
         telemetry.update();
     }
 

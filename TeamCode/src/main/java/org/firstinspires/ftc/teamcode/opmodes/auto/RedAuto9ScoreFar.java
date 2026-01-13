@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opmodes;
+package org.firstinspires.ftc.teamcode.opmodes.auto;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.JoinedTelemetry;
@@ -16,24 +16,23 @@ import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 import com.seattlesolvers.solverslib.util.TelemetryData;
 
 import org.firstinspires.ftc.teamcode.NovaPyraRobot;
-import org.firstinspires.ftc.teamcode.autos.BlueFarFromGoalConstants;
+import org.firstinspires.ftc.teamcode.autos.RedFarFromGoalConstants;
 import org.firstinspires.ftc.teamcode.autos.TimingConstants;
 import org.firstinspires.ftc.teamcode.constants.Alliance;
 import org.firstinspires.ftc.teamcode.constants.Constants;
 import org.firstinspires.ftc.teamcode.lib.orchestration.PresetShot;
 import org.firstinspires.ftc.teamcode.lib.orchestration.ShotCycleState;
-import org.firstinspires.ftc.teamcode.lib.panels.PanelsUtils;
 import org.firstinspires.ftc.teamcode.lib.triggers.SupplierTrigger;
 import org.firstinspires.ftc.teamcode.lib.util.BlackboardHelpers;
 import org.firstinspires.ftc.teamcode.triggers.RobotTriggers;
 
-@Autonomous(name = "Blue 9-Score Far Wall", group = "Autonomous")
+@Autonomous(name = "Red 9-Score Far Wall", group = "Autonomous")
 @Configurable // Panels
-public class BlueAuto9ScoreFar extends CommandOpMode {
+public class RedAuto9ScoreFar extends CommandOpMode {
     private NovaPyraRobot robot;
     private RobotTriggers robotTriggers;
     private Follower follower;
-    private BlueFarFromGoalConstants paths;
+    private RedFarFromGoalConstants paths;
     protected TelemetryData telemetryData;
     private Alliance alliance;
 
@@ -76,7 +75,7 @@ public class BlueAuto9ScoreFar extends CommandOpMode {
     public void initialize() {
         super.reset();
 
-        alliance = Alliance.BLUE;
+        alliance = Alliance.RED;
 
         telemetry.addData("Robot Status", "Initializing Auto 9 Ball Far " + alliance.name());
         telemetry.update();
@@ -85,8 +84,6 @@ public class BlueAuto9ScoreFar extends CommandOpMode {
         if (Constants.DebugModes.ENABLE_PANELS_DASHBOARD) {
             telemetry = new JoinedTelemetry(PanelsTelemetry.INSTANCE.getFtcTelemetry(), telemetry);
             this.telemetryData = new TelemetryData(telemetry);
-            PanelsUtils.Drawing.init();
-            PanelsUtils.Drawing.sendPacket();
         }
 
         this.robot = new NovaPyraRobot(hardwareMap, telemetry, alliance);
@@ -94,10 +91,10 @@ public class BlueAuto9ScoreFar extends CommandOpMode {
         this.robotTriggers.setupNonControllerTriggers();
 
         this.follower = robot.pedroFollower;
-        this.paths = new BlueFarFromGoalConstants(follower);
+        this.paths = new RedFarFromGoalConstants(follower);
 
         // Initialize follower
-        follower.setStartingPose(paths.blueFarWallStart.withHeading(Math.toRadians(paths.blueFarWallStartHeading)));
+        follower.setStartingPose(paths.redFarWallStart.withHeading(Math.toRadians(paths.redFarWallStartHeading)));
         BlackboardHelpers.setAutoEndPose(blackboard, follower.getPose());
 
         // Schedule the autonomous sequence
@@ -108,34 +105,34 @@ public class BlueAuto9ScoreFar extends CommandOpMode {
                                 // Score preload
                                 setupFarWallPresetShot(),
                                 prepareShot(),
-                                new FollowPathCommand(follower, paths.blueWallToFarZonePrescore),
+                                new FollowPathCommand(follower, paths.redWallToFarZonePrescore),
                                 new WaitCommand(TimingConstants.waitBeforeShootingMS),
                                 shoot(),
                                 new WaitCommand(TimingConstants.waitForShootingMS),
                                 // Intake 3 from row closest to far wall from goal
                                 intake(),
-                                new FollowPathCommand(follower, paths.blueFarZonePrescoreToFarIntake),
+                                new FollowPathCommand(follower, paths.redFarZonePrescoreToFarIntake),
                                 new WaitCommand(TimingConstants.waitForIntakeMS),
                                 // Score 3
                                 setupFarWallPresetShot(),
                                 prepareShot(),
-                                new FollowPathCommand(follower, paths.blueFarWallIntakeToFarScore),
+                                new FollowPathCommand(follower, paths.redFarWallIntakeToFarScore),
                                 new WaitCommand(TimingConstants.waitBeforeShootingMS),
                                 shoot(),
                                 new WaitCommand(TimingConstants.waitForShootingMS),
                                 // Intake 3 from from mid row
                                 intake(),
-                                new FollowPathCommand(follower, paths.blueFarZoneScoreToMidIntake),
+                                new FollowPathCommand(follower, paths.redFarZoneScoreToMidIntake),
                                 new WaitCommand(TimingConstants.waitForIntakeMS),
                                 // Score 3
                                 setupFarWallPresetShot(),
                                 prepareShot(),
-                                new FollowPathCommand(follower, paths.blueMidWallIntakeToFarScore),
+                                new FollowPathCommand(follower, paths.redMidWallIntakeToFarScore),
                                 new WaitCommand(TimingConstants.waitBeforeShootingMS),
                                 shoot(),
                                 new WaitCommand(TimingConstants.waitForShootingMS),
                                 // Park
-                                new FollowPathCommand(follower, paths.blueFarWallToPark, false),
+                                new FollowPathCommand(follower, paths.redFarWallToPark, false),
                                 spinDown()
                         )
                 )
@@ -145,16 +142,6 @@ public class BlueAuto9ScoreFar extends CommandOpMode {
 
         telemetry.addData("Robot Status", "Initialized Auto 9 Ball Far " + alliance.name());
         telemetry.update();
-    }
-
-    public void initialize_loop() {
-        super.initialize_loop();
-        // Things that need to run while disabled every cycle
-        if (Constants.DebugModes.ENABLE_PANELS_DASHBOARD) {
-            PanelsUtils.Drawing.drawVisionAndCurrent(robot.vision, robot.pedroFollower);
-            drawPaths();
-            PanelsUtils.Drawing.sendPacket();
-        }
     }
 
     @Override
@@ -169,12 +156,6 @@ public class BlueAuto9ScoreFar extends CommandOpMode {
             telemetry.addData("Follower heading error", follower.getHeadingError());
         }
 
-        if (Constants.DebugModes.ENABLE_PANELS_DASHBOARD) {
-            PanelsUtils.Drawing.drawVisionAndCurrentAndHistory(robot.vision, robot.pedroFollower);
-            drawPaths();
-            PanelsUtils.Drawing.sendPacket();
-        }
-
         telemetryData.addData("X", follower.getPose().getX());
         telemetryData.addData("Y", follower.getPose().getY());
         telemetryData.addData("Heading", follower.getPose().getHeading());
@@ -185,14 +166,5 @@ public class BlueAuto9ScoreFar extends CommandOpMode {
     public void end() {
         super.end();
         BlackboardHelpers.setAutoEndPose(blackboard, follower.getPose());
-    }
-
-    private void drawPaths() {
-        PanelsUtils.Drawing.drawPath(paths.blueWallToFarZonePrescore);
-        PanelsUtils.Drawing.drawPath(paths.blueFarZonePrescoreToFarIntake);
-        PanelsUtils.Drawing.drawPath(paths.blueFarWallIntakeToFarScore);
-        PanelsUtils.Drawing.drawPath(paths.blueFarZoneScoreToMidIntake);
-        PanelsUtils.Drawing.drawPath(paths.blueMidWallIntakeToFarScore);
-        PanelsUtils.Drawing.drawPath(paths.blueFarWallToPark);
     }
 }
