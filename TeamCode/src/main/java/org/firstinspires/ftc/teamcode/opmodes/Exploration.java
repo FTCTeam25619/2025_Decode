@@ -156,6 +156,11 @@ public class Exploration extends CommandOpMode {
 
         robot.shotController.updateState();
 
+        // ========================================================================
+        // NEW: Update indicator lights based on current state
+        // ========================================================================
+        robotTriggers.updateIndicatorLights();
+
         telemetry.addData("X", robot.pedroFollower.getPose().getX());
         telemetry.addData("Y", robot.pedroFollower.getPose().getY());
         telemetry.addData("Heading", robot.pedroFollower.getPose().getHeading());

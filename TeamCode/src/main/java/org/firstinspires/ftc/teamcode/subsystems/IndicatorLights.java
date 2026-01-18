@@ -18,6 +18,7 @@ public class IndicatorLights extends SubsystemBase {
     private final ServoEx indicatorLight1;
     private final ServoEx indicatorLight2;
     private final ServoEx indicatorLight3;
+    private final ServoEx indicatorLight4;
     private final Telemetry telemetry;
 
     private final LightsManager lightTelemetryManager;
@@ -25,17 +26,19 @@ public class IndicatorLights extends SubsystemBase {
     private final RGBIndicator light1Telemetry;
     private final RGBIndicator light2Telemetry;
     private final RGBIndicator light3Telemetry;
-
+    private final RGBIndicator light4Telemetry;
     public enum Indicators {
         Light1,
         Light2,
-        Light3;
+        Light3,
+        Light4;
     }
 
     public IndicatorLights(HardwareMap hardwareMap, Telemetry telemetry) {
         indicatorLight1 = new ServoEx(hardwareMap, Devices.Indicators.indicatorLight1);
         indicatorLight2 = new ServoEx(hardwareMap, Devices.Indicators.indicatorLight2);
         indicatorLight3 = new ServoEx(hardwareMap, Devices.Indicators.indicatorLight3);
+        indicatorLight4 = new ServoEx(hardwareMap, Devices.Indicators.indicatorLight4);
 
         this.telemetry = telemetry;
         if (Constants.DebugModes.Telemetry.DEBUG_LIGHTS) {
@@ -44,10 +47,12 @@ public class IndicatorLights extends SubsystemBase {
             light1Telemetry = new RGBIndicator("Light 1");
             light2Telemetry = new RGBIndicator("Light 2");
             light3Telemetry = new RGBIndicator("Light 3");
+            light4Telemetry = new RGBIndicator("Light 4");
             lightTelemetryManager.initLights(
                     light1Telemetry,
                     light2Telemetry,
-                    light3Telemetry
+                    light3Telemetry,
+                    light4Telemetry
             );
         } else {
             lightTelemetryManager = null;
@@ -55,6 +60,7 @@ public class IndicatorLights extends SubsystemBase {
             light1Telemetry = null;
             light2Telemetry = null;
             light3Telemetry = null;
+            light4Telemetry = null;
         }
     }
 
@@ -85,6 +91,10 @@ public class IndicatorLights extends SubsystemBase {
             case Light3:
                 setLightColor(indicatorLight3, color.pwmSetting);
                 addLightTelemetry("Light 3", color, light3Telemetry);
+                break;
+            case Light4:
+                setLightColor(indicatorLight4, color.pwmSetting);
+                addLightTelemetry("Light 4", color, light4Telemetry);
                 break;
         }
     }
