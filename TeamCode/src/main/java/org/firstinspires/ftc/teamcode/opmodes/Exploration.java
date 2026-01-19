@@ -15,12 +15,14 @@ import org.firstinspires.ftc.teamcode.constants.Alliance;
 import org.firstinspires.ftc.teamcode.constants.Constants;
 import org.firstinspires.ftc.teamcode.constants.DriveConstants;
 import org.firstinspires.ftc.teamcode.NovaPyraRobot;
+import org.firstinspires.ftc.teamcode.constants.IndicatorLightsConstants;
 import org.firstinspires.ftc.teamcode.constants.OdometryConstants;
 import org.firstinspires.ftc.teamcode.constants.VisionConstants;
 import org.firstinspires.ftc.teamcode.lib.triggers.ControllerTriggers;
 import org.firstinspires.ftc.teamcode.lib.util.BlackboardHelpers;
 import org.firstinspires.ftc.teamcode.lib.util.NovaPyraUtils;
 import org.firstinspires.ftc.teamcode.lib.panels.PanelsUtils.Drawing;
+import org.firstinspires.ftc.teamcode.subsystems.IndicatorLights;
 import org.firstinspires.ftc.teamcode.triggers.CompetitionTriggers;
 import org.firstinspires.ftc.teamcode.triggers.RobotTriggers;
 import org.firstinspires.ftc.teamcode.triggers.TuningTriggers;
@@ -85,6 +87,11 @@ public class Exploration extends CommandOpMode {
         robot.pedroFollower.setPose(startingPose);
 
         robot.pedroFollower.startTeleopDrive();
+
+        // Set light 4 to GREEN since we start in autoAim mode
+        robot.indicatorLights.setLightColor(IndicatorLights.Indicators.Light4, IndicatorLightsConstants.IndicatorColors.GREEN);
+        // Update indicator lights inside staging area - we might have artifacts inside system after auto
+        robotTriggers.updateIndicatorLights();
 
         telemetry.addData("Robot Status", "Initialized Exploration " + alliance.name());
         telemetry.update();
