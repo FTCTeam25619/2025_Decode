@@ -14,6 +14,7 @@ import org.firstinspires.ftc.teamcode.subsystems.IndicatorLights;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Lift;
 import org.firstinspires.ftc.teamcode.subsystems.Odometry;
+import org.firstinspires.ftc.teamcode.subsystems.Power;
 import org.firstinspires.ftc.teamcode.subsystems.Sensors;
 import org.firstinspires.ftc.teamcode.subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.ShooterFeed;
@@ -28,6 +29,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Vision;
  */
 public class NovaPyraRobot extends Robot {
     public static Telemetry telemetry;
+    public final Power power;
     public final Odometry odometry;
     public final ShooterFeed shooterFeed;
     public final Shooter shooter;
@@ -50,6 +52,7 @@ public class NovaPyraRobot extends Robot {
         NovaPyraRobot.telemetry = telemetry;
 
         // Subsystems
+        power = new Power(hardwareMap, NovaPyraRobot.telemetry);
         shooter = new Shooter(hardwareMap, NovaPyraRobot.telemetry);
         indicatorLights = new IndicatorLights(hardwareMap, NovaPyraRobot.telemetry);
         shooterFeed = new ShooterFeed(hardwareMap,NovaPyraRobot.telemetry);
