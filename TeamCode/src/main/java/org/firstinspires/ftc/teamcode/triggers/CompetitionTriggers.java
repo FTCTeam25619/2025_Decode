@@ -3,12 +3,12 @@ package org.firstinspires.ftc.teamcode.triggers;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.RepeatCommand;
 import com.seattlesolvers.solverslib.command.button.GamepadButton;
-import com.seattlesolvers.solverslib.command.button.Trigger;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.NovaPyraRobot;
+import org.firstinspires.ftc.teamcode.constants.LiftConstants;
 import org.firstinspires.ftc.teamcode.constants.OdometryConstants;
 import org.firstinspires.ftc.teamcode.lib.orchestration.PresetShot;
 import org.firstinspires.ftc.teamcode.lib.orchestration.ShotCycleState;
@@ -102,7 +102,6 @@ public class CompetitionTriggers implements ControllerTriggers {
             }
         }));
 
-
         // PRESET SHOTS (fallback / manual)
         c1Back.and(c1A).whenActive(new InstantCommand(() -> {
             robot.shotController.setupPresetShot(PresetShot.AtGoal);
@@ -122,6 +121,10 @@ public class CompetitionTriggers implements ControllerTriggers {
         c1DPadDown.whenPressed(new InstantCommand(() -> robot.shotController.setState(ShotCycleState.OFF)));
         // Reset to auto-targeting
         c1DPadLeft.whenPressed(new InstantCommand(robot.shotController::autoTargetShot));
+
+        // Endgame Lift controls
+        c1Back.and(c1RightBumper).whenActive(new InstantCommand(robot.lift::engage));
+        c1Back.and(c1LeftBumper).whenActive(new InstantCommand(robot.lift::disengage));
 
         // Reset odometry heading to 0 degrees
         c1Start.whenPressed(new InstantCommand(() -> robot.odometry.setOdometryHeading(

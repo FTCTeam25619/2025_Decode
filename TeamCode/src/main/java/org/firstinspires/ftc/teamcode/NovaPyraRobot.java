@@ -12,7 +12,9 @@ import org.firstinspires.ftc.teamcode.subsystems.FeedStop;
 import org.firstinspires.ftc.teamcode.subsystems.Hood;
 import org.firstinspires.ftc.teamcode.subsystems.IndicatorLights;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
+import org.firstinspires.ftc.teamcode.subsystems.Lift;
 import org.firstinspires.ftc.teamcode.subsystems.Odometry;
+import org.firstinspires.ftc.teamcode.subsystems.Power;
 import org.firstinspires.ftc.teamcode.subsystems.Sensors;
 import org.firstinspires.ftc.teamcode.subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.ShooterFeed;
@@ -27,12 +29,14 @@ import org.firstinspires.ftc.teamcode.subsystems.Vision;
  */
 public class NovaPyraRobot extends Robot {
     public static Telemetry telemetry;
+    public final Power power;
     public final Odometry odometry;
     public final ShooterFeed shooterFeed;
     public final Shooter shooter;
     public final FeedStop feedStop;
     public final Hood hood;
     public final Intake intake;
+    public final Lift lift;
     public final Sensors sensors;
     public final IndicatorLights indicatorLights;
     public final Vision vision;
@@ -48,12 +52,14 @@ public class NovaPyraRobot extends Robot {
         NovaPyraRobot.telemetry = telemetry;
 
         // Subsystems
+        power = new Power(hardwareMap, NovaPyraRobot.telemetry);
         shooter = new Shooter(hardwareMap, NovaPyraRobot.telemetry);
         indicatorLights = new IndicatorLights(hardwareMap, NovaPyraRobot.telemetry);
         shooterFeed = new ShooterFeed(hardwareMap,NovaPyraRobot.telemetry);
         feedStop = new FeedStop(hardwareMap, NovaPyraRobot.telemetry);
         hood = new Hood(hardwareMap, NovaPyraRobot.telemetry);
         intake = new Intake(hardwareMap, NovaPyraRobot.telemetry);
+        lift = new Lift(hardwareMap, NovaPyraRobot.telemetry);
         sensors = new Sensors(hardwareMap, NovaPyraRobot.telemetry);
         odometry = new Odometry(hardwareMap, NovaPyraRobot.telemetry);
         vision = new Vision(hardwareMap, odometry, NovaPyraRobot.telemetry, alliance);

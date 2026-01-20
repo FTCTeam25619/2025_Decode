@@ -31,7 +31,7 @@ public class DriveConstants {
             public static double kISecondaryHeadingCorrection = 0.1;
             public static double kDSecondaryHeadingCorrection = 0.001;
         }
-        public static double correctionOutputClamp = 0.6;
+        public static double correctionOutputClamp = 0.4;
         public static double kFHeadingCorrection = 0.025;
         public static double SecondaryHeadingThreshold = 3.5;
     }
