@@ -381,14 +381,14 @@ public class ShotController {
         return this._readyToShootTrigger;
     }
 
-    public Trigger autoShootMode() {
+    public Trigger autoShootModeTrigger() {
         if (this._presetShotModeTrigger == null) {
             this._presetShotModeTrigger = new SupplierTrigger(() -> !this.presetShotMode);
         }
         return this._presetShotModeTrigger.negate();
     }
 
-    public Trigger presetShotMode() {
+    public Trigger presetShotModeTrigger() {
         if (this._presetShotModeTrigger == null) {
             this._presetShotModeTrigger = new SupplierTrigger(() -> this.presetShotMode);
         }
