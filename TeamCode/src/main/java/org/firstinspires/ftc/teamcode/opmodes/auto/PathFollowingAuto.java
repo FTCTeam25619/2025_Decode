@@ -49,6 +49,11 @@ public abstract class PathFollowingAuto extends CommandOpMode {
             robot.shotController.setupPresetShot(PresetShot.FarWall);
         });
     }
+    protected InstantCommand setupNearWallPresetShot() {
+        return new InstantCommand(() -> {
+            robot.shotController.setupPresetShot(PresetShot.NearZoneMid);
+        });
+    }
 
     protected InstantCommand intake() {
         return new InstantCommand(() -> {
