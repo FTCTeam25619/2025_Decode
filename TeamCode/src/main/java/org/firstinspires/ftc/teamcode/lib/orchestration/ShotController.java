@@ -17,7 +17,257 @@ import com.seattlesolvers.solverslib.util.MathUtils;
 
 
 import java.util.function.Predicate;
-
+/**
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ * SHOT CONTROLLER - State Machine for Managing Shot Cycles
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ *
+ * This class orchestrates the complete shot cycle from intake through shooting.
+ * It manages shooter RPM, hood angle, feed mechanisms, and auto-targeting.
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ * STATE MACHINE FLOWCHART
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ *
+ * LEGEND:
+ *   [STATE]           = Current state
+ *   ─────────>        = Automatic transition (no driver input)
+ *   ═════════>        = Driver action required
+ *   Condition?        = Decision point
+ *   {Action}          = What happens during transition
+ *
+ * ┌───────────────────────────────────────────────────────────────────────────────────┐
+ * │                                                                                   │
+ * │  STARTING STATE (Auto Mode Only)                                                  │
+ * │  ┌───────┐                                                                        │
+ * │  │  OFF  │  Used in autonomous - all mechanisms disabled                          │
+ * │  └───┬───┘                                                                        │
+ * │      │                                                                            │
+ * │      │ {Auto starts}                                                              │
+ * │      └────────────────────────────────────────────────────────┐                   │
+ * │                                                               │                   │
+ * │  ┌──────────────────────────────────────────────────────────────────────────────┐ │
+ * │  │  DEFAULT STARTING STATE (TeleOp)                                             │ │
+ * │  │  ┌──────┐                                                                    │ │
+ * │  │  │ IDLE │  Shooter: Idle RPM, Hood: Max angle, FeedStop: Open                │ │
+ * │  │  └───┬──┘  Intake: Off, Feed: Off                                            │ │
+ * │  │      │                                                                       │ │
+ * │  │      │                                                                       │ │
+ * │  │      │ ═══════> Driver holds LT (Left Trigger)                               │ │
+ * │  │      │          {Turn on intake, close feed stop}                            │ │
+ * │  │      ▼                                                                       │ │
+ * │  │  ┌────────┐                                                                  │ │
+ * │  │  │ INTAKE │  Intake: Running, FeedStop: Closed                               │ │
+ * │  │  └────┬───┘  Shooter: Idle RPM, Feed: Off                                    │ │
+ * │  │       │                                                                      │ │
+ * │  │       │                                                                      │ │
+ * │  │       │ ──────> Ball detected by sensor?                                     │ │
+ * │  │       │         {Automatically transition}                                   │ │
+ * │  │       ▼                                                                      │ │
+ * │  │  ┌────────┐                                                                  │ │
+ * │  │  │ STAGED │  Ball(s) ready behind feed stop                                  │ │
+ * │  │  └────┬───┘  Intake: Off, FeedStop: Closed                                   │ │
+ * │  │       │      Shooter: Idle RPM, Feed: Off                                    │ │
+ * │  │       │                                                                      │ │
+ * │  │       │                                                                      │ │
+ * │  │       │ ═══════> Driver holds LB (Left Bumper)                               │ │
+ * │  │       │          {Spin up shooter, aim hood}                                 │ │
+ * │  │       ▼                                                                      │ │
+ * │  │  ┌──────────────┐                                                            │ │
+ * │  │  │ PREPARE_SHOT │  Shooter: Spinning up to target RPM                        │ │
+ * │  │  └──────┬───────┘  Hood: Moving to target angle                              │ │
+ * │  │         │            Robot: Auto-aiming to target (if enabled)               │ │
+ * │  │         │            FeedStop: Closed, Feed: Off                             │ │
+ * │  │         │                                                                    │ │
+ * │  │         │            ┌─────────────────────────────────────┐                 │ │
+ * │  │         │            │ TARGETING MODE (Light 4 indicator)  │                 │ │
+ * │  │         │            │                                     │                 │ │
+ * │  │         │            │ GREEN: Auto-shoot (LUT)             │                 │ │
+ * │  │         │            │  - Uses distance to calculate RPM   │                 │ │
+ * │  │         │            │  - Updates continuously             │                 │ │
+ * │  │         │            │                                     │                 │ │
+ * │  │         │            │ RED: Preset mode                    │                 │ │
+ * │  │         │            │  - Fixed RPM/angle from preset      │                 │ │
+ * │  │         │            │  - No auto-calculation              │                 │ │
+ * │  │         │            └─────────────────────────────────────┘                 │ │
+ * │  │         │                                                                    │ │
+ * │  │         │ ──────> All conditions met? ┐                                      │ │
+ * │  │         │         - Shooter at RPM     │                                     │ │
+ * │  │         │         - Hood at angle      │                                     │ │
+ * │  │         │         - Robot at heading   │                                     │ │
+ * │  │         │         {Light 2 turns GREEN}│                                     │ │
+ * │  │         ▼                               │                                    │ │
+ * │  │  ┌────────────────┐                    │                                     │ │
+ * │  │  │ READY_TO_SHOOT │  All conditions met, waiting for shoot command           │ │
+ * │  │  └────────┬───────┘  Lights: Green = Ready                                   │ │
+ * │  │           │            FeedStop: Still closed                                │ │
+ * │  │           │                                                                  │ │
+ * │  │           │ ◄──────────────────────────┘ Not ready anymore?                  │ │
+ * │  │           │                              {Fall back to PREPARE_SHOT}         │ │
+ * │  │           │                                                                  │ │
+ * │  │           │                                                                  │ │
+ * │  │           │ ═══════> Driver pulls RT (Right Trigger)                         │ │
+ * │  │           │          {Open feed stop, run feed + intake}                     │ │
+ * │  │           ▼                                                                  │ │
+ * │  │  ┌──────────┐                                                                │ │
+ * │  │  │ SHOOTING │  FeedStop: OPEN                                                │ │
+ * │  │  └─────┬────┘  Feed: Running, Intake: Running                                │ │
+ * │  │        │       Shooter: At target RPM                                        │ │
+ * │  │        │       Balls feeding through shooter                                 │ │
+ * │  │        │                                                                     │ │
+ * │  │        │                                                                     │ │
+ * │  │        │ ──────> RPM drops? ┐                                                │ │
+ * │  │        │         {Temporary disturbance from shooting}                       │ │
+ * │  │        ▼                     │                                               │ │
+ * │  │  ┌──────────┐               │                                                │ │
+ * │  │  │ RECOVERY │  FeedStop: OPEN (stays open!)                                  │ │
+ * │  │  └─────┬────┘  Feed: STOPPED (prevent jamming)                               │ │
+ * │  │        │       Intake: Stopped                                               │ │
+ * │  │        │       Shooter: Recovering to target RPM                             │ │
+ * │  │        │                                                                     │ │
+ * │  │        │ ◄─────────────────┘ RPM recovered?                                  │ │
+ * │  │        │                     {Resume SHOOTING}                               │ │
+ * │  │        │                                                                     │ │
+ * │  │        │ ═══════> Driver releases RT                                         │ │
+ * │  │        │          OR no more balls detected                                  │ │
+ * │  │        │          {Return to appropriate state}                              │ │
+ * │  │        │                                                                     │ │
+ * │  │        └────────> Still holding LB? ─Yes─> Back to PREPARE_SHOT              │ │
+ * │  │                                      │                                       │ │
+ * │  │                                      └─No──> Back to IDLE ◄──────────────────┤ │
+ * │  │                                                                              │ │
+ * │  └──────────────────────────────────────────────────────────────────────────────┘ │
+ * │                                                                                   │
+ * └───────────────────────────────────────────────────────────────────────────────────┘
+ *
+ * ═════════════════════════════════════════════════════════════════════════════════════
+ * STATE TRANSITION TRIGGER SUMMARY
+ * ═════════════════════════════════════════════════════════════════════════════════════
+ *
+ * MANUAL TRANSITIONS (Driver Input):
+ * ┌───────────────────┬─────────────────┬──────────────────────────────────────────────┐
+ * │ From State        │ Input           │ To State                                     │
+ * ├───────────────────┼─────────────────┼──────────────────────────────────────────────┤
+ * │ IDLE              │ LT pressed      │ INTAKE                                       │
+ * │ INTAKE            │ LT released     │ IDLE (or auto to STAGED if ball detected)    │
+ * │ STAGED            │ LB pressed      │ PREPARE_SHOT                                 │
+ * │ PREPARE_SHOT      │ LB released     │ IDLE (if RT also released)                   │
+ * │ READY_TO_SHOOT    │ RT pressed      │ SHOOTING                                     │
+ * │ SHOOTING/RECOVERY │ RT released     │ PREPARE_SHOT (if LB held) or IDLE            │
+ * │ Any State         │ DPad Up         │ IDLE (emergency)                             │
+ * │ Any State         │ DPad Down       │ OFF (shutdown)                               │
+ * └───────────────────┴─────────────────┴──────────────────────────────────────────────┘
+ *
+ * AUTOMATIC TRANSITIONS (No Driver Input):
+ * ┌───────────────────┬─────────────────────────────────┬────────────────────────────┐
+ * │ From State        │ Condition                       │ To State                   │
+ * ├───────────────────┼─────────────────────────────────┼────────────────────────────┤
+ * │ INTAKE            │ Ball detected by sensor         │ STAGED                     │
+ * │ PREPARE_SHOT      │ All ready conditions met        │ READY_TO_SHOOT             │
+ * │ READY_TO_SHOOT    │ Any ready condition not met     │ PREPARE_SHOT               │
+ * │ SHOOTING          │ RPM drops below tolerance       │ RECOVERY                   │
+ * │ RECOVERY          │ RPM back at target              │ SHOOTING                   │
+ * └───────────────────┴─────────────────────────────────┴────────────────────────────┘
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ * MECHANISM STATE BY SHOT CONTROLLER STATE
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ *
+ * ┌───────────────┬──────────┬──────────┬─────────┬────────┬─────────────────────────┐
+ * │ State         │ Intake   │ FeedStop │ Shooter │ Feed   │ Hood                    │
+ * ├───────────────┼──────────┼──────────┼─────────┼────────┼─────────────────────────┤
+ * │ OFF           │ Stopped  │ Open     │ Off     │ Off    │ Max Angle               │
+ * │ IDLE          │ Stopped  │ Open     │ Idle    │ Off    │ Max Angle               │
+ * │ INTAKE        │ Running  │ CLOSED   │ Idle    │ Off    │ Max Angle               │
+ * │ STAGED        │ Stopped  │ CLOSED   │ Idle    │ Off    │ Max Angle               │
+ * │ PREPARE_SHOT  │ Stopped  │ CLOSED   │ Spin Up │ Off    │ Moving to Target        │
+ * │ READY_TO_SHOOT│ Stopped  │ CLOSED   │ At RPM  │ Off    │ At Target               │
+ * │ SHOOTING      │ Running  │ OPEN     │ At RPM  │ RUNNING│ At Target               │
+ * │ RECOVERY      │ Stopped  │ OPEN     │ Recover │ STOPPED│ At Target               │
+ * └───────────────┴──────────┴──────────┴─────────┴────────┴─────────────────────────┘
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ * INDICATOR LIGHTS DURING SHOOTING STATES
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ *
+ * When isShooting() returns true (PREPARE_SHOT, READY_TO_SHOOT, SHOOTING, RECOVERY):
+ *
+ * ┌────────┬───────────────────────────────────────┬────────────────────────────────┐
+ * │ Light  │ Shows                                 │ Color Logic                    │
+ * ├────────┼───────────────────────────────────────┼────────────────────────────────┤
+ * │ Light 1│ Shooter RPM Status                    │ GREEN = at target RPM          │
+ * │        │                                       │ RED = spinning up/recovering   │
+ * ├────────┼───────────────────────────────────────┼────────────────────────────────┤
+ * │ Light 2│ Overall Ready Status                  │ GREEN = ready to shoot         │
+ * │        │ (RPM + Hood + Heading all good)       │ RED = not ready                │
+ * ├────────┼───────────────────────────────────────┼────────────────────────────────┤
+ * │ Light 3│ Heading Alignment                     │ GREEN = aimed at target        │
+ * │        │                                       │ RED = still turning            │
+ * ├────────┼───────────────────────────────────────┼────────────────────────────────┤
+ * │ Light 4│ Targeting Mode (Independent)          │ GREEN = Auto-shoot (LUT)       │
+ * │        │                                       │ RED = Preset shot              │
+ * └────────┴───────────────────────────────────────┴────────────────────────────────┘
+ *
+ * When NOT shooting (IDLE, INTAKE, STAGED):
+ *   Lights 1-3 show ball detection (sensor colors)
+ *   Light 4 still shows targeting mode
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ * READY TO SHOOT CONDITIONS
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ *
+ * For readyToShoot() to return true, ALL must be satisfied:
+ *
+ *   ✓ Shooter at target RPM (within tolerance)
+ *   ✓ Hood at target angle (within tolerance)
+ *   ✓ Robot at target heading (within tolerance)
+ *
+ * Missing any condition → Light 2 RED, cannot shoot
+ * All conditions met → Light 2 GREEN, ready to shoot
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ * TARGETING MODES
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ *
+ * AUTO-SHOOT MODE (presetShotMode = false, Light 4 GREEN):
+ *   - Uses LUT (Lookup Table) based on distance to target
+ *   - Distance measured from Limelight (preferred) or odometry (backup)
+ *   - RPM and hood angle calculated automatically
+ *   - Updates continuously as robot moves
+ *   - Activated by: DPad Left or starting state
+ *
+ * PRESET SHOT MODE (presetShotMode = true, Light 4 RED):
+ *   - Uses fixed RPM, hood angle, feed power from PresetShot enum
+ *   - No auto-calculation, values don't change
+ *   - Good for: consistent shots from known positions
+ *   - Activated by: Back + A/X/B/Y (selects preset)
+ *   - Available presets:
+ *     • AtGoal - Right at the goal
+ *     • NearZoneMid - Middle of near scoring zone
+ *     • NearZoneEnd - Far edge of near zone
+ *     • FarWall - From far wall position
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ * RECOVERY STATE EXPLAINED
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ *
+ * WHY RECOVERY EXISTS:
+ *   When shooting, balls exiting the flywheel temporarily slow it down (mechanical load).
+ *   If we keep feeding while RPM is low, balls won't shoot properly and may jam.
+ *
+ * WHAT RECOVERY DOES:
+ *   1. Detects RPM drop during SHOOTING
+ *   2. STOPS the feed wheel (prevents more balls entering)
+ *   3. Keeps FeedStop OPEN (important - prevents jamming)
+ *   4. Lets shooter recover to target RPM
+ *   5. Automatically returns to SHOOTING when RPM recovers
+ *
+ * KEY DESIGN DECISION:
+ *   FeedStop stays OPEN during recovery to avoid re-engaging on a partially-fed ball.
+ *   This prevents jamming at the cost of potentially losing a ball if driver releases RT.
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ */
 public class ShotController {
     private SupplierTrigger _shotStagedTrigger;
     private SupplierTrigger _readyToShootTrigger;
