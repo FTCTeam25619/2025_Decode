@@ -38,10 +38,7 @@ public class RobotTriggers {
 
     /**
      * Update indicator lights 1-3 based on current robot state.
-     * Call this from your main run() loop every cycle.
-     *
-     * - No trigger spam when sensors flicker
-     * - Predictable update order every cycle
+     * Called  from Explorer run() loop every cycle.
      * - Shooting mode overrides intake mode
      * - No repeated InstantCommand
      */
