@@ -19,7 +19,7 @@ public class RedAuto9ScoreNear extends PathFollowingAuto {
 
     // Mechanism commands - replace these with your actual subsystem commands
     public RedAuto9ScoreNear() {
-        super("Red 9-Score Far Wall", Alliance.RED);
+        super("Red 9-Score Near Goal", Alliance.RED);
         this.paths = new RedNearGoalConstants(follower);
     }
 
@@ -69,6 +69,8 @@ public class RedAuto9ScoreNear extends PathFollowingAuto {
         PanelsUtils.Drawing.drawPath(paths.redWallToNearZonePrescore);
         PanelsUtils.Drawing.drawPath(paths.redNearZonePrescoreToNearIntake);
         PanelsUtils.Drawing.drawPath(paths.redNearWallIntakeToNearScore);
+        PanelsUtils.Drawing.drawPath(paths.redNearZoneScoreToMidIntake);
+        PanelsUtils.Drawing.drawPath(paths.redMidWallIntakeToNearScore);
         PanelsUtils.Drawing.drawPath(paths.redNearWallToPark);
     }
 }

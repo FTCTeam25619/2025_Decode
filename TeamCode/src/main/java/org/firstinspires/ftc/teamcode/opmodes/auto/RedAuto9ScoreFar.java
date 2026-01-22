@@ -67,6 +67,8 @@ public class RedAuto9ScoreFar extends PathFollowingAuto {
         PanelsUtils.Drawing.drawPath(paths.redWallToFarZonePrescore);
         PanelsUtils.Drawing.drawPath(paths.redFarZonePrescoreToFarIntake);
         PanelsUtils.Drawing.drawPath(paths.redFarWallIntakeToFarScore);
+        PanelsUtils.Drawing.drawPath(paths.redFarZoneScoreToMidIntake);
+        PanelsUtils.Drawing.drawPath(paths.redMidWallIntakeToFarScore);
         PanelsUtils.Drawing.drawPath(paths.redFarWallToPark);
     }
 }
