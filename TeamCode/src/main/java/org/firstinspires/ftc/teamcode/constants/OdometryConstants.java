@@ -28,8 +28,8 @@ public class OdometryConstants {
          * Note: Positive direction of axes depends on the mounting position of the GoBilda PinPoint
          * odometry computer on the robot.
          */
-        public static double forwardPodYMM = 79.91;
-        public static double strafePodXMM = 140.41;
+        public static double forwardPodYMM = -79.91;
+        public static double strafePodXMM = 150.00;
     }
 
     public static class DefaultStartPose {
