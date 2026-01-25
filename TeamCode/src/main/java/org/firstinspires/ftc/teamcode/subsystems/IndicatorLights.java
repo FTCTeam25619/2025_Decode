@@ -6,6 +6,8 @@ import com.bylazar.lights.RGBIndicator;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.seattlesolvers.solverslib.command.Command;
+import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 
@@ -14,7 +16,10 @@ import org.firstinspires.ftc.teamcode.constants.Constants;
 import org.firstinspires.ftc.teamcode.constants.Devices;
 import org.firstinspires.ftc.teamcode.constants.IndicatorLightsConstants;
 
+import java.util.function.BooleanSupplier;
+
 public class IndicatorLights extends SubsystemBase {
+    private final ServoEx indicatorLight0;
     private final ServoEx indicatorLight1;
     private final ServoEx indicatorLight2;
     private final ServoEx indicatorLight3;
@@ -22,17 +27,20 @@ public class IndicatorLights extends SubsystemBase {
 
     private final LightsManager lightTelemetryManager;
     private final TelemetryManager panelsTelemetry;
+    private final RGBIndicator light0Telemetry;
     private final RGBIndicator light1Telemetry;
     private final RGBIndicator light2Telemetry;
     private final RGBIndicator light3Telemetry;
 
     public enum Indicators {
+        Light0,
         Light1,
         Light2,
         Light3;
     }
 
     public IndicatorLights(HardwareMap hardwareMap, Telemetry telemetry) {
+        indicatorLight0 = new ServoEx(hardwareMap, Devices.Indicators.indicatorLight0);
         indicatorLight1 = new ServoEx(hardwareMap, Devices.Indicators.indicatorLight1);
         indicatorLight2 = new ServoEx(hardwareMap, Devices.Indicators.indicatorLight2);
         indicatorLight3 = new ServoEx(hardwareMap, Devices.Indicators.indicatorLight3);
@@ -41,10 +49,12 @@ public class IndicatorLights extends SubsystemBase {
         if (Constants.DebugModes.Telemetry.DEBUG_LIGHTS) {
             lightTelemetryManager = PanelsLights.INSTANCE.getLights();
             panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
+            light0Telemetry = new RGBIndicator("Light 0");
             light1Telemetry = new RGBIndicator("Light 1");
             light2Telemetry = new RGBIndicator("Light 2");
             light3Telemetry = new RGBIndicator("Light 3");
             lightTelemetryManager.initLights(
+                    light0Telemetry,
                     light1Telemetry,
                     light2Telemetry,
                     light3Telemetry
@@ -52,6 +62,7 @@ public class IndicatorLights extends SubsystemBase {
         } else {
             lightTelemetryManager = null;
             panelsTelemetry = null;
+            light0Telemetry = null;
             light1Telemetry = null;
             light2Telemetry = null;
             light3Telemetry = null;
@@ -70,10 +81,22 @@ public class IndicatorLights extends SubsystemBase {
         }
     }
 
+    public void updatePresetModeWarningLight(boolean presetMode) {
+        if (presetMode) {
+            setLightColor(Indicators.Light0, IndicatorLightsConstants.IndicatorColors.RED);
+        } else {
+            setLightColor(Indicators.Light0, IndicatorLightsConstants.IndicatorColors.BLUE);
+        }
+    }
+
     public void setLightColor(Indicators selectedLight, IndicatorLightsConstants.IndicatorColors color) {
         if (selectedLight == null) { return; }
         if (color == null) { color = IndicatorLightsConstants.IndicatorColors.OFF; }
         switch (selectedLight) {
+            case Light0:
+                setLightColor(indicatorLight0, color.pwmSetting);
+                addLightTelemetry("Light 0", color, light0Telemetry);
+                break;
             case Light1:
                 setLightColor(indicatorLight1, color.pwmSetting);
                 addLightTelemetry("Light 1", color, light1Telemetry);
