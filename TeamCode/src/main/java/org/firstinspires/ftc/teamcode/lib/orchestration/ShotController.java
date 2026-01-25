@@ -80,6 +80,8 @@ public class ShotController {
 
         this.priorState = this.currentState;
 
+        this.robot.indicatorLights.updatePresetModeWarningLight(this.presetShotMode);
+
         // State actions that need to happen each cycle
         switch (this.currentState) {
             case OFF:
@@ -379,20 +381,6 @@ public class ShotController {
             this._readyToShootTrigger = new SupplierTrigger(this::readyToShoot);
         }
         return this._readyToShootTrigger;
-    }
-
-    public Trigger autoShootModeTrigger() {
-        if (this._presetShotModeTrigger == null) {
-            this._presetShotModeTrigger = new SupplierTrigger(() -> !this.presetShotMode);
-        }
-        return this._presetShotModeTrigger.negate();
-    }
-
-    public Trigger presetShotModeTrigger() {
-        if (this._presetShotModeTrigger == null) {
-            this._presetShotModeTrigger = new SupplierTrigger(() -> this.presetShotMode);
-        }
-        return this._presetShotModeTrigger;
     }
 
     public boolean doAutoHeading() {

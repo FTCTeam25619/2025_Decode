@@ -6,6 +6,8 @@ import com.bylazar.lights.RGBIndicator;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.seattlesolvers.solverslib.command.Command;
+import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 
@@ -13,6 +15,8 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.constants.Constants;
 import org.firstinspires.ftc.teamcode.constants.Devices;
 import org.firstinspires.ftc.teamcode.constants.IndicatorLightsConstants;
+
+import java.util.function.BooleanSupplier;
 
 public class IndicatorLights extends SubsystemBase {
     private final ServoEx indicatorLight0;
@@ -74,6 +78,14 @@ public class IndicatorLights extends SubsystemBase {
                 panelsTelemetry.debug(light.getId() + " " + light.getType() + " " + light.getValue());
             });
             panelsTelemetry.update();
+        }
+    }
+
+    public void updatePresetModeWarningLight(boolean presetMode) {
+        if (presetMode) {
+            setLightColor(Indicators.Light0, IndicatorLightsConstants.IndicatorColors.RED);
+        } else {
+            setLightColor(Indicators.Light0, IndicatorLightsConstants.IndicatorColors.GREEN);
         }
     }
 

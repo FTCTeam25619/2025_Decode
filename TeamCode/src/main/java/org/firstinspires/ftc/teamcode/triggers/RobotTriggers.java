@@ -16,29 +16,9 @@ public class RobotTriggers {
     }
 
     public void setupNonControllerTriggers() {
-        setupPresetModeWarningDisplayTriggers();
         setupNonShootingBallPatternDisplayTriggers();
         setupShootingReadinessDisplayTriggers();
         this.robot.shotController.setupStateTransitionTriggers();
-    }
-
-    public void setupPresetModeWarningDisplayTriggers() {
-        // Light 0 reflects whether the robot is in a preset mode for
-        // shooting or not: GREEN for auto mode, RED for preset mode
-        robot.shotController.presetShotModeTrigger()
-                .whenActive(new InstantCommand(() -> {
-                    robot.telemetry.addData("Preset Light RED", ++presetLightRedCount);
-                    this.robot.indicatorLights.setLightColor(
-                            IndicatorLights.Indicators.Light0,
-                            IndicatorLightsConstants.IndicatorColors.RED);
-                }));
-        robot.shotController.presetShotModeTrigger()
-                .whenInactive(new InstantCommand(() -> {
-                    robot.telemetry.addData("Preset Light GREEN", ++presetLightGreenCount);
-                    this.robot.indicatorLights.setLightColor(
-                            IndicatorLights.Indicators.Light0,
-                            IndicatorLightsConstants.IndicatorColors.GREEN);
-                }));
     }
 
     public void setupNonShootingBallPatternDisplayTriggers() {
