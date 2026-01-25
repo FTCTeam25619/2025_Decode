@@ -8,8 +8,6 @@ import org.firstinspires.ftc.teamcode.subsystems.IndicatorLights;
 
 public class RobotTriggers {
     private final NovaPyraRobot robot;
-    private long presetLightRedCount = 0;
-    private long presetLightGreenCount = 0;
 
     public RobotTriggers(NovaPyraRobot robot) {
         this.robot = robot;
