@@ -85,7 +85,7 @@ public class IndicatorLights extends SubsystemBase {
         if (presetMode) {
             setLightColor(Indicators.Light0, IndicatorLightsConstants.IndicatorColors.RED);
         } else {
-            setLightColor(Indicators.Light0, IndicatorLightsConstants.IndicatorColors.GREEN);
+            setLightColor(Indicators.Light0, IndicatorLightsConstants.IndicatorColors.BLUE);
         }
     }
 
