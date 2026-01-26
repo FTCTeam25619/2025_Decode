@@ -42,7 +42,7 @@ public class PedroConstants {
 
     public static Drivetrain drivetrain;
     public static FollowerConstants followerConstants = new FollowerConstants()
-            .mass(4.92)
+            .mass(13.245)
             .forwardZeroPowerAcceleration(-34.27)
             .lateralZeroPowerAcceleration(-69.85)
             .translationalPIDFCoefficients(new PIDFCoefficients(0.12, 0.0, 0.01, 0.04))
