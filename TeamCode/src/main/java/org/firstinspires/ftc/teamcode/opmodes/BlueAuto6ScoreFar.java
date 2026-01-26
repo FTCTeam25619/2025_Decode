@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
 import com.bylazar.configurables.annotations.Configurable;
+import com.bylazar.field.PanelsField;
+import com.bylazar.field.Style;
 import com.bylazar.telemetry.JoinedTelemetry;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.pedropathing.follower.Follower;
@@ -100,6 +102,11 @@ public class BlueAuto6ScoreFar extends CommandOpMode {
         follower.setStartingPose(paths.blueFarWallStart.withHeading(Math.toRadians(paths.blueFarWallStartHeading)));
         BlackboardHelpers.setAutoEndPose(blackboard, follower.getPose());
 
+        if (Constants.DebugModes.ENABLE_PANELS_DASHBOARD) {
+            drawPaths();
+//            PanelsUtils.Drawing.sendPacket();
+        }
+
         // Schedule the autonomous sequence
         schedule(
                 new ParallelCommandGroup(
@@ -142,7 +149,7 @@ public class BlueAuto6ScoreFar extends CommandOpMode {
         if (Constants.DebugModes.ENABLE_PANELS_DASHBOARD) {
             PanelsUtils.Drawing.drawVisionAndCurrent(robot.vision, robot.pedroFollower);
             drawPaths();
-            PanelsUtils.Drawing.sendPacket();
+//            PanelsUtils.Drawing.sendPacket();
         }
     }
 
@@ -160,6 +167,7 @@ public class BlueAuto6ScoreFar extends CommandOpMode {
 
         if (Constants.DebugModes.ENABLE_PANELS_DASHBOARD) {
             PanelsUtils.Drawing.drawVisionAndCurrentAndHistory(robot.vision, robot.pedroFollower);
+            PanelsUtils.Drawing.sendPacket();
             drawPaths();
             PanelsUtils.Drawing.sendPacket();
         }
@@ -177,9 +185,19 @@ public class BlueAuto6ScoreFar extends CommandOpMode {
     }
 
     private void drawPaths() {
-        PanelsUtils.Drawing.drawPath(paths.blueWallToFarZonePrescore);
-        PanelsUtils.Drawing.drawPath(paths.blueFarZonePrescoreToFarIntake);
-        PanelsUtils.Drawing.drawPath(paths.blueFarWallIntakeToFarScore);
-        PanelsUtils.Drawing.drawPath(paths.blueFarWallToPark);
+        String fill = PanelsField.INSTANCE.getTRANSPARENT();
+        double width = 1.0;
+        PanelsUtils.Drawing.drawPath(paths.blueWallToFarZonePrescore,
+                new Style(fill, "#66ff00", width));
+        PanelsUtils.Drawing.sendPacket();
+        PanelsUtils.Drawing.drawPath(paths.blueFarZonePrescoreToFarIntake,
+                new Style(fill, "#66ff33", width));
+        PanelsUtils.Drawing.sendPacket();
+        PanelsUtils.Drawing.drawPath(paths.blueFarWallIntakeToFarScore,
+                new Style(fill, "#66ff66", width));
+        PanelsUtils.Drawing.sendPacket();
+        PanelsUtils.Drawing.drawPath(paths.blueFarWallToPark,
+                new Style(fill, "#66ff99", width));
+        PanelsUtils.Drawing.sendPacket();
     }
 }

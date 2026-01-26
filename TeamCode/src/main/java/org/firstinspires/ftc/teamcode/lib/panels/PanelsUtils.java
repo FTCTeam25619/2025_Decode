@@ -8,6 +8,7 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.math.Vector;
 import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
+import com.pedropathing.paths.PathPoint;
 import com.pedropathing.util.PoseHistory;
 
 import org.firstinspires.ftc.teamcode.subsystems.Vision;
@@ -18,17 +19,17 @@ public class PanelsUtils {
         private static final FieldManager panelsField = PanelsField.INSTANCE.getField();
 
         public static final Style robotLook = new Style(
-                "", "#3F51B5", 3.0
+                PanelsField.INSTANCE.getTRANSPARENT(), "#3F51B5", 3.0
         );
         public static final Style visionLook = new Style(
-                "", "#ff5050", 3.0
+                PanelsField.INSTANCE.getTRANSPARENT(), "#ff5050", 3.0
         );
         public static final Style historyLook = new Style(
-                "", "#4CAF50", 1.0
+                PanelsField.INSTANCE.getTRANSPARENT(), "#66ffff", 1.0
         );
 
         public static final Style pathLook = new Style(
-                "", "#c700ff", 1.0
+                PanelsField.INSTANCE.getTRANSPARENT(), "#66ff33", 1.0
         );
 
         /**
@@ -88,7 +89,7 @@ public class PanelsUtils {
          * @param pose the Pose to draw the robot at
          */
         public static void drawRobot(Pose pose) {
-            drawRobot(pose, robotLook);
+            drawRobot(pose, Drawing.robotLook);
         }
 
         /**
@@ -99,21 +100,30 @@ public class PanelsUtils {
          */
         public static void drawPath(Path path, Style style) {
             double[][] points = path.getPanelsDrawingPoints();
+            double startX = Double.isNaN(points[0][0]) ? 0.0 : points[0][0];
+            double startY = Double.isNaN(points[1][0]) ? 0.0 : points[1][0];
+            int length = points[0].length;
 
-            for (int i = 0; i < points[0].length; i++) {
-                for (int j = 0; j < points.length; j++) {
-                    if (Double.isNaN(points[j][i])) {
-                        points[j][i] = 0;
-                    }
+            Pose start = path.getPoint(path.getTFromPathCompletion(0.0));
+            Pose end = path.getPoint(path.getTFromPathCompletion(1.0));
+
+            panelsField.setStyle(style);
+
+            panelsField.moveCursor(start.getX(), start.getY());
+            panelsField.circle(1.0);
+            panelsField.moveCursor(end.getX(), end.getY());
+            panelsField.circle(1.0);
+
+            panelsField.moveCursor(startX, startY);
+            for (int i = 1; i < length; i++) {
+                if (Double.isNaN(points[0][i]) || Double.isNaN(points[1][i])) {
+                    continue;
                 }
+                panelsField.line(points[0][i], points[1][i]);
             }
-
-//            panelsField.setStyle(style);
-            panelsField.moveCursor(points[0][0], points[0][1]);
-            panelsField.line(points[1][0], points[1][1]);
         }
 
-        public static void drawPath(Path path) { drawPath(path, pathLook);}
+        public static void drawPath(Path path) { drawPath(path, Drawing.pathLook);}
 
         /**
          * This draws all the Paths in a PathChain with a
@@ -128,7 +138,7 @@ public class PanelsUtils {
             }
         }
 
-        public static void drawPath(PathChain pathChain) { drawPath(pathChain, pathLook); }
+        public static void drawPath(PathChain pathChain) { drawPath(pathChain, Drawing.pathLook); }
 
         /**
          * This draws the pose history of the robot.
@@ -160,7 +170,7 @@ public class PanelsUtils {
 
         public static void drawVisionAndCurrent(Vision vision, Follower follower) {
             try {
-                        Drawing.drawRobot(vision.getPedroPose(), Drawing.visionLook);
+                drawRobot(vision.getPedroPose(), Drawing.visionLook);
                 drawCurrent(follower);
             } catch (Exception e) {
                 throw new RuntimeException("Drawing Vision failed " + e);
