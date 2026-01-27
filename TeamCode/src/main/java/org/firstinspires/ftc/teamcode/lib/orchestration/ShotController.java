@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.lib.orchestration;
 
+import com.pedropathing.geometry.Pose;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.button.Trigger;
 import com.seattlesolvers.solverslib.util.InterpLUT;
@@ -190,7 +191,8 @@ public class ShotController {
         }
 
         // No valid distance when we don't see the tag
-        return Double.NaN;
+        Pose robotPose = robot.pedroFollower.getPose();
+        return robotPose.distanceFrom(robot.vision.getTargetTagPose());
     }
 
 
