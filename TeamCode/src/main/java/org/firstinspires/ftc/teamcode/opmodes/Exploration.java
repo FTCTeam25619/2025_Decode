@@ -155,13 +155,24 @@ public class Exploration extends CommandOpMode {
 
 
         robot.shotController.updateState();
+        Pose currentPose = robot.pedroFollower.getPose();
+        Pose targetPose = robot.vision.getTargetTagPose();
 
-        telemetry.addData("X", robot.pedroFollower.getPose().getX());
-        telemetry.addData("Y", robot.pedroFollower.getPose().getY());
-        telemetry.addData("Heading", robot.pedroFollower.getPose().getHeading());
-        telemetry.addData("LL Seeing Target", robot.vision.isSeeingTarget());
-        telemetry.addData("LL Angle (deg)", robot.vision.angleToTarget());
-        telemetry.addData("Is Shooting?", robot.shotController.isShooting());
+        // Vector FROM robot TO target
+        double dx = targetPose.getX() - currentPose.getX();
+        double dy = targetPose.getY() - currentPose.getY();
+
+        // Bearing to target (returns -π to π)
+        double bearingToTarget = Math.atan2(dy, dx);
+
+        // Normalize heading to (-π, π]
+        double currentHeading = normalizeAngle(currentPose.getHeading());
+
+        // Calculate error
+        double errorRad = normalizeAngle(bearingToTarget - currentHeading);
+        telemetry.addData("Error: ", Math.toDegrees(errorRad));
+        telemetry.addData("Vision Pose X: ", robot.vision.getTargetTagPose().getX());
+        telemetry.addData("Vision Pose Y: ", robot.vision.getTargetTagPose().getY());
         telemetry.update();
 
         if (Constants.DebugModes.ENABLE_PANELS_DASHBOARD) {
@@ -213,15 +224,29 @@ public class Exploration extends CommandOpMode {
     }
 
     public double calculateAutoAimFromOdometry() {
-        // Subtract current robot pose from target pose, returning the positive vector to target
-        Pose delta = robot.pedroFollower.getPose().minus(robot.vision.getTargetTagPose());
-        // Calculate the difference in heading between the robot heading and the positive vector to target
-        double angleToTagHeadingRad = -1.0 * Pose.cartesianToPolar(delta.getX(), delta.getY())[1] -
-                robot.pedroFollower.getPose().getHeading();  // Negate to match sign provide dby LL tx
-        // Normalize the angle adjustment to heading
-        double normalizedAngleRad = MathFunctions.normalizeAngle(angleToTagHeadingRad) - Math.PI;
-        // Call the normal PID calculator for auto-aim rotation
-        return calculateAutoAimRotation(Math.toDegrees(normalizedAngleRad));
+        Pose currentPose = robot.pedroFollower.getPose();
+        Pose targetPose = robot.vision.getTargetTagPose();
+
+        // Vector FROM robot TO target
+        double dx = targetPose.getX() - currentPose.getX();
+        double dy = targetPose.getY() - currentPose.getY();
+
+        // Bearing to target (returns -π to π)
+        double bearingToTarget = Math.atan2(dy, dx);
+
+        // Normalize heading to (-π, π]
+        double currentHeading = normalizeAngle(currentPose.getHeading());
+
+        // Calculate error
+        double errorRad = normalizeAngle(bearingToTarget - currentHeading);
+
+        return -calculateAutoAimRotation(Math.toDegrees(errorRad));
+    }
+
+    private double normalizeAngle(double angleRad) {
+        while (angleRad > Math.PI) angleRad -= 2 * Math.PI;
+        while (angleRad <= -Math.PI) angleRad += 2 * Math.PI;
+        return angleRad;
     }
 
     /**
@@ -233,5 +258,6 @@ public class Exploration extends CommandOpMode {
             return false; // no target, not aligned
         }
         return Math.abs(robot.vision.angleToTarget()) <= VisionConstants.headingAngleThresholdDeg;
-    }
+   }
+
 }
