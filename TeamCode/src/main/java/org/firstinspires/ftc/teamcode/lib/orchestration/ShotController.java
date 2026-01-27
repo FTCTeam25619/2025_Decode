@@ -454,22 +454,18 @@ public class ShotController {
         table.add(0, 1850);
 
         // Big Triangle / Close Shots
-        table.add(51, 1950);
-        table.add(69, 2050);
-        table.add(109, 2300);
-        table.add(129, 2350);
-        table.add(152, 2500);
-        table.add(172, 2500);
-        table.add(177, 2500);
-        table.add(190, 2500);
-        table.add(212, 2650);
-
+        table.add(60, 1950);
+        table.add(81, 2050);
+        table.add(107, 2100);
+        table.add(140, 2200);
+        table.add(170, 2375);
+        table.add(208, 2550);
+        table.add(223, 2550);
         // Small Triangle / Far Shots
         table.add(280, 2850);
-        table.add(290, 2900);
-        table.add(310, 2950);
+        table.add(295, 2875);
+        table.add(315, 2950);
         table.add(330, 3050);
-        table.add(354, 3100);
 
 
         table.add(600, 3200);
@@ -488,23 +484,19 @@ public class ShotController {
         table.add(0, 275);
 
         // Big Triangle / Close Shots
-        table.add(51, 275);
-        table.add(69, 275);
-        table.add(109, 230);
-        table.add(129, 210);
-        table.add(152, 200);
-        table.add(172, 180);
-        table.add(177, 165);
-        table.add(190, 110);
-        table.add(212, 110);
+        table.add(60, 110);
+        table.add(81, 50);
+        table.add(107, 20);
+        table.add(140, 10);
+        table.add(170, 5);
+        table.add(208, 0);
+        table.add(223, 0);
 
         // Small Triangle / Far Shots
-        table.add(280, 10);
-        table.add(290, 10);
-        table.add(310, 10);
-        // FIXME: Soft stop on servo currently set at 10. Do we really need to go below that?
+        table.add(280, 0);
+        table.add(295, 0);
+        table.add(315, 0);
         table.add(330, 0);
-        table.add(354, 0);
 
         table.add(600, 0);
 
