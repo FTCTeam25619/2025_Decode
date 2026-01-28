@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.lib.orchestration;
 
+import com.pedropathing.geometry.Pose;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.button.Trigger;
 import com.seattlesolvers.solverslib.util.InterpLUT;
@@ -9,6 +10,7 @@ import org.firstinspires.ftc.teamcode.NovaPyraRobot;
 import org.firstinspires.ftc.teamcode.constants.HoodConstants;
 import org.firstinspires.ftc.teamcode.constants.ShooterConstants;
 import org.firstinspires.ftc.teamcode.constants.ShooterFeedConstants;
+import org.firstinspires.ftc.teamcode.constants.VisionConstants;
 import org.firstinspires.ftc.teamcode.lib.triggers.SupplierTrigger;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Sensors;
@@ -259,8 +261,29 @@ public class ShotController {
     }
 
     private boolean atTargetHeading() {
-        // Implement hybrid LL/odometry logic inside Vision.atHeading()
-        return this.robot.vision.atHeading();
+        // Use odometry-based alignment check from Exploration
+        // This matches the auto-aim control logic
+        Pose currentPose = robot.pedroFollower.getPose();
+        Pose targetPose = robot.vision.getTargetTagPose();
+
+        // Calculate vector from robot to target
+        double dx = targetPose.getX() - currentPose.getX();
+        double dy = targetPose.getY() - currentPose.getY();
+        double targetHeading = Math.atan2(dy, dx);
+
+        // Calculate heading error
+        double headingError = normalizeAngle(targetHeading - currentPose.getHeading());
+        double headingErrorDeg = Math.toDegrees(Math.abs(headingError));
+
+        // Check if within tolerance
+        return headingErrorDeg <= VisionConstants.headingAngleThresholdDeg;
+    }
+
+    // Add helper method
+    private double normalizeAngle(double angleRad) {
+        while (angleRad > Math.PI) angleRad -= 2.0 * Math.PI;
+        while (angleRad <= -Math.PI) angleRad += 2.0 * Math.PI;
+        return angleRad;
     }
 
     public boolean readyToShoot() {
@@ -283,7 +306,7 @@ public class ShotController {
         stateTransitionTrigger(ShotCycleState.OFF).whenActive(new InstantCommand(() -> {
             // Transitioning back to OFF state
             this.robot.intake.setState(Intake.IntakeState.Stopped);
-            this.robot.feedStop.disengage();
+            this.robot.feedStop.engage();
             this.robot.shooter.setState(Shooter.ShooterState.Stopped);
             this.robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
             this.robot.hood.setAngle(HoodConstants.Limits.hoodHardStopMin);
@@ -293,7 +316,7 @@ public class ShotController {
             // Transitioning back to IDLE state
             // NOTE: This will not trigger at start because initial state is IDLE
             this.robot.intake.setState(Intake.IntakeState.Stopped);
-            this.robot.feedStop.disengage();
+            this.robot.feedStop.engage();
             this.robot.shooter.setState(Shooter.ShooterState.Shooting);
             this.robot.shooter.setTargetRPM(ShooterConstants.Targets.idleRPM);
             this.robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
