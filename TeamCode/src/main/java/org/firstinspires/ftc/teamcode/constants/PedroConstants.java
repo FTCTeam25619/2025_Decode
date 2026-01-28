@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.constants;
 
 import com.pedropathing.Drivetrain;
+import com.pedropathing.control.FilteredPIDFCoefficients;
 import com.pedropathing.control.PIDFCoefficients;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.follower.FollowerConstants;
@@ -49,9 +50,10 @@ public class PedroConstants {
             .translationalPIDFCoefficients(new PIDFCoefficients(0.12, 0.0, 0.01, 0.028))
             .secondaryTranslationalPIDFCoefficients(new PIDFCoefficients(0.18, 0.0, 0.01, 0.035))
             .useSecondaryHeadingPIDF(true)
-            .headingPIDFCoefficients(new PIDFCoefficients(1.0, 0.0, 0.025, 0.028))
-            .secondaryHeadingPIDFCoefficients(new PIDFCoefficients(2.2, 0.0, 0.025, 0.08))
-            // TODO: Centripetal scaling not yet retuned. Stopped before Drive Tuner.
+            .headingPIDFCoefficients(new PIDFCoefficients(0.9, 0.0, 0.045, 0.025))
+            .secondaryHeadingPIDFCoefficients(new PIDFCoefficients(1.5, 0.0, 0.035, 0.025))
+            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.02, 0.0, 0.00005, 0.6, 0.015))
+            .secondaryDrivePIDFCoefficients(new FilteredPIDFCoefficients(0.02, 0.0, 0.00005, 0.6, 0.015))
             .centripetalScaling(0.0012);
 
     public static PathConstraints pathConstraints = new PathConstraints(
