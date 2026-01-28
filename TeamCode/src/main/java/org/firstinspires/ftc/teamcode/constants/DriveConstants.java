@@ -34,6 +34,7 @@ public class DriveConstants {
         public static double correctionOutputClamp = 0.4;
         public static double kFHeadingCorrection = 0.025;
         public static double SecondaryHeadingThreshold = 3.5;
+        public static double holdPoint = 0.5;
     }
 
     @Configurable
