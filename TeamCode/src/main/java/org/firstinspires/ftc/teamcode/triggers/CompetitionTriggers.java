@@ -117,14 +117,14 @@ public class CompetitionTriggers implements ControllerTriggers {
         }));
 
         // Shooter off/on
-        c1DPadUp.whenPressed(new InstantCommand(() -> robot.shotController.setState(ShotCycleState.IDLE)));
-        c1DPadDown.whenPressed(new InstantCommand(() -> robot.shotController.setState(ShotCycleState.OFF)));
+        c1Back.and(c1RightBumper).whileActiveOnce(new InstantCommand(() -> robot.shotController.setState(ShotCycleState.IDLE)));
+        c1Back.and(c1LeftBumper).whileActiveOnce(new InstantCommand(() -> robot.shotController.setState(ShotCycleState.OFF)));
         // Reset to auto-targeting
         c1DPadLeft.whenPressed(new InstantCommand(robot.shotController::autoTargetShot));
 
         // Endgame Lift controls
-        c1Back.and(c1RightBumper).whenActive(new InstantCommand(robot.lift::engage));
-        c1Back.and(c1LeftBumper).whenActive(new InstantCommand(robot.lift::disengage));
+        c1DPadDown.whenPressed(new InstantCommand(robot.lift::engage));
+        c1DPadUp.whenPressed(new InstantCommand(robot.lift::disengage));
 
         // Reset odometry heading to 0 degrees
         c1Start.whenPressed(new InstantCommand(() -> robot.odometry.setOdometryHeading(
