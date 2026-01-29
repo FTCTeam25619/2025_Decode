@@ -17,7 +17,7 @@ public class BlueFarDDConstants {
     public Pose openGateCP = new Pose(29.283, 63.959);
     public Pose nearIntakePose = new Pose(18.318, 36.454, Math.toRadians(360.0));
     public Pose nearIntakeCP = new Pose(65.086, 36.454);
-    public Pose cornerIntakePose = new Pose(8.000, 9.000, Math.toRadians(360.0));
+    public Pose cornerIntakePose = new Pose(11.0, 9.000, Math.toRadians(360.0));
     public Pose cornerIntakeCP = new Pose(33.171, 18.595);
     public Pose cornerShootCP = new Pose(46.444, 25.569);
     public Pose parkPose = new Pose(56.742, 27.000, Math.toRadians(90.0));

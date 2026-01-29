@@ -2,11 +2,11 @@ package org.firstinspires.ftc.teamcode.opmodes;
 
 import com.bylazar.telemetry.JoinedTelemetry;
 import com.bylazar.telemetry.PanelsTelemetry;
-import com.pedropathing.control.PIDFCoefficients;
-import com.pedropathing.control.PIDFController;
 import com.pedropathing.follower.FollowerConstants;
+import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
-import com.pedropathing.math.MathFunctions;
+import com.pedropathing.math.Vector;
+import com.pedropathing.paths.Path;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
@@ -26,11 +26,22 @@ import org.firstinspires.ftc.teamcode.triggers.RobotTriggers;
 import org.firstinspires.ftc.teamcode.triggers.TuningTriggers;
 
 /**
- *   Uses Pedro's PID coefficients with proper scaling
- * - Uses same tuning as autonomous (FollowerConstants)
- * - Applies holdPointHeadingScaling like Pedro does in holdPoint()
- * - Maintains PID state while auto-aiming
- * - Single place to tune heading PID
+ * IMPROVED AUTO-AIM - HEADINGTUNER APPROACH
+ *
+ * Key insight: HeadingTuner follows a path with only heading PID active.
+ * We do the same but create a "virtual path" that moves with the robot.
+ *
+ * This approach:
+ * 1. Creates a Path with constant heading interpolation (like HeadingTuner)
+ * 2. Disables drive and translational PID (only heading active)
+ * 3. Lets driver control translation via teleop
+ * 4. Pedro's heading PID runs automatically via followPath()
+ *
+ * Benefits:
+ * - Exact same behavior as HeadingTuner
+ * - Driver can translate freely
+ * - Full PID power (no damping)
+ * - Single tuning point (HeadingTuner)
  */
 public class Exploration extends CommandOpMode {
     private NovaPyraRobot robot;
@@ -40,12 +51,14 @@ public class Exploration extends CommandOpMode {
     private ControllerTriggers controllerMappings;
     private RobotTriggers robotTriggers;
 
-    // Using Pedro's PIDFController
-    private PIDFController headingController;
-    private PIDFController secondaryHeadingController;
-
-    // Track auto-aim state to maintain PID state properly
+    // Track auto-aim state
     private boolean wasAutoAiming = false;
+    private Path autoAimPath = null;
+    private double lastTargetHeading = 0;
+
+    // How far ahead to create the "virtual" path point
+    // Large enough that we never reach it, small enough to update quickly
+    private static final double VIRTUAL_PATH_DISTANCE = 100.0;  // inches
 
     public Exploration(Alliance allianceSetting) {
         super();
@@ -56,7 +69,6 @@ public class Exploration extends CommandOpMode {
     public void initialize() {
         super.reset();
 
-        // Setup Dashboard if enabled
         if (Constants.DebugModes.ENABLE_PANELS_DASHBOARD) {
             telemetry = new JoinedTelemetry(PanelsTelemetry.INSTANCE.getFtcTelemetry(), telemetry);
             Drawing.init();
@@ -66,11 +78,9 @@ public class Exploration extends CommandOpMode {
         robot = new NovaPyraRobot(hardwareMap, telemetry, alliance);
         robotTriggers = new RobotTriggers(robot);
 
-        // Controllers
         controller1 = new GamepadEx(gamepad1);
         controller2 = new GamepadEx(gamepad2);
 
-        // Controller Mappings
         if (Constants.DebugModes.ControlInterface.TUNING_CONTROLS) {
             controllerMappings = new TuningTriggers(robot, controller1, controller2);
         } else {
@@ -88,40 +98,9 @@ public class Exploration extends CommandOpMode {
         robot.pedroFollower.setPose(startingPose);
         robot.pedroFollower.startTeleopDrive();
 
-        // Initialize heading controllers with Pedro's coefficients
-        initializeHeadingControllers();
-
-        telemetry.addData("Robot Status", "Initialized Exploration " + alliance.name());
+        telemetry.addData("Robot Status", "Initialized Better Exploration " + alliance.name());
+        telemetry.addData("Auto-Aim Mode", "HeadingTuner approach (path following)");
         telemetry.update();
-    }
-
-    /**
-     * Initialize heading controllers using Pedro's PID coefficients.
-     * This ensures consistent tuning between autonomous and teleop.
-     */
-    private void initializeHeadingControllers() {
-        FollowerConstants constants = robot.pedroFollower.getConstants();
-
-        // Primary heading controller (for large errors)
-        PIDFCoefficients primaryCoeffs = constants.coefficientsHeadingPIDF;
-        headingController = new PIDFController(primaryCoeffs);
-
-        // Secondary heading controller (for fine tuning)
-        PIDFCoefficients secondaryCoeffs = constants.coefficientsSecondaryHeadingPIDF;
-        secondaryHeadingController = new PIDFController(secondaryCoeffs);
-
-        // Optional: Debug telemetry
-        if (Constants.DebugModes.Telemetry.DEBUG_AUTO_AIM) {
-            telemetry.addLine("=== Heading PID Coefficients ===");
-            telemetry.addData("Primary kP", primaryCoeffs.P);
-            telemetry.addData("Primary kD", primaryCoeffs.D);
-            telemetry.addData("Primary kF", primaryCoeffs.F);
-            telemetry.addData("Secondary kP", secondaryCoeffs.P);
-            telemetry.addData("Secondary kD", secondaryCoeffs.D);
-            telemetry.addData("Secondary kF", secondaryCoeffs.F);
-            telemetry.addData("Heading Scaling", constants.holdPointHeadingScaling);
-            telemetry.update();
-        }
     }
 
     @Override
@@ -147,7 +126,7 @@ public class Exploration extends CommandOpMode {
                 DriveConstants.Joysticks.driveInverseDeadband
         );
 
-        // Get driver rotation input
+        // Get driver rotation input (only used in manual mode)
         double rotateAxis = NovaPyraUtils.deadbandAndSmoothValue(
                 -controller1.getRightX(),
                 DriveConstants.Joysticks.rotateSmoothFactor,
@@ -156,50 +135,75 @@ public class Exploration extends CommandOpMode {
         );
 
         // ============================================================================
-        // AUTO-AIM LOGIC (Limelight with odometry backup)
+        // AUTO-AIM LOGIC - HeadingTuner Approach
         // ============================================================================
 
         boolean useAutoAim = robot.shotController.doAutoHeading() ||
                 controller1.getButton(GamepadKeys.Button.RIGHT_STICK_BUTTON);
 
-       /*
-        // Reset controllers when transitioning INTO auto-aim mode
-        // This gives a fresh start but maintains state WHILE auto-aiming
-        if (useAutoAim && !wasAutoAiming) {
-            headingController.reset();
-            secondaryHeadingController.reset();
-        }
-
-        */
-
         if (useAutoAim) {
-            // Calculate target heading
-            double targetHeading = calculateAutoAimTargetHeading();
-            double currentHeading = robot.pedroFollower.getPose().getHeading();
-            double headingError = normalizeAngle(targetHeading - currentHeading);
+            // ═══ AUTO-AIM MODE: Use path following with heading-only PID ═══
 
-            // Use Pedro's PID with proper scaling (like holdPoint does)
-            rotateAxis = calculateRotationPower(headingError);
+            Pose currentPose = robot.pedroFollower.getPose();
+            double targetHeading = calculateAutoAimTargetHeading();
+
+            // Check if we need to create/update the path
+            boolean needsUpdate = !wasAutoAiming ||
+                    autoAimPath == null ||
+                    Math.abs(normalizeAngle(targetHeading - lastTargetHeading)) > Math.toRadians(2);
+
+            if (needsUpdate) {
+                // Create a "virtual" path that the robot will never reach
+                // This mimics what HeadingTuner does
+                Pose startPose = new Pose(currentPose.getX(), currentPose.getY(), currentPose.getHeading());
+                Pose endPose = new Pose(
+                        currentPose.getX() + VIRTUAL_PATH_DISTANCE * Math.cos(currentPose.getHeading()),
+                        currentPose.getY() + VIRTUAL_PATH_DISTANCE * Math.sin(currentPose.getHeading()),
+                        currentPose.getHeading()
+                );
+
+                autoAimPath = new Path(new BezierLine(startPose, endPose));
+
+                // Set constant heading interpolation to target
+                // This is exactly what HeadingTuner does!
+                autoAimPath.setConstantHeadingInterpolation(targetHeading);
+
+                // Configure PID usage - ONLY heading active (like HeadingTuner)
+                robot.pedroFollower.deactivateAllPIDFs();
+                robot.pedroFollower.activateHeading();
+
+                // Start following the path
+                robot.pedroFollower.followPath(autoAimPath, false);  // false = don't hold at end
+
+                lastTargetHeading = targetHeading;
+            }
+
+            // Driver translation will be handled AFTER follower.update()
+            // We'll override the drivetrain directly with manual input
 
         } else {
-            // Manual control
-            rotateAxis /= DriveConstants.Joysticks.rotateScalingFactor;
+            // ═══ MANUAL CONTROL MODE: Standard teleop ═══
+
+            // Transition from auto-aim back to teleop
+            if (wasAutoAiming) {
+                robot.pedroFollower.activateAllPIDFs();  // Re-enable all PIDFs
+                robot.pedroFollower.startTeleopDrive();
+                autoAimPath = null;
+            }
+
+            // Standard field-centric drive
+            robot.pedroFollower.setTeleOpDrive(
+                    driveAxes[0],
+                    driveAxes[1],
+                    rotateAxis / DriveConstants.Joysticks.rotateScalingFactor,
+                    false,  // Field-centric
+                    Math.toRadians(OdometryConstants.DefaultStartPose.allianceDriveHeadingOffset(alliance))
+            );
         }
 
-        // Update state tracking
-        wasAutoAiming = useAutoAim;
-
         // ============================================================================
-        // Drive (field-centric for both auto-aim and manual)
+        // Pedro Update FIRST - Computes heading correction from path
         // ============================================================================
-
-        robot.pedroFollower.setTeleOpDrive(
-                driveAxes[0],
-                driveAxes[1],
-                rotateAxis,
-                false,  // Field-centric
-                Math.toRadians(OdometryConstants.DefaultStartPose.allianceDriveHeadingOffset(alliance))
-        );
         robot.pedroFollower.update();
 
         // Update odometry with vision measurements
@@ -209,6 +213,72 @@ public class Exploration extends CommandOpMode {
                     System.nanoTime() - robot.vision.getVisionLatencyNS()
             );
         }
+
+        // ============================================================================
+        // THEN handle auto-aim override (after Pedro computed heading vector)
+        // ============================================================================
+        if (useAutoAim) {
+            // Pedro's update() already computed heading correction from the path
+            // Now we override the drivetrain with manual drive + Pedro's heading
+
+            Pose currentPose = robot.pedroFollower.getPose();
+            double headingOffset = Math.toRadians(
+                    OdometryConstants.DefaultStartPose.allianceDriveHeadingOffset(alliance)
+            );
+
+            // Create drive vector from joystick
+            // When using field coordinates, use axes as-is (not swapped)
+            Vector driveVector = new Vector();
+            driveVector.setOrthogonalComponents(driveAxes[0], driveAxes[1]);
+
+            // Scale to max power
+            double maxPowerScaling = robot.pedroFollower.getMaxPowerScaling();
+            driveVector.setMagnitude(driveVector.getMagnitude() * maxPowerScaling);
+
+            // For field-centric control:
+            // - Blue alliance (offset=0°): Rotate ONLY by headingOffset (which is 0, so no rotation)
+            //   This keeps the vector in absolute field coordinates
+            // - Red alliance (offset=180°): Rotate by headingOffset (180°)
+            //   This flips the vector for the other side of the field
+            //
+            // The key insight: We DON'T rotate by currentHeading here!
+            // The drivetrain will handle converting from field to robot coordinates
+            driveVector.rotateVector(headingOffset);
+
+            // DEBUG: Log vectors
+            if (Constants.DebugModes.Telemetry.DEBUG_AUTO_AIM) {
+                telemetry.addLine("═══ FIELD-CENTRIC (FIXED) ═══");
+                telemetry.addData("Alliance", alliance.name());
+                telemetry.addData("Joystick", "Fwd: %.3f, Strafe: %.3f", driveAxes[0], driveAxes[1]);
+                telemetry.addData("Current Heading", "%.1f°", Math.toDegrees(currentPose.getHeading()));
+                telemetry.addData("Heading Offset", "%.1f°", Math.toDegrees(headingOffset));
+                telemetry.addData("Drive Vector", "X: %.3f, Y: %.3f, Theta: %.1f°, Mag: %.3f",
+                        driveVector.getXComponent(),
+                        driveVector.getYComponent(),
+                        Math.toDegrees(driveVector.getTheta()),
+                        driveVector.getMagnitude());
+            }
+
+            // Get Pedro's heading correction
+            Vector headingVector = robot.pedroFollower.getHeadingVector();
+
+            if (Constants.DebugModes.Telemetry.DEBUG_AUTO_AIM) {
+                telemetry.addData("Heading Vector", "Mag: %.3f", headingVector.getMagnitude());
+            }
+
+            // Pass the field coordinate vector (rotated only by headingOffset)
+            // The drivetrain's calculateDrive() will handle field-to-robot conversion
+            robot.pedroFollower.getDrivetrain().runDrive(
+                    new Vector(),          // No corrective vector
+                    headingVector,         // Pedro's heading from path
+                    driveVector,           // Field coordinates (offset-rotated only)
+                    currentPose.getHeading()
+            );
+        }
+        // If not auto-aiming, follower.update() already handled everything
+
+        // Update state tracking
+        wasAutoAiming = useAutoAim;
 
         robot.shotController.updateState();
 
@@ -253,72 +323,25 @@ public class Exploration extends CommandOpMode {
     private double calculateAutoAimTargetHeading() {
         Pose currentPose = robot.pedroFollower.getPose();
 
-       /* // Priority 1: Use Limelight if seeing target
+       /*
+        // Priority 1: Use Limelight if seeing target
         if (robot.vision.isSeeingTarget()) {
-            // Limelight gives angle error from current heading
             double angleErrorDeg = robot.vision.angleToTarget();
             double angleErrorRad = Math.toRadians(angleErrorDeg);
             return currentPose.getHeading() + angleErrorRad;
         }
-
         */
+
         // Priority 2: Use odometry if vision pose estimate is enabled
         if (DriveConstants.PoseEstimator.useVisionPoseEstimate) {
             Pose targetPose = robot.vision.getTargetTagPose();
-
-            // Calculate bearing from robot to target
             double dx = targetPose.getX() - currentPose.getX();
             double dy = targetPose.getY() - currentPose.getY();
             return Math.atan2(dy, dx);
         }
 
-        // Fallback: maintain current heading (no auto-aim)
+        // Fallback: maintain current heading
         return currentPose.getHeading();
-    }
-
-    /**
-     * Calculate rotation power from heading error using Pedro's PID.
-     * This exactly mimics what Pedro does in holdPoint() mode.
-     * Includes proper scaling factor to prevent oscillation.
-     *
-     * @param headingError Error in radians (target - current)
-     * @return Rotation power [-1.0, 1.0]
-     */
-    private double calculateRotationPower(double headingError) {
-        FollowerConstants constants = robot.pedroFollower.getConstants();
-        double headingPIDFSwitch = constants.headingPIDFSwitch;
-        boolean useSecondary = constants.useSecondaryHeadingPIDF;
-
-        // CRITICAL: Apply the same scaling Pedro uses in holdPoint()
-        double holdPointHeadingScaling = DriveConstants.HeadingControl.holdPoint;
-
-        double output;
-        Pose currentPose = robot.pedroFollower.getPose();
-        double targetHeading = currentPose.getHeading() + headingError;
-
-        // Switch between primary and secondary PID based on error magnitude
-        if (Math.abs(headingError) < headingPIDFSwitch && useSecondary) {
-            // Small error - use secondary PID (fine tuning)
-            secondaryHeadingController.updateFeedForwardInput(
-                    MathFunctions.getTurnDirection(currentPose.getHeading(), targetHeading)
-            );
-            secondaryHeadingController.updateError(headingError);
-            output = secondaryHeadingController.run();
-
-        } else {
-            // Large error - use primary PID
-            headingController.updateFeedForwardInput(
-                    MathFunctions.getTurnDirection(currentPose.getHeading(), targetHeading)
-            );
-            headingController.updateError(headingError);
-            output = headingController.run();
-        }
-
-        // Apply scaling (this is what prevents oscillation!)
-        // Pedro does: getHeadingVector().times(holdPointHeadingScaling)
-        output *= holdPointHeadingScaling;
-
-        return MathFunctions.clamp(output, -1.0, 1.0);
     }
 
     /**
@@ -334,6 +357,8 @@ public class Exploration extends CommandOpMode {
      * Check if robot is aligned with target within tolerance
      */
     public boolean isAutoAimAligned() {
+        if (!wasAutoAiming) return false;
+
         double targetHeading = calculateAutoAimTargetHeading();
         double currentHeading = robot.pedroFollower.getPose().getHeading();
         double headingError = normalizeAngle(targetHeading - currentHeading);
@@ -351,7 +376,7 @@ public class Exploration extends CommandOpMode {
         double targetHeading = calculateAutoAimTargetHeading();
         double headingError = normalizeAngle(targetHeading - currentPose.getHeading());
 
-        telemetry.addLine("═══ AUTO-AIM DEBUG ═══");
+        telemetry.addLine("═══ AUTO-AIM DEBUG (HeadingTuner Method) ═══");
 
         // Robot state
         telemetry.addData("Robot Pose", "(%.1f, %.1f) @ %.1f°",
@@ -377,12 +402,21 @@ public class Exploration extends CommandOpMode {
         telemetry.addData("Target Heading", "%.1f°", Math.toDegrees(targetHeading));
         telemetry.addData("Heading Error", "%.1f°", Math.toDegrees(headingError));
         telemetry.addData("Aligned", isAutoAimAligned() ? "✓ YES" : "✗ NO");
-        telemetry.addData("Auto-Aim Active", wasAutoAiming ? "YES" : "NO");
 
-        // Controller state
-        FollowerConstants constants = robot.pedroFollower.getConstants();
-        boolean usingSecondary = Math.abs(headingError) < constants.headingPIDFSwitch;
-        telemetry.addData("PID Controller", usingSecondary ? "Secondary (fine)" : "Primary (coarse)");
-        telemetry.addData("Scaling Factor", "%.2f", constants.holdPointHeadingScaling);
+        // Mode info
+        telemetry.addData("Control Mode", wasAutoAiming ? "AUTO-AIM (followPath)" : "MANUAL (teleop)");
+        if (wasAutoAiming) {
+            telemetry.addData("  Method", "Path following with heading-only PID");
+            telemetry.addData("  Active PIDFs", "Heading ONLY");
+
+            // Show Pedro's heading vector
+            Vector headingVector = robot.pedroFollower.getHeadingVector();
+            telemetry.addData("  Pedro Heading Power", "%.3f", headingVector.getMagnitude());
+
+            // Show which PID is active
+            FollowerConstants constants = robot.pedroFollower.getConstants();
+            boolean usingSecondary = Math.abs(headingError) < constants.headingPIDFSwitch;
+            telemetry.addData("  PID Mode", usingSecondary ? "Secondary (fine)" : "Primary (coarse)");
+        }
     }
 }

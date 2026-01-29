@@ -421,7 +421,9 @@ public class ShotController {
 
     public boolean doAutoHeading() {
         return this.currentState == ShotCycleState.PREPARE_SHOT ||
-                this.currentState == ShotCycleState.READY_TO_SHOOT;
+                this.currentState == ShotCycleState.READY_TO_SHOOT ||
+                this.currentState == ShotCycleState.SHOOTING ||
+                this.currentState == ShotCycleState.RECOVERY;
     }
 
     public boolean isShooting() {

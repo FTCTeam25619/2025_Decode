@@ -20,6 +20,7 @@ import org.firstinspires.ftc.teamcode.autos.BlueFarDDConstants;
 import org.firstinspires.ftc.teamcode.autos.TimingConstants;
 import org.firstinspires.ftc.teamcode.constants.Alliance;
 import org.firstinspires.ftc.teamcode.constants.Constants;
+import org.firstinspires.ftc.teamcode.constants.VisionConstants;
 import org.firstinspires.ftc.teamcode.lib.orchestration.PresetShot;
 import org.firstinspires.ftc.teamcode.lib.orchestration.ShotCycleState;
 import org.firstinspires.ftc.teamcode.lib.panels.PanelsUtils;
@@ -96,8 +97,14 @@ public class BlueFarDD extends CommandOpMode {
         this.follower = robot.pedroFollower;
         this.paths = new BlueFarDDConstants(follower);
 
+        robot.vision.setTargetingTag(
+                alliance == Alliance.BLUE ?
+                        VisionConstants.AprilTags.BlueGoal :
+                        VisionConstants.AprilTags.RedGoal
+        );
+
         // Initialize follower
-        follower.setStartingPose(paths.startPose.withHeading(Math.toRadians(paths.startPose.getHeading())));
+        follower.setStartingPose(paths.startPose.withHeading(paths.startPose.getHeading()));
         BlackboardHelpers.setAutoEndPose(blackboard, follower.getPose());
 
         // Schedule the autonomous sequence

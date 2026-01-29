@@ -21,7 +21,7 @@ public class VisionConstants {
 
 
 
-    public static double headingAngleThresholdDeg = 1.0;
+    public static double headingAngleThresholdDeg = 1.5;
 
 
     @Configurable
