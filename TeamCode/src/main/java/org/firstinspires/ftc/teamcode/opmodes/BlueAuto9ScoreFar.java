@@ -20,6 +20,7 @@ import org.firstinspires.ftc.teamcode.autos.BlueFarFromGoalConstants;
 import org.firstinspires.ftc.teamcode.autos.TimingConstants;
 import org.firstinspires.ftc.teamcode.constants.Alliance;
 import org.firstinspires.ftc.teamcode.constants.Constants;
+import org.firstinspires.ftc.teamcode.constants.VisionConstants;
 import org.firstinspires.ftc.teamcode.lib.orchestration.PresetShot;
 import org.firstinspires.ftc.teamcode.lib.orchestration.ShotCycleState;
 import org.firstinspires.ftc.teamcode.lib.panels.PanelsUtils;
@@ -92,6 +93,12 @@ public class BlueAuto9ScoreFar extends CommandOpMode {
         this.robot = new NovaPyraRobot(hardwareMap, telemetry, alliance);
         this.robotTriggers = new RobotTriggers(robot);
         this.robotTriggers.setupNonControllerTriggers();
+
+        robot.vision.setTargetingTag(
+                alliance == Alliance.BLUE ?
+                        VisionConstants.AprilTags.BlueGoal :
+                        VisionConstants.AprilTags.RedGoal
+        );
 
         this.follower = robot.pedroFollower;
         this.paths = new BlueFarFromGoalConstants(follower);

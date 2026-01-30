@@ -15,6 +15,7 @@ public final class Constants {
             public static final boolean DEBUG_LIGHTS = ENABLE_PANELS_DASHBOARD && true;
             public static final boolean DEBUG_VISION = true;
             public static final boolean DEBUG_PATH_FOLLOWING = false;
+            public static final boolean DEBUG_AUTO_AIM = true;
         }
     }
 

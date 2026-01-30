@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.lib.orchestration;
 
+import com.pedropathing.geometry.Pose;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.button.Trigger;
 import com.seattlesolvers.solverslib.util.InterpLUT;
@@ -9,8 +10,10 @@ import org.firstinspires.ftc.teamcode.NovaPyraRobot;
 import org.firstinspires.ftc.teamcode.constants.HoodConstants;
 import org.firstinspires.ftc.teamcode.constants.ShooterConstants;
 import org.firstinspires.ftc.teamcode.constants.ShooterFeedConstants;
+import org.firstinspires.ftc.teamcode.constants.VisionConstants;
 import org.firstinspires.ftc.teamcode.lib.triggers.SupplierTrigger;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
+import org.firstinspires.ftc.teamcode.subsystems.Sensors;
 import org.firstinspires.ftc.teamcode.subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.ShooterFeed;
 import com.seattlesolvers.solverslib.util.MathUtils;
@@ -95,6 +98,15 @@ public class ShotController {
 
             case INTAKE:
                 // Behavior handled mostly by state transition triggers + LT mapping.
+                // Stop feed wheel when feedhigh sensor detects artifact
+                if (robot.sensors.seeingSomeBall(Sensors.SensorLocation.FeedHigh)){
+                    this.robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
+                }
+                // Check if intake is stalled and stop it
+                if (this.robot.intake.isStalled()) {
+                    this.robot.intake.setState(Intake.IntakeState.Stopped);
+                    this.robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
+                }
                 break;
 
             case STAGED:
@@ -249,8 +261,29 @@ public class ShotController {
     }
 
     private boolean atTargetHeading() {
-        // Implement hybrid LL/odometry logic inside Vision.atHeading()
-        return this.robot.vision.atHeading();
+        // Use odometry-based alignment check from Exploration
+        // This matches the auto-aim control logic
+        Pose currentPose = robot.pedroFollower.getPose();
+        Pose targetPose = robot.vision.getTargetTagPose();
+
+        // Calculate vector from robot to target
+        double dx = targetPose.getX() - currentPose.getX();
+        double dy = targetPose.getY() - currentPose.getY();
+        double targetHeading = Math.atan2(dy, dx);
+
+        // Calculate heading error
+        double headingError = normalizeAngle(targetHeading - currentPose.getHeading());
+        double headingErrorDeg = Math.toDegrees(Math.abs(headingError));
+
+        // Check if within tolerance
+        return headingErrorDeg <= VisionConstants.headingAngleThresholdDeg;
+    }
+
+    // Add helper method
+    private double normalizeAngle(double angleRad) {
+        while (angleRad > Math.PI) angleRad -= 2.0 * Math.PI;
+        while (angleRad <= -Math.PI) angleRad += 2.0 * Math.PI;
+        return angleRad;
     }
 
     public boolean readyToShoot() {
@@ -273,21 +306,21 @@ public class ShotController {
         stateTransitionTrigger(ShotCycleState.OFF).whenActive(new InstantCommand(() -> {
             // Transitioning back to OFF state
             this.robot.intake.setState(Intake.IntakeState.Stopped);
-            this.robot.feedStop.disengage();
+            this.robot.feedStop.engage();
             this.robot.shooter.setState(Shooter.ShooterState.Stopped);
             this.robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
-            this.robot.hood.setAngle(HoodConstants.Limits.hoodHardStopMax);
+            this.robot.hood.setAngle(HoodConstants.Limits.hoodHardStopMin);
         }));
 
         stateTransitionTrigger(ShotCycleState.IDLE).whenActive(new InstantCommand(() -> {
             // Transitioning back to IDLE state
             // NOTE: This will not trigger at start because initial state is IDLE
             this.robot.intake.setState(Intake.IntakeState.Stopped);
-            this.robot.feedStop.disengage();
+            this.robot.feedStop.engage();
             this.robot.shooter.setState(Shooter.ShooterState.Shooting);
             this.robot.shooter.setTargetRPM(ShooterConstants.Targets.idleRPM);
             this.robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
-            this.robot.hood.setAngle(HoodConstants.Limits.hoodHardStopMax);
+            this.robot.hood.setAngle(HoodConstants.Limits.hoodHardStopMin);
         }));
 
         // INTAKE state: left trigger held
@@ -298,8 +331,11 @@ public class ShotController {
             // Same as prior state IDLE
             this.robot.shooter.setState(Shooter.ShooterState.Shooting);
             this.robot.shooter.setTargetRPM(ShooterConstants.Targets.idleRPM);
-            this.robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
-            this.robot.hood.setAngle(HoodConstants.Limits.hoodHardStopMax);
+            // Feed wheel turned on during transition to move game pieces up closer to shooter and within alignment of color sensors.
+            // When feedhigh sensor detects gamepiece the feedwheel will be set to stopped in the UpdateState loop
+            this.robot.shooterFeed.setFeedPower(this.getTargetFeedPower());
+            this.robot.shooterFeed.setState(ShooterFeed.FeedState.Feeding);
+            this.robot.hood.setAngle(HoodConstants.Limits.hoodHardStopMin);
         }));
 
         // STAGED: ball is staged but not yet preparing to shoot
@@ -311,7 +347,7 @@ public class ShotController {
             this.robot.shooter.setState(Shooter.ShooterState.Shooting);
             this.robot.shooter.setTargetRPM(ShooterConstants.Targets.idleRPM);
             this.robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
-            this.robot.hood.setAngle(HoodConstants.Limits.hoodHardStopMax);
+            this.robot.hood.setAngle(HoodConstants.Limits.hoodHardStopMin);
         }));
 
         // PREPARE_SHOT: spin up, aim hood, keep feedStop engaged
@@ -385,7 +421,9 @@ public class ShotController {
 
     public boolean doAutoHeading() {
         return this.currentState == ShotCycleState.PREPARE_SHOT ||
-                this.currentState == ShotCycleState.READY_TO_SHOOT;
+                this.currentState == ShotCycleState.READY_TO_SHOOT ||
+                this.currentState == ShotCycleState.SHOOTING ||
+                this.currentState == ShotCycleState.RECOVERY;
     }
 
     public boolean isShooting() {
@@ -445,11 +483,6 @@ public class ShotController {
 
     private InterpLUT setupShooterRPMInterpolator() {
         InterpLUT table = new InterpLUT();
-       // table.add(OdometryConstants.TargetDistances.atGoalShot,      ShooterConstants.RPMTargets.atGoalShot);
-       // table.add(OdometryConstants.TargetDistances.nearZoneMidShot, ShooterConstants.RPMTargets.nearZoneMidShot);
-       // table.add(OdometryConstants.TargetDistances.nearZoneEndShot, ShooterConstants.RPMTargets.nearZoneEndShot);
-       // table.add(OdometryConstants.TargetDistances.farWallShot,     ShooterConstants.RPMTargets.farWallShot);
-
 
         table.add(0, 1850);
 
@@ -462,10 +495,10 @@ public class ShotController {
         table.add(208, 2550);
         table.add(223, 2550);
         // Small Triangle / Far Shots
-        table.add(280, 2850);
-        table.add(295, 2875);
-        table.add(315, 2950);
-        table.add(330, 3050);
+        table.add(280, 2875);
+        table.add(295, 2900);
+        table.add(315, 3000);
+        table.add(330, 3100);
 
 
         table.add(600, 3200);
@@ -475,11 +508,6 @@ public class ShotController {
 
     private InterpLUT setupHoodAngleInterpolator() {
         InterpLUT table = new InterpLUT();
-        //table.add(OdometryConstants.TargetDistances.atGoalShot,      HoodConstants.Targets.atGoalShot);
-        //table.add(OdometryConstants.TargetDistances.nearZoneMidShot, HoodConstants.Targets.nearZoneMidShot);
-        //table.add(OdometryConstants.TargetDistances.nearZoneEndShot, HoodConstants.Targets.nearZoneEndShot);
-        //table.add(OdometryConstants.TargetDistances.farWallShot,     HoodConstants.Targets.farWallShot);
-
 
         table.add(0, 275);
 
@@ -488,17 +516,17 @@ public class ShotController {
         table.add(81, 50);
         table.add(107, 20);
         table.add(140, 10);
-        table.add(170, 5);
-        table.add(208, 0);
-        table.add(223, 0);
+        table.add(170, 10);
+        table.add(208, 10);
+        table.add(223, 10);
 
         // Small Triangle / Far Shots
-        table.add(280, 0);
-        table.add(295, 0);
-        table.add(315, 0);
-        table.add(330, 0);
+        table.add(280, 10);
+        table.add(295, 10);
+        table.add(315, 10);
+        table.add(330, 10);
 
-        table.add(600, 0);
+        table.add(600, 10);
 
         table.createLUT();
         return table;
