@@ -16,10 +16,11 @@ public class BlueFarFromGoalConstants {
     public Pose blueFarWallFarIntake = new Pose(21.0, 36.454);
     public Pose blueFarWallShootToMidIntakeCP = new Pose(65.324, 72.238);
     public Pose blueFarWallMidIntake = new Pose(18.0, 55.192);
-    public Pose blueFarWallPark = new Pose(56.742, 27.000);
+    public Pose blueFarWallParkCP = new Pose(51,25);
+    public Pose blueFarWallPark = new Pose(15.00, 10.00);
     public double blueFarWallStartHeading = 90.0;
-    public double blueFarWallFirstShotHeading = 109.5;
-    public double blueFarWallShootHeading = 112.0;
+    public double blueFarWallFirstShotHeading = 113.0;
+    public double blueFarWallShootHeading = 113.0;
     public double blueFarWallRowIntakeHeading = 0.0;
     public double blueFarWallMidIntakeHeading = 0.0;
 
@@ -112,15 +113,16 @@ public class BlueFarFromGoalConstants {
         blueFarWallToPark = follower
                 .pathBuilder()
                 .addPath(
-                        new BezierLine(
+                        new BezierCurve(
                                 blueFarWallShoot,
+                                blueFarWallParkCP,
                                 blueFarWallPark
                         )
                 )
                 .setLinearHeadingInterpolation(
                         Math.toRadians(blueFarWallShootHeading),
-                        Math.toRadians(blueFarWallShootHeading),
-                        0.7)
+                        Math.toRadians(0.0),
+                0.5)
                 .build();
     }
 }
