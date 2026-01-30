@@ -52,12 +52,12 @@ public class PedroConstants {
             .useSecondaryHeadingPIDF(true)
             .headingPIDFCoefficients(new PIDFCoefficients(0.9, 0.0, 0.045, 0.025))
             .secondaryHeadingPIDFCoefficients(new PIDFCoefficients(1.5, 0.0, 0.035, 0.025))
-            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.02, 0.0, 0.00005, 0.6, 0.015))
-            .secondaryDrivePIDFCoefficients(new FilteredPIDFCoefficients(0.02, 0.0, 0.00005, 0.6, 0.015))
-            .centripetalScaling(0.0012);
+            .useSecondaryDrivePIDF(false)
+            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.03, 0.0, 0.00005, 0.6, 0.015))
+            .centripetalScaling(0.0006);
 
     public static PathConstraints pathConstraints = new PathConstraints(
-            0.99, 100, 0.3, 2.5);
+            0.99, 100, 0.25, 1.0);
 
     public static Drivetrain createDrivetrain(HardwareMap hardwareMap) {
         if (drivetrain == null) {
