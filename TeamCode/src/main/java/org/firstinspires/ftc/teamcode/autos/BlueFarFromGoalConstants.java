@@ -16,20 +16,21 @@ public class BlueFarFromGoalConstants {
     public Pose blueFarWallFarIntake = new Pose(21.0, 36.454);
     public Pose blueFarWallShootToMidIntakeCP = new Pose(65.324, 72.238);
     public Pose blueFarWallMidIntake = new Pose(18.0, 55.192);
-    public Pose blueFarWallParkCP = new Pose(51,25);
-    public Pose blueFarWallPark = new Pose(15.00, 10.00);
+    public Pose blueFarWallIntakeLoadingStationCP = new Pose(51,25);
+    public Pose blueFarWallIntakeLoadingStation = new Pose(14.00, 9.00);
     public double blueFarWallStartHeading = 90.0;
     public double blueFarWallFirstShotHeading = 113.0;
     public double blueFarWallShootHeading = 113.0;
     public double blueFarWallRowIntakeHeading = 0.0;
     public double blueFarWallMidIntakeHeading = 0.0;
+    public double blueLoadingZoneIntakeHeading = 0.0;
 
     public PathChain blueWallToFarZonePrescore;
     public PathChain blueFarZonePrescoreToFarIntake;
     public PathChain blueFarWallIntakeToFarScore;
     public PathChain blueFarZoneScoreToMidIntake;
     public PathChain blueMidWallIntakeToFarScore;
-    public PathChain blueFarWallToPark;
+    public PathChain blueFarWallToIntakeLoadingStation;
 
     public BlueFarFromGoalConstants(Follower follower) {
         buildPaths(follower);
@@ -110,18 +111,18 @@ public class BlueFarFromGoalConstants {
                 .5)
                 .build();
 
-        blueFarWallToPark = follower
+        blueFarWallToIntakeLoadingStation = follower
                 .pathBuilder()
                 .addPath(
                         new BezierCurve(
                                 blueFarWallShoot,
-                                blueFarWallParkCP,
-                                blueFarWallPark
+                                blueFarWallIntakeLoadingStationCP,
+                                blueFarWallIntakeLoadingStation
                         )
                 )
                 .setLinearHeadingInterpolation(
                         Math.toRadians(blueFarWallShootHeading),
-                        Math.toRadians(0.0),
+                        Math.toRadians(blueLoadingZoneIntakeHeading),
                 0.5)
                 .build();
     }

@@ -113,25 +113,37 @@ public class BlueAuto6ScoreFar extends CommandOpMode {
                         new RunCommand(follower::update),
                         new SequentialCommandGroup(
                                 // Score preload
-                                setupFarWallPresetShot(),
                                 prepareShot(),
-                                new FollowPathCommand(follower, paths.blueWallToFarZonePrescore),
+                                new FollowPathCommand(follower, paths.blueWallToFarZonePrescore).setGlobalMaxPower(0.8),
                                 new WaitCommand(TimingConstants.waitBeforeShootingMS),
                                 shoot(),
                                 new WaitCommand(TimingConstants.waitForShootingMS),
                                 // Intake 3 from row closest to far wall from goal
                                 intake(),
                                 new FollowPathCommand(follower, paths.blueFarZonePrescoreToFarIntake),
-                                new WaitCommand(TimingConstants.waitForIntakeMS),
                                 // Score 3
-                                setupFarWallPresetShot(),
                                 prepareShot(),
                                 new FollowPathCommand(follower, paths.blueFarWallIntakeToFarScore),
                                 new WaitCommand(TimingConstants.waitBeforeShootingMS),
                                 shoot(),
                                 new WaitCommand(TimingConstants.waitForShootingMS),
-                                // Park
-                                new FollowPathCommand(follower, paths.blueFarWallToPark, false),
+
+                                // Intake from loading station
+                                intake(),
+                                new FollowPathCommand(follower, paths.blueFarWallToIntakeLoadingStation),
+                                new WaitCommand(TimingConstants.waitForIntakeMS),
+
+                                // Score 3
+                                prepareShot(),
+                                new FollowPathCommand(follower, paths.blueFarWallIntakeToFarScore),
+                                new WaitCommand(TimingConstants.waitBeforeShootingMS),
+                                shoot(),
+                                new WaitCommand(TimingConstants.waitForShootingMS),
+
+                                // Intake from loading station and park
+                                intake(),
+                                new FollowPathCommand(follower, paths.blueFarWallToIntakeLoadingStation),
+                                new WaitCommand(TimingConstants.waitForIntakeMS),
                                 spinDown()
                         )
                 )
@@ -187,6 +199,6 @@ public class BlueAuto6ScoreFar extends CommandOpMode {
         PanelsUtils.Drawing.drawPath(paths.blueWallToFarZonePrescore);
         PanelsUtils.Drawing.drawPath(paths.blueFarZonePrescoreToFarIntake);
         PanelsUtils.Drawing.drawPath(paths.blueFarWallIntakeToFarScore);
-        PanelsUtils.Drawing.drawPath(paths.blueFarWallToPark);
+        PanelsUtils.Drawing.drawPath(paths.blueFarWallToIntakeLoadingStation);
     }
 }

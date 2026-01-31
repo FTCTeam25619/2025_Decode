@@ -112,7 +112,7 @@ public class BlueAuto6ScoreNear extends CommandOpMode {
                                 // Score preload
                                 setupNearWallPresetShot(),
                                 prepareShot(),
-                                new FollowPathCommand(follower, paths.blueWallToNearZonePrescore),
+                                new FollowPathCommand(follower, paths.blueWallToNearZonePrescore).setGlobalMaxPower(0.8),
                                 new WaitCommand(TimingConstants.waitBeforeShootingMS),
                                 shoot(),
                                 new WaitCommand(TimingConstants.waitForShootingMS),

@@ -115,7 +115,6 @@ public class BlueAuto9ScoreFar extends CommandOpMode {
                         new RunCommand(follower::update),
                         new SequentialCommandGroup(
                                 // Score preload
-                                // setupFarWallPresetShot(),
                                 prepareShot(),
                                 new FollowPathCommand(follower, paths.blueWallToFarZonePrescore).setGlobalMaxPower(0.8),
                                 new WaitCommand(TimingConstants.waitBeforeShootingMS),
@@ -124,9 +123,7 @@ public class BlueAuto9ScoreFar extends CommandOpMode {
                                 // Intake 3 from row closest to far wall from goal
                                 intake(),
                                 new FollowPathCommand(follower, paths.blueFarZonePrescoreToFarIntake),
-                                new WaitCommand(TimingConstants.waitForIntakeMS),
                                 // Score 3
-                                // setupFarWallPresetShot(),
                                 prepareShot(),
                                 new FollowPathCommand(follower, paths.blueFarWallIntakeToFarScore),
                                 new WaitCommand(TimingConstants.waitBeforeShootingMS),
@@ -135,17 +132,16 @@ public class BlueAuto9ScoreFar extends CommandOpMode {
                                 // Intake 3 from from mid row
                                 intake(),
                                 new FollowPathCommand(follower, paths.blueFarZoneScoreToMidIntake),
-                                new WaitCommand(TimingConstants.waitForIntakeMS),
                                 // Score 3
-                                // setupFarWallPresetShot(),
                                 prepareShot(),
                                 new FollowPathCommand(follower, paths.blueMidWallIntakeToFarScore),
                                 new WaitCommand(TimingConstants.waitBeforeShootingMS),
                                 shoot(),
                                 new WaitCommand(TimingConstants.waitForShootingMS),
-                                // Park
+                                // Intake from loading station and park
                                 intake(),
-                                new FollowPathCommand(follower, paths.blueFarWallToPark),
+                                new FollowPathCommand(follower, paths.blueFarWallToIntakeLoadingStation, .65),
+                                new WaitCommand(TimingConstants.waitForIntakeMS),
                                 spinDown()
                         )
                 )
@@ -203,6 +199,6 @@ public class BlueAuto9ScoreFar extends CommandOpMode {
         PanelsUtils.Drawing.drawPath(paths.blueFarWallIntakeToFarScore);
         PanelsUtils.Drawing.drawPath(paths.blueFarZoneScoreToMidIntake);
         PanelsUtils.Drawing.drawPath(paths.blueMidWallIntakeToFarScore);
-        PanelsUtils.Drawing.drawPath(paths.blueFarWallToPark);
+        PanelsUtils.Drawing.drawPath(paths.blueFarWallToIntakeLoadingStation);
     }
 }

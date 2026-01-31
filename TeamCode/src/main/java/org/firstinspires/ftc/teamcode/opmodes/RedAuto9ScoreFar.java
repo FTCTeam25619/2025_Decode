@@ -139,7 +139,7 @@ public class RedAuto9ScoreFar extends CommandOpMode {
                                 shoot(),
                                 new WaitCommand(TimingConstants.waitForShootingMS),
                                 // Park
-                                new FollowPathCommand(follower, paths.redFarWallToPark, false),
+                                new FollowPathCommand(follower, paths.redFarWallToIntakeLoadingStation),
                                 spinDown()
                         )
                 )
