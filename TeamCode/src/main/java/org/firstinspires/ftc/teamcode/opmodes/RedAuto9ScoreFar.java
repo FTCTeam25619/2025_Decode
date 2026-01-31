@@ -20,6 +20,7 @@ import org.firstinspires.ftc.teamcode.autos.RedFarFromGoalConstants;
 import org.firstinspires.ftc.teamcode.autos.TimingConstants;
 import org.firstinspires.ftc.teamcode.constants.Alliance;
 import org.firstinspires.ftc.teamcode.constants.Constants;
+import org.firstinspires.ftc.teamcode.constants.VisionConstants;
 import org.firstinspires.ftc.teamcode.lib.orchestration.PresetShot;
 import org.firstinspires.ftc.teamcode.lib.orchestration.ShotCycleState;
 import org.firstinspires.ftc.teamcode.lib.triggers.SupplierTrigger;
@@ -90,6 +91,12 @@ public class RedAuto9ScoreFar extends CommandOpMode {
         this.robotTriggers = new RobotTriggers(robot);
         this.robotTriggers.setupNonControllerTriggers();
 
+        robot.vision.setTargetingTag(
+                alliance == Alliance.BLUE ?
+                        VisionConstants.AprilTags.BlueGoal :
+                        VisionConstants.AprilTags.RedGoal
+        );
+
         this.follower = robot.pedroFollower;
         this.paths = new RedFarFromGoalConstants(follower);
 
@@ -132,7 +139,7 @@ public class RedAuto9ScoreFar extends CommandOpMode {
                                 shoot(),
                                 new WaitCommand(TimingConstants.waitForShootingMS),
                                 // Park
-                                new FollowPathCommand(follower, paths.redFarWallToPark, false),
+                                new FollowPathCommand(follower, paths.redFarWallToIntakeLoadingStation),
                                 spinDown()
                         )
                 )

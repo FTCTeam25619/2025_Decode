@@ -28,7 +28,7 @@ import org.firstinspires.ftc.teamcode.lib.triggers.SupplierTrigger;
 import org.firstinspires.ftc.teamcode.lib.util.BlackboardHelpers;
 import org.firstinspires.ftc.teamcode.triggers.RobotTriggers;
 
-@Autonomous(name = "Blue Far 12 DD", group = "Autonomous")
+//@Autonomous(name = "Blue Far 12 DD", group = "Autonomous")
 @Configurable // Panels
 public class BlueFarDD extends CommandOpMode {
     private NovaPyraRobot robot;

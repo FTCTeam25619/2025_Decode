@@ -4,6 +4,7 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.JoinedTelemetry;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.InstantCommand;
@@ -13,6 +14,7 @@ import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.command.button.Trigger;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
+import com.seattlesolvers.solverslib.pedroCommand.HoldPointCommand;
 import com.seattlesolvers.solverslib.util.TelemetryData;
 
 import org.firstinspires.ftc.teamcode.NovaPyraRobot;
@@ -113,18 +115,15 @@ public class BlueAuto9ScoreFar extends CommandOpMode {
                         new RunCommand(follower::update),
                         new SequentialCommandGroup(
                                 // Score preload
-                                setupFarWallPresetShot(),
                                 prepareShot(),
-                                new FollowPathCommand(follower, paths.blueWallToFarZonePrescore),
+                                new FollowPathCommand(follower, paths.blueWallToFarZonePrescore).setGlobalMaxPower(0.8),
                                 new WaitCommand(TimingConstants.waitBeforeShootingMS),
                                 shoot(),
                                 new WaitCommand(TimingConstants.waitForShootingMS),
                                 // Intake 3 from row closest to far wall from goal
                                 intake(),
                                 new FollowPathCommand(follower, paths.blueFarZonePrescoreToFarIntake),
-                                new WaitCommand(TimingConstants.waitForIntakeMS),
                                 // Score 3
-                                setupFarWallPresetShot(),
                                 prepareShot(),
                                 new FollowPathCommand(follower, paths.blueFarWallIntakeToFarScore),
                                 new WaitCommand(TimingConstants.waitBeforeShootingMS),
@@ -133,16 +132,16 @@ public class BlueAuto9ScoreFar extends CommandOpMode {
                                 // Intake 3 from from mid row
                                 intake(),
                                 new FollowPathCommand(follower, paths.blueFarZoneScoreToMidIntake),
-                                new WaitCommand(TimingConstants.waitForIntakeMS),
                                 // Score 3
-                                setupFarWallPresetShot(),
                                 prepareShot(),
                                 new FollowPathCommand(follower, paths.blueMidWallIntakeToFarScore),
                                 new WaitCommand(TimingConstants.waitBeforeShootingMS),
                                 shoot(),
                                 new WaitCommand(TimingConstants.waitForShootingMS),
-                                // Park
-                                new FollowPathCommand(follower, paths.blueFarWallToPark, false),
+                                // Intake from loading station and park
+                                intake(),
+                                new FollowPathCommand(follower, paths.blueFarWallToIntakeLoadingStation, .65),
+                                new WaitCommand(TimingConstants.waitForIntakeMS),
                                 spinDown()
                         )
                 )
@@ -200,6 +199,6 @@ public class BlueAuto9ScoreFar extends CommandOpMode {
         PanelsUtils.Drawing.drawPath(paths.blueFarWallIntakeToFarScore);
         PanelsUtils.Drawing.drawPath(paths.blueFarZoneScoreToMidIntake);
         PanelsUtils.Drawing.drawPath(paths.blueMidWallIntakeToFarScore);
-        PanelsUtils.Drawing.drawPath(paths.blueFarWallToPark);
+        PanelsUtils.Drawing.drawPath(paths.blueFarWallToIntakeLoadingStation);
     }
 }

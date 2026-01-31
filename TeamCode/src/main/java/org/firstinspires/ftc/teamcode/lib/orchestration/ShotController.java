@@ -137,6 +137,7 @@ public class ShotController {
                 break;
 
             case RECOVERY:
+                runPrepareShotLogic();
                 // In recovery we keep shooter + hood at target, but feed is stopped.
                 // Once we are “ready” again, resume SHOOTING.
                 if (this.isRPMatTarget()) {
@@ -200,9 +201,21 @@ public class ShotController {
             // Limelight reports distance in cm.
             return robot.vision.distanceToTarget();
         }
+        // Odometry/Pedro fallback (field distance): poses are in inches, so convert to cm
+        Pose robotPose  = robot.pedroFollower.getPose();
+        Pose targetPose = robot.vision.getTargetTagPose();
 
-        // No valid distance when we don't see the tag
-        return Double.NaN;
+        // Check if we have valid target pose data
+        if (targetPose == null) {
+            // No valid distance when we don't see the tag
+            return Double.NaN;
+        }
+
+        double dxIn = targetPose.getX() - robotPose.getX();
+        double dyIn = targetPose.getY() - robotPose.getY();
+
+        double distanceIn = Math.hypot(dxIn, dyIn);
+        return distanceIn * 2.54; // inches -> cm
     }
 
 
