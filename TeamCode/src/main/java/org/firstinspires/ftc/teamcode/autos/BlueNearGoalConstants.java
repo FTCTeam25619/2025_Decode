@@ -49,9 +49,6 @@ public class BlueNearGoalConstants {
                         Math.toRadians(blueNearWallStartHeading),
                         Math.toRadians(blueNearWallShootHeading),
                         0.7)
-                .setVelocityConstraint(25.0)
-                .setTranslationalConstraint(0.5)
-                .setHeadingConstraint(Math.toRadians(2.0))
                 .build();
 
         blueNearZonePrescoreToNearIntake = follower
@@ -67,9 +64,6 @@ public class BlueNearGoalConstants {
                         Math.toRadians(blueNearWallShootHeading),
                         Math.toRadians(blueNearWallRowIntakeHeading),
                         0.5)
-                .setVelocityConstraint(10.0)
-                .setTranslationalConstraint(0.5)
-                .setHeadingConstraint(Math.toRadians(2.0))
                 .build();
 
         blueNearWallIntakeToNearScore = follower
@@ -84,10 +78,6 @@ public class BlueNearGoalConstants {
                         Math.toRadians(blueNearWallRowIntakeHeading),
                         Math.toRadians(blueNearWallShootHeading),
                         0.7)
-                .setVelocityConstraint(25.0)
-                .setTranslationalConstraint(0.5)
-                .setHeadingConstraint(Math.toRadians(2.0))
-                .setBrakingStart(2.0)
                 .build();
 
         blueNearZoneScoreToMidIntake = follower
@@ -103,9 +93,6 @@ public class BlueNearGoalConstants {
                         Math.toRadians(blueNearWallShootHeading),
                         Math.toRadians(blueNearWallMidRowIntakeHeading),
                         0.4)
-                .setVelocityConstraint(20.0)
-                .setTranslationalConstraint(0.5)
-                .setHeadingConstraint(Math.toRadians(2.0))
                 .build();
 
         blueMidWallIntakeToNearScore = follower
@@ -120,10 +107,6 @@ public class BlueNearGoalConstants {
                         Math.toRadians(blueNearWallRowIntakeHeading),
                         Math.toRadians(blueNearWallShootHeading),
                         0.7)
-                .setVelocityConstraint(25.0)
-                .setTranslationalConstraint(0.5)
-                .setHeadingConstraint(Math.toRadians(2.0))
-                .setBrakingStart(2.0)
                 .build();
 
         blueNearWallToPark = follower
@@ -138,9 +121,6 @@ public class BlueNearGoalConstants {
                         Math.toRadians(blueNearWallShootHeading),
                         Math.toRadians(blueNearWallShootHeading),
                         0.7)
-                .setVelocityConstraint(25.0)
-                .setTranslationalConstraint(0.5)
-                .setHeadingConstraint(Math.toRadians(2.0))
                 .build();
     }
 }
