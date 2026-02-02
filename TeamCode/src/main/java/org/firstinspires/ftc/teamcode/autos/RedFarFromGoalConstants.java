@@ -20,6 +20,7 @@ public class RedFarFromGoalConstants {
     public Pose redFarWallMidIntake = new Pose(126, 55.192);
     public Pose redFarWallIntakeLoadingStationCP = new Pose(93,25);
     public Pose redFarWallIntakeLoadingStation = new Pose(130, 9.00);
+    public Pose redFarWallParkPose = new Pose(114.00,46.00);
     public double redFarWallStartHeading = 90;
     public double redFarWallFirstShotHeading = 67;
     public double redFarWallShootHeading = 67;
@@ -35,6 +36,7 @@ public class RedFarFromGoalConstants {
     public PathChain redFarZoneScoreToMidIntake;
     public PathChain redMidWallIntakeToFarScore;
     public PathChain redFarWallToIntakeLoadingStation;
+    public PathChain redFarWallPark;
 
 
     public RedFarFromGoalConstants(Follower follower) {
@@ -128,6 +130,19 @@ public class RedFarFromGoalConstants {
                 .setLinearHeadingInterpolation(
                         Math.toRadians(redFarWallShootHeading),
                         Math.toRadians(redLoadingZoneIntakeHeading),
+                        0.5)
+                .build();
+        redFarWallPark = follower
+                .pathBuilder()
+                .addPath(
+                        new BezierCurve(
+                                redFarWallIntakeLoadingStation,
+                                redFarWallParkPose
+                        )
+                )
+                .setLinearHeadingInterpolation(
+                        Math.toRadians(redLoadingZoneIntakeHeading),
+                        Math.toRadians(90.0),
                         0.5)
                 .build();
     }

@@ -110,6 +110,7 @@ public class BlueAuto9ScoreNear extends CommandOpMode {
                 new ParallelCommandGroup(
                         new RunCommand(follower::update),
                         new SequentialCommandGroup(
+
                                 // Score preload
                                 prepareShot(),
                                 new FollowPathCommand(follower, paths.blueWallToNearZonePrescore).setGlobalMaxPower(0.8),

@@ -109,24 +109,25 @@ public class BlueAuto6ScoreNear extends CommandOpMode {
                 new ParallelCommandGroup(
                         new RunCommand(follower::update),
                         new SequentialCommandGroup(
+
                                 // Score preload
-                                setupNearWallPresetShot(),
                                 prepareShot(),
                                 new FollowPathCommand(follower, paths.blueWallToNearZonePrescore).setGlobalMaxPower(0.8),
                                 new WaitCommand(TimingConstants.waitBeforeShootingMS),
                                 shoot(),
                                 new WaitCommand(TimingConstants.waitForShootingMS),
+
                                 // Intake 3 from row closest to far wall from goal
                                 intake(),
                                 new FollowPathCommand(follower, paths.blueNearZonePrescoreToNearIntake),
-                                new WaitCommand(TimingConstants.waitForIntakeMS),
+
                                 // Score 3
-                                setupNearWallPresetShot(),
                                 prepareShot(),
                                 new FollowPathCommand(follower, paths.blueNearWallIntakeToNearScore),
                                 new WaitCommand(TimingConstants.waitBeforeShootingMS),
                                 shoot(),
                                 new WaitCommand(TimingConstants.waitForShootingMS),
+
                                 // Park
                                 new FollowPathCommand(follower, paths.blueNearWallToPark, false),
                                 spinDown()

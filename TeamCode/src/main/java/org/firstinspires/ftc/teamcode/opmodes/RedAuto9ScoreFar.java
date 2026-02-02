@@ -110,18 +110,19 @@ public class RedAuto9ScoreFar extends CommandOpMode {
                         new RunCommand(follower::update),
                         new SequentialCommandGroup(
                                 // Score preload
-                                setupFarWallPresetShot(),
+
                                 prepareShot(),
                                 new FollowPathCommand(follower, paths.redWallToFarZonePrescore),
                                 new WaitCommand(TimingConstants.waitBeforeShootingMS),
                                 shoot(),
                                 new WaitCommand(TimingConstants.waitForShootingMS),
+
                                 // Intake 3 from row closest to far wall from goal
                                 intake(),
                                 new FollowPathCommand(follower, paths.redFarZonePrescoreToFarIntake),
-                                new WaitCommand(TimingConstants.waitForIntakeMS),
+
                                 // Score 3
-                                setupFarWallPresetShot(),
+
                                 prepareShot(),
                                 new FollowPathCommand(follower, paths.redFarWallIntakeToFarScore),
                                 new WaitCommand(TimingConstants.waitBeforeShootingMS),
@@ -130,17 +131,18 @@ public class RedAuto9ScoreFar extends CommandOpMode {
                                 // Intake 3 from from mid row
                                 intake(),
                                 new FollowPathCommand(follower, paths.redFarZoneScoreToMidIntake),
-                                new WaitCommand(TimingConstants.waitForIntakeMS),
+
                                 // Score 3
-                                setupFarWallPresetShot(),
                                 prepareShot(),
                                 new FollowPathCommand(follower, paths.redMidWallIntakeToFarScore),
                                 new WaitCommand(TimingConstants.waitBeforeShootingMS),
                                 shoot(),
                                 new WaitCommand(TimingConstants.waitForShootingMS),
+
                                 // Park
                                 new FollowPathCommand(follower, paths.redFarWallToIntakeLoadingStation),
-                                spinDown()
+                                spinDown(),
+                                new FollowPathCommand(follower, paths.redFarWallPark, 1.0)
                         )
                 )
         );
