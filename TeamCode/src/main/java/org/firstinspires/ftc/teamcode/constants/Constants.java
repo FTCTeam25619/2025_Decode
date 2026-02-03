@@ -23,6 +23,7 @@ public final class Constants {
         public static final double FEET_TO_METERS = 0.3048;
         public static final double METERS_TO_FEET = 1.0 / FEET_TO_METERS;
         public static final double MM_TO_INCHES = METERS_TO_FEET * 12.0 / 1000.0;
+        public static final double INCHES_TO_CM = FEET_TO_METERS * 100.0 / 12.0;
         public static final double DEGREES_TO_RADIANS = Math.PI / 180.0;
         public static final double RADIANS_TO_DEGREES = 180.0 / Math.PI;
     }

@@ -1,11 +1,13 @@
 package org.firstinspires.ftc.teamcode.lib.orchestration;
 
+import com.pedropathing.geometry.Pose;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.button.Trigger;
 import com.seattlesolvers.solverslib.util.InterpLUT;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.NovaPyraRobot;
+import org.firstinspires.ftc.teamcode.constants.Constants;
 import org.firstinspires.ftc.teamcode.constants.HoodConstants;
 import org.firstinspires.ftc.teamcode.constants.ShooterConstants;
 import org.firstinspires.ftc.teamcode.constants.ShooterFeedConstants;
@@ -70,13 +72,14 @@ public class ShotController {
             this.stateTransition = false;
         }
 
-        telemetry.addData("ShotController: Prior State", this.priorState.name());
-        telemetry.addData("ShotController: Current State", this.currentState.name());
-        telemetry.addData("ShotController: Transitioning?", this.stateTransition);
-        telemetry.addData("ShotController: RPM Target", this.getTargetFlywheelRPM());
-        telemetry.addData("ShotController: Hood Target", this.getTargetHoodAngle());
-        telemetry.addData("ShotController: Feed Power Target", this.getTargetFeedPower());
-        telemetry.addData("ShotController: Preset Mode?", this.presetShotMode);
+        telemetry.addData("ShotController- Prior State", this.priorState.name());
+        telemetry.addData("ShotController- Current State", this.currentState.name());
+        telemetry.addData("ShotController- Transitioning?", this.stateTransition);
+        telemetry.addData("ShotController- RPM Target", this.getTargetFlywheelRPM());
+        telemetry.addData("ShotController- Hood Target", this.getTargetHoodAngle());
+        telemetry.addData("ShotController- Feed Power Target", this.getTargetFeedPower());
+        telemetry.addData("ShotController- Preset Mode?", this.presetShotMode);
+        telemetry.addData("ShotController- Dist to Tag (cm)", this.getDistanceToTarget());
 
         this.priorState = this.currentState;
 
@@ -190,7 +193,9 @@ public class ShotController {
         }
 
         // No valid distance when we don't see the tag
-        return Double.NaN;
+        Pose robotPose = robot.pedroFollower.getPose();
+        return robotPose.distanceFrom(robot.vision.getTargetTagPose()) *
+                Constants.ConversionFactors.INCHES_TO_CM;
     }
 
 
