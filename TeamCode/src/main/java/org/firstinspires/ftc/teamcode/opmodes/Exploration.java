@@ -231,6 +231,7 @@ public class Exploration extends CommandOpMode {
             Vector driveVector = new Vector();
             driveVector.setOrthogonalComponents(driveAxes[0], driveAxes[1]);
 
+
             // Scale to max power
             double maxPowerScaling = robot.pedroFollower.getMaxPowerScaling();
             driveVector.setMagnitude(driveVector.getMagnitude() * maxPowerScaling);

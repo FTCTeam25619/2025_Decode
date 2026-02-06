@@ -112,10 +112,10 @@ public class RedAuto9ScoreFar extends CommandOpMode {
                                 // Score preload
 
                                 prepareShot(),
-                                new FollowPathCommand(follower, paths.redWallToFarZonePrescore),
-                                new WaitCommand(TimingConstants.waitBeforeShootingMS),
+                                new FollowPathCommand(follower, paths.redWallToFarZonePrescore).setGlobalMaxPower(1.0),
+                                //new WaitCommand(TimingConstants.waitBeforeShootingMS),
                                 shoot(),
-                                new WaitCommand(TimingConstants.waitForShootingMS),
+                                new WaitCommand(TimingConstants.waitForShootingFirstShotsMS),
 
                                 // Intake 3 from row closest to far wall from goal
                                 intake(),
@@ -125,9 +125,10 @@ public class RedAuto9ScoreFar extends CommandOpMode {
 
                                 prepareShot(),
                                 new FollowPathCommand(follower, paths.redFarWallIntakeToFarScore),
-                                new WaitCommand(TimingConstants.waitBeforeShootingMS),
+                                // new WaitCommand(TimingConstants.waitBeforeShootingMS),
                                 shoot(),
                                 new WaitCommand(TimingConstants.waitForShootingMS),
+
                                 // Intake 3 from from mid row
                                 intake(),
                                 new FollowPathCommand(follower, paths.redFarZoneScoreToMidIntake),
@@ -135,11 +136,12 @@ public class RedAuto9ScoreFar extends CommandOpMode {
                                 // Score 3
                                 prepareShot(),
                                 new FollowPathCommand(follower, paths.redMidWallIntakeToFarScore),
-                                new WaitCommand(TimingConstants.waitBeforeShootingMS),
+                                // new WaitCommand(TimingConstants.waitBeforeShootingMS),
                                 shoot(),
                                 new WaitCommand(TimingConstants.waitForShootingMS),
 
-                                // Park
+                                //
+                                intake(),
                                 new FollowPathCommand(follower, paths.redFarWallToIntakeLoadingStation),
                                 spinDown(),
                                 new FollowPathCommand(follower, paths.redFarWallPark, 1.0)

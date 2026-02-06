@@ -29,8 +29,8 @@ public class PedroConstants {
             .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
             .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD)
             .useBrakeModeInTeleOp(true)
-            .xVelocity(71.891427)
-            .yVelocity(50.062855);
+            .xVelocity(69.284877)
+            .yVelocity(42.686530);
 
     public static PinpointConstants localizerConstants = new PinpointConstants()
             .forwardPodY(OdometryConstants.OdometryPods.forwardPodYMM)
@@ -44,8 +44,8 @@ public class PedroConstants {
     public static Drivetrain drivetrain;
     public static FollowerConstants followerConstants = new FollowerConstants()
             .mass(13.245)
-            .forwardZeroPowerAcceleration(-31.295587)
-            .lateralZeroPowerAcceleration(-70.547653)
+            .forwardZeroPowerAcceleration(-42.378)
+            .lateralZeroPowerAcceleration(-66.285)
             .useSecondaryTranslationalPIDF(true)
             .translationalPIDFCoefficients(new PIDFCoefficients(0.12, 0.0, 0.01, 0.028))
             .secondaryTranslationalPIDFCoefficients(new PIDFCoefficients(0.18, 0.0, 0.01, 0.035))
@@ -57,7 +57,7 @@ public class PedroConstants {
             .centripetalScaling(0.0012);
 
     public static PathConstraints pathConstraints = new PathConstraints(
-            0.99, 100, 0.2, 2.5);
+            0.99, 100, .05, 1.0);
 
     public static Drivetrain createDrivetrain(HardwareMap hardwareMap) {
         if (drivetrain == null) {

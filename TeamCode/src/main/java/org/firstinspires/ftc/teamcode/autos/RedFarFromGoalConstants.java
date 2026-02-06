@@ -15,15 +15,15 @@ public class RedFarFromGoalConstants {
     public Pose redFarWallToShootCP = new Pose(87.735, 12.397);
     public Pose redFarWallShoot = new Pose(87.258, 14.543);
     public Pose redFarWallShootToFarIntakeCP = new Pose(78.914, 36.454);
-    public Pose redFarWallFarIntake = new Pose(123, 36.454);
+    public Pose redFarWallFarIntake = new Pose(132, 36.454);
     public Pose redFarWallShootToMidIntakeCP = new Pose(78.676, 72.238);
-    public Pose redFarWallMidIntake = new Pose(126, 55.192);
+    public Pose redFarWallMidIntake = new Pose(132, 55.192);
     public Pose redFarWallIntakeLoadingStationCP = new Pose(93,25);
-    public Pose redFarWallIntakeLoadingStation = new Pose(130, 9.00);
+    public Pose redFarWallIntakeLoadingStation = new Pose(132, 9.00);
     public Pose redFarWallParkPose = new Pose(114.00,46.00);
     public double redFarWallStartHeading = 90;
-    public double redFarWallFirstShotHeading = 67;
-    public double redFarWallShootHeading = 67;
+    public double redFarWallFirstShotHeading = 71;
+    public double redFarWallShootHeading = 71;
     public double redFarWallRowIntakeHeading = 180.0;
     public double redFarWallMidIntakeHeading = 180.0;
 
@@ -68,6 +68,8 @@ public class RedFarFromGoalConstants {
                                 redFarWallFarIntake
                         )
                 )
+                .setTranslationalConstraint(4.0)
+
                 .setLinearHeadingInterpolation(
                         Math.toRadians(redFarWallShootHeading),
                         Math.toRadians(redFarWallRowIntakeHeading),
@@ -83,6 +85,8 @@ public class RedFarFromGoalConstants {
                         )
 
                 )
+                .setTranslationalConstraint(3.0)
+
                 .setLinearHeadingInterpolation(
                         Math.toRadians(redFarWallRowIntakeHeading),
                         Math.toRadians(redFarWallShootHeading),
@@ -98,6 +102,8 @@ public class RedFarFromGoalConstants {
                                 redFarWallMidIntake
                         )
                 )
+                .setTranslationalConstraint(4.0)
+
                 .setLinearHeadingInterpolation(
                         Math.toRadians(redFarWallShootHeading),
                         Math.toRadians(redFarWallMidIntakeHeading),
@@ -127,6 +133,7 @@ public class RedFarFromGoalConstants {
                                 redFarWallIntakeLoadingStation
                         )
                 )
+                .setTranslationalConstraint(4.0)
                 .setLinearHeadingInterpolation(
                         Math.toRadians(redFarWallShootHeading),
                         Math.toRadians(redLoadingZoneIntakeHeading),
