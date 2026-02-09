@@ -101,7 +101,7 @@ public class BlueAuto6ScoreFar extends CommandOpMode {
         );
 
         this.follower = robot.pedroFollower;
-        this.paths = new BlueFarFromGoalConstants(follower);
+        this.paths = new BlueFarFromGoalConstants(follower, robot);
 
         // Initialize follower
         follower.setStartingPose(paths.blueFarWallStart.withHeading(Math.toRadians(paths.blueFarWallStartHeading)));

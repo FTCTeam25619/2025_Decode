@@ -7,11 +7,14 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
+import com.seattlesolvers.solverslib.command.ConditionalCommand;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
+import com.seattlesolvers.solverslib.command.ParallelRaceGroup;
 import com.seattlesolvers.solverslib.command.RunCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
+import com.seattlesolvers.solverslib.command.WaitUntilCommand;
 import com.seattlesolvers.solverslib.command.button.Trigger;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 import com.seattlesolvers.solverslib.pedroCommand.HoldPointCommand;
@@ -52,6 +55,13 @@ public class BlueAuto9ScoreFar extends CommandOpMode {
             robot.shotController.setState(ShotCycleState.INTAKE);
         });
     }
+
+    private InstantCommand idleState() {
+        return new InstantCommand(() -> {
+            robot.shotController.setState(ShotCycleState.IDLE);
+        });
+    }
+
 
     private InstantCommand prepareShot() {
         return new InstantCommand(() -> {
@@ -103,7 +113,7 @@ public class BlueAuto9ScoreFar extends CommandOpMode {
         );
 
         this.follower = robot.pedroFollower;
-        this.paths = new BlueFarFromGoalConstants(follower);
+        this.paths = new BlueFarFromGoalConstants(follower, robot);
 
         // Initialize follower
         follower.setStartingPose(paths.blueFarWallStart.withHeading(Math.toRadians(paths.blueFarWallStartHeading)));
@@ -114,42 +124,50 @@ public class BlueAuto9ScoreFar extends CommandOpMode {
                 new ParallelCommandGroup(
                         new RunCommand(follower::update),
                         new SequentialCommandGroup(
-
                                 // Score preload
-                                prepareShot(),
-                                new FollowPathCommand(follower, paths.blueWallToFarZonePrescore).setGlobalMaxPower(0.8),
-                                new WaitCommand(TimingConstants.waitBeforeShootingMS),
+                                new FollowPathCommand(follower, paths.blueWallToFarZonePrescore).beforeStarting(prepareShot()),
+                                new ParallelRaceGroup(
+                                        new WaitCommand(TimingConstants.waitBeforeShootingMS), // 0.750 second timeout
+                                        new WaitUntilCommand(() -> robot.shotController.readyToShoot()) // wait until shooter is ready
+                                ),
                                 shoot(),
-                                new WaitCommand(TimingConstants.waitForShootingMS),
+                                new WaitCommand(TimingConstants.waitForShootingMS).andThen(idleState()),
 
-                                // Intake 3 from row closest to far wall from goal
-                                intake(),
-                                new FollowPathCommand(follower, paths.blueFarZonePrescoreToFarIntake),
 
-                                // Score 3
-                                prepareShot(),
+                                // Intake from row closest to far wall from goal -- intake starts after 50% of path complete
+                                new FollowPathCommand(follower, paths.blueFarZonePrescoreToFarIntake, false),
+
+
+                                // Score -- preparing shot after 50% of path complete. Begin shooting after 80% of path complete
                                 new FollowPathCommand(follower, paths.blueFarWallIntakeToFarScore),
-                                new WaitCommand(TimingConstants.waitBeforeShootingMS),
-                                shoot(),
-                                new WaitCommand(TimingConstants.waitForShootingMS),
+                                new WaitCommand(TimingConstants.waitForShootingMS).andThen(idleState()),
 
-                                // Intake 3 from from mid row
-                                intake(),
-                                new FollowPathCommand(follower, paths.blueFarZoneScoreToMidIntake),
+                                // Intake from from mid row -- intake starts after 50% of path complete
+                                new FollowPathCommand(follower, paths.blueFarZoneScoreToMidIntake, false),
 
-                                // Score 3
-                                prepareShot(),
+
+                                // Score 3 -- preparing shot after 50% of path complete. Begin shooting after 80% of path complete
                                 new FollowPathCommand(follower, paths.blueMidWallIntakeToFarScore),
-                                new WaitCommand(TimingConstants.waitBeforeShootingMS),
-                                shoot(),
-                                new WaitCommand(TimingConstants.waitForShootingMS),
+                                new WaitCommand(TimingConstants.waitForShootingMS).andThen(idleState()),
 
-                                // Intake from loading station and park
-                                intake(),
-                                new FollowPathCommand(follower, paths.blueFarWallToIntakeLoadingStation, .65),
-                                new WaitCommand(TimingConstants.waitForIntakeMS),
-                                spinDown(),
-                                new FollowPathCommand(follower, paths.blueFarWallPark, 1.0)
+                                // Intake from loading station -- intake starts after 50% of path complete
+                                new FollowPathCommand(follower, paths.blueFarWallToIntakeLoadingStation, false),
+
+                                new ConditionalCommand(
+                                        // Shoot if we have time
+                                        new SequentialCommandGroup(
+                                                new FollowPathCommand(follower, paths.blueFarLoadingStationToFarScore),
+                                                new WaitCommand(TimingConstants.waitForShootingMS).andThen(spinDown()),
+                                                new FollowPathCommand(follower, paths.blueFarScoreToPark, false)
+                                        ),
+                                        // Otherwise just park and spin down
+                                        new SequentialCommandGroup(
+                                                new FollowPathCommand(follower, paths.blueLoadingStationToPark, false),
+                                                spinDown()
+                                        ),
+                                        // Condition
+                                        () -> getRuntime() <= 35.0
+                                )
                         )
                 )
         );

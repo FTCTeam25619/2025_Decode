@@ -7,17 +7,20 @@ import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 
+import org.firstinspires.ftc.teamcode.NovaPyraRobot;
+import org.firstinspires.ftc.teamcode.lib.orchestration.ShotCycleState;
+
 @Configurable
 public class BlueFarFromGoalConstants {
     public Pose blueFarWallStart = new Pose(56.000, 8.000);
     public Pose blueFarWallToShootCP = new Pose(56.265, 12.397);
     public Pose blueFarWallShoot = new Pose(56.742, 14.543);
     public Pose blueFarWallShootToFarIntakeCP = new Pose(65.086, 36.454);
-    public Pose blueFarWallFarIntake = new Pose(21.0, 36.454);
+    public Pose blueFarWallFarIntake = new Pose(16.5, 36.454);
     public Pose blueFarWallShootToMidIntakeCP = new Pose(65.324, 72.238);
-    public Pose blueFarWallMidIntake = new Pose(18.0, 55.192);
+    public Pose blueFarWallMidIntake = new Pose(16.5, 55.192);
     public Pose blueFarWallIntakeLoadingStationCP = new Pose(51,25);
-    public Pose blueFarWallIntakeLoadingStation = new Pose(14.00, 9.00);
+    public Pose blueFarWallIntakeLoadingStation = new Pose(13.0, 8.00);
     public Pose blueFarWallParkPose = new Pose(30.00, 46.00);
     public double blueFarWallStartHeading = 90.0;
     public double blueFarWallFirstShotHeading = 113.0;
@@ -32,9 +35,15 @@ public class BlueFarFromGoalConstants {
     public PathChain blueFarZoneScoreToMidIntake;
     public PathChain blueMidWallIntakeToFarScore;
     public PathChain blueFarWallToIntakeLoadingStation;
-    public PathChain blueFarWallPark;
+    public PathChain blueFarLoadingStationToFarScore;
 
-    public BlueFarFromGoalConstants(Follower follower) {
+    public PathChain blueFarScoreToPark;
+    public PathChain blueLoadingStationToPark;
+
+    public NovaPyraRobot robot;
+
+    public BlueFarFromGoalConstants(Follower follower, NovaPyraRobot robot) {
+        this.robot = robot;
         buildPaths(follower);
     }
 
@@ -67,6 +76,9 @@ public class BlueFarFromGoalConstants {
                         Math.toRadians(blueFarWallShootHeading),
                         Math.toRadians(blueFarWallRowIntakeHeading),
                 .5)
+                .addParametricCallback(0.25, () -> {
+                    robot.shotController.setState(ShotCycleState.INTAKE);
+                 })
                 .build();
 
         blueFarWallIntakeToFarScore = follower
@@ -82,6 +94,13 @@ public class BlueFarFromGoalConstants {
                         Math.toRadians(blueFarWallRowIntakeHeading),
                         Math.toRadians(blueFarWallShootHeading),
                 .5)
+                .addParametricCallback(0.20, () -> {
+                    robot.shotController.autoTargetShot();
+                    robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
+                })
+                .addParametricCallback(0.85, () -> {
+                    robot.shotController.setState(ShotCycleState.SHOOTING);
+                })
                 .build();
 
         blueFarZoneScoreToMidIntake = follower
@@ -97,6 +116,9 @@ public class BlueFarFromGoalConstants {
                         Math.toRadians(blueFarWallShootHeading),
                         Math.toRadians(blueFarWallMidIntakeHeading),
                 .5)
+                .addParametricCallback(0.25, () -> {
+                    robot.shotController.setState(ShotCycleState.INTAKE);
+                })
                 .build();
 
         blueMidWallIntakeToFarScore = follower
@@ -111,6 +133,13 @@ public class BlueFarFromGoalConstants {
                         Math.toRadians(blueFarWallRowIntakeHeading),
                         Math.toRadians(blueFarWallShootHeading),
                 .5)
+                .addParametricCallback(0.20, () -> {
+                    robot.shotController.autoTargetShot();
+                    robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
+                })
+                .addParametricCallback(0.90, () -> {
+                    robot.shotController.setState(ShotCycleState.SHOOTING);
+                })
                 .build();
 
         blueFarWallToIntakeLoadingStation = follower
@@ -126,9 +155,34 @@ public class BlueFarFromGoalConstants {
                         Math.toRadians(blueFarWallShootHeading),
                         Math.toRadians(blueLoadingZoneIntakeHeading),
                 0.5)
+                .addParametricCallback(0.20, () -> {
+                    robot.shotController.setState(ShotCycleState.INTAKE);
+                })
                 .build();
 
-        blueFarWallPark = follower
+        blueFarLoadingStationToFarScore = follower
+                .pathBuilder()
+                .addPath(
+                        new BezierCurve(
+                                blueFarWallIntakeLoadingStation,
+                                blueFarWallIntakeLoadingStationCP,
+                                blueFarWallShoot
+                        )
+                )
+                .setLinearHeadingInterpolation(
+                        Math.toRadians(blueLoadingZoneIntakeHeading),
+                        Math.toRadians(blueFarWallShootHeading),
+                        0.5)
+                .addParametricCallback(0.20, () -> {
+                    robot.shotController.autoTargetShot();
+                    robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
+                })
+                .addParametricCallback(0.85, () -> {
+                    robot.shotController.setState(ShotCycleState.SHOOTING);
+                })
+                .build();
+
+        blueLoadingStationToPark = follower
                 .pathBuilder()
                 .addPath(
                         new BezierCurve(
@@ -138,6 +192,20 @@ public class BlueFarFromGoalConstants {
                 )
                 .setLinearHeadingInterpolation(
                         Math.toRadians(blueLoadingZoneIntakeHeading),
+                        Math.toRadians(90.0),
+                        0.5)
+                .build();
+
+        blueFarScoreToPark = follower
+                .pathBuilder()
+                .addPath(
+                        new BezierCurve(
+                                blueFarWallShoot,
+                                blueFarWallParkPose
+                        )
+                )
+                .setLinearHeadingInterpolation(
+                        Math.toRadians(blueFarWallShootHeading),
                         Math.toRadians(90.0),
                         0.5)
                 .build();
