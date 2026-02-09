@@ -16,11 +16,11 @@ public class BlueFarFromGoalConstants {
     public Pose blueFarWallToShootCP = new Pose(56.265, 12.397);
     public Pose blueFarWallShoot = new Pose(56.742, 14.543);
     public Pose blueFarWallShootToFarIntakeCP = new Pose(65.086, 36.454);
-    public Pose blueFarWallFarIntake = new Pose(16.5, 36.454);
+    public Pose blueFarWallFarIntake = new Pose(15.5, 36.454);
     public Pose blueFarWallShootToMidIntakeCP = new Pose(65.324, 72.238);
-    public Pose blueFarWallMidIntake = new Pose(16.5, 55.192);
+    public Pose blueFarWallMidIntake = new Pose(15.5, 55.192);
     public Pose blueFarWallIntakeLoadingStationCP = new Pose(51,25);
-    public Pose blueFarWallIntakeLoadingStation = new Pose(13.0, 8.00);
+    public Pose blueFarWallIntakeLoadingStation = new Pose(12.0, 8.00);
     public Pose blueFarWallParkPose = new Pose(30.00, 46.00);
     public double blueFarWallStartHeading = 90.0;
     public double blueFarWallFirstShotHeading = 113.0;
