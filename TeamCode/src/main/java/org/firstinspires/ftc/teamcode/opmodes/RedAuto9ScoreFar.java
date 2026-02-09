@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
+import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.drawCurrent;
+import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.follower;
+
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.JoinedTelemetry;
 import com.bylazar.telemetry.PanelsTelemetry;
@@ -50,6 +53,11 @@ public class RedAuto9ScoreFar extends CommandOpMode {
         });
     }
 
+    private InstantCommand idleState() {
+        return new InstantCommand(() -> {
+            robot.shotController.setState(ShotCycleState.IDLE);
+        });
+    }
     private InstantCommand prepareShot() {
         return new InstantCommand(() -> {
             robot.shotController.setState(ShotCycleState.PREPARE_SHOT);

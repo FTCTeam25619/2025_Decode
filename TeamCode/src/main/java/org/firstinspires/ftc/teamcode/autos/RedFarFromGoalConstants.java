@@ -69,7 +69,7 @@ public class RedFarFromGoalConstants {
                         )
                 )
                 .setTranslationalConstraint(4.0)
-
+                .setHeadingConstraint(5.0)
                 .setLinearHeadingInterpolation(
                         Math.toRadians(redFarWallShootHeading),
                         Math.toRadians(redFarWallRowIntakeHeading),
@@ -85,8 +85,8 @@ public class RedFarFromGoalConstants {
                         )
 
                 )
-                .setTranslationalConstraint(3.0)
-
+                .setTranslationalConstraint(4.0)
+                .setHeadingConstraint(5.0)
                 .setLinearHeadingInterpolation(
                         Math.toRadians(redFarWallRowIntakeHeading),
                         Math.toRadians(redFarWallShootHeading),
@@ -103,7 +103,7 @@ public class RedFarFromGoalConstants {
                         )
                 )
                 .setTranslationalConstraint(4.0)
-
+                .setHeadingConstraint(5.0)
                 .setLinearHeadingInterpolation(
                         Math.toRadians(redFarWallShootHeading),
                         Math.toRadians(redFarWallMidIntakeHeading),
@@ -134,6 +134,7 @@ public class RedFarFromGoalConstants {
                         )
                 )
                 .setTranslationalConstraint(4.0)
+                .setHeadingConstraint(5.0)
                 .setLinearHeadingInterpolation(
                         Math.toRadians(redFarWallShootHeading),
                         Math.toRadians(redLoadingZoneIntakeHeading),

@@ -127,7 +127,7 @@ public class BlueAuto6ScoreNear extends CommandOpMode {
                                 new WaitCommand(TimingConstants.waitForShootingMS).andThen(idleState()),
 
                                 // Intake from row closest to goal -- intake starts after 25% of path complete
-                                new FollowPathCommand(follower, paths.blueNearZonePrescoreToNearIntake),
+                                new FollowPathCommand(follower, paths.blueNearZoneToNearIntakeblueBlue),
 
                                 // Score 3
                                 prepareShot(),

@@ -8,17 +8,14 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
-import com.seattlesolvers.solverslib.command.ParallelRaceGroup;
 import com.seattlesolvers.solverslib.command.RunCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
-import com.seattlesolvers.solverslib.command.WaitUntilCommand;
 import com.seattlesolvers.solverslib.command.button.Trigger;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 import com.seattlesolvers.solverslib.util.TelemetryData;
 
 import org.firstinspires.ftc.teamcode.NovaPyraRobot;
-import org.firstinspires.ftc.teamcode.autos.BlueFarFromGoalConstants;
 import org.firstinspires.ftc.teamcode.autos.BlueNearGoalConstants;
 import org.firstinspires.ftc.teamcode.autos.TimingConstants;
 import org.firstinspires.ftc.teamcode.constants.Alliance;
@@ -121,29 +118,37 @@ public class BlueAuto9ScoreNear extends CommandOpMode {
 
                                 // Prepare shot before starting
                                 new FollowPathCommand(follower, paths.blueWallToNearZonePrescore).beforeStarting(prepareShot()),
-                                new ParallelRaceGroup(
-                                        new WaitCommand(TimingConstants.waitBeforeShootingMS), // 0.700 second timeout
-                                        new WaitUntilCommand(() -> robot.shotController.readyToShoot()) // wait until shooter is ready
-                                ),
-                                shoot(),
-                                new WaitCommand(TimingConstants.waitForShootingMS).andThen(idleState()),
 
-                                // Intake from row closest to goal -- intake starts after 25% of path complete
-                                new FollowPathCommand(follower, paths.blueNearZonePrescoreToNearIntake, false),
+                                new WaitCommand(TimingConstants.waitForShootingNearMS).andThen(idleState()),
 
-                                // Score -- preparing shot after 50% of path complete. Begin shooting after 85% of path complete
-                                new FollowPathCommand(follower, paths.blueNearWallIntakeToNearScore),
-                                new WaitCommand(TimingConstants.waitForShootingMS).andThen(idleState()),
 
                                 // Intake 3 from from mid row -- intake starts after 25% of path complete
                                 new FollowPathCommand(follower, paths.blueNearZoneScoreToMidIntake, false),
 
-                                // Score -- preparing shot after 50% of path complete. Begin shooting after 85% of path complete
+                                // Score -- preparing shot after 30% of path complete. Begin shooting after 60% of path complete
                                 new FollowPathCommand(follower, paths.blueMidWallIntakeToNearScore),
-                                new WaitCommand(TimingConstants.waitForShootingMS),
+                                new WaitCommand(TimingConstants.waitForShootingNearMS),
 
+                                new FollowPathCommand(follower, paths.blueScoreToOpenGate,false).beforeStarting(idleState()),
+                                new FollowPathCommand(follower, paths.blueOpenGateToIntakeGate).beforeStarting(intake()),
+
+                                new WaitCommand(TimingConstants.waitForIntakeByGateMS),
+
+                                // Score -- preparing shot after 30% of path complete. Begin shooting after 60% of path complete
+                                new FollowPathCommand(follower, paths.blueMidWallIntakeToNearScore),
+                                new WaitCommand(TimingConstants.waitForShootingNearMS),
+
+                                // Intake from row closest to goal -- intake starts after 25% of path complete
+                                new FollowPathCommand(follower, paths.blueNearZoneToNearIntakeblueBlue, false),
+
+                                // Score -- preparing shot after 30% of path complete. Begin shooting after 60% of path complete
+                                new FollowPathCommand(follower, paths.blueNearWallIntakeToNearScore),
+                                new WaitCommand(TimingConstants.waitForShootingNearMS).andThen(idleState()),
+
+                                new FollowPathCommand(follower, paths.blueNearShootToIntakeFromGate),
+                                new WaitCommand(TimingConstants.waitForIntakeByGateMS),
                                 // Park
-                                new FollowPathCommand(follower, paths.blueNearWallToPark, false),
+                                // new FollowPathCommand(follower, paths.blueNearWallToPark, false),
                                 spinDown()
                         )
                 )
