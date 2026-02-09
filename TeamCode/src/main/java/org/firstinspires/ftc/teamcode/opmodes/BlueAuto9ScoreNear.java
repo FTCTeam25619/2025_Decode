@@ -116,7 +116,7 @@ public class BlueAuto9ScoreNear extends CommandOpMode {
                         new RunCommand(follower::update),
                         new SequentialCommandGroup(
 
-                                // Prepare shot before starting
+                                // Prepare shot before starting - Begin shooting after 95% of path complete
                                 new FollowPathCommand(follower, paths.blueWallToNearZonePrescore).beforeStarting(prepareShot()),
 
                                 new WaitCommand(TimingConstants.waitForShootingNearMS).andThen(idleState()),
@@ -125,7 +125,7 @@ public class BlueAuto9ScoreNear extends CommandOpMode {
                                 // Intake 3 from from mid row -- intake starts after 25% of path complete
                                 new FollowPathCommand(follower, paths.blueNearZoneScoreToMidIntake, false),
 
-                                // Score -- preparing shot after 30% of path complete. Begin shooting after 60% of path complete
+                                // Score -- preparing shot after 30% of path complete. Begin shooting after 90% of path complete
                                 new FollowPathCommand(follower, paths.blueMidWallIntakeToNearScore),
                                 new WaitCommand(TimingConstants.waitForShootingNearMS),
 
@@ -134,14 +134,14 @@ public class BlueAuto9ScoreNear extends CommandOpMode {
 
                                 new WaitCommand(TimingConstants.waitForIntakeByGateMS),
 
-                                // Score -- preparing shot after 30% of path complete. Begin shooting after 60% of path complete
+                                // Score -- preparing shot after 30% of path complete. Begin shooting after 90% of path complete
                                 new FollowPathCommand(follower, paths.blueMidWallIntakeToNearScore),
                                 new WaitCommand(TimingConstants.waitForShootingNearMS),
 
                                 // Intake from row closest to goal -- intake starts after 25% of path complete
                                 new FollowPathCommand(follower, paths.blueNearZoneToNearIntakeblueBlue, false),
 
-                                // Score -- preparing shot after 30% of path complete. Begin shooting after 60% of path complete
+                                // Score -- preparing shot after 30% of path complete. Begin shooting after 90% of path complete
                                 new FollowPathCommand(follower, paths.blueNearWallIntakeToNearScore),
                                 new WaitCommand(TimingConstants.waitForShootingNearMS).andThen(idleState()),
 

@@ -64,7 +64,7 @@ public class BlueNearGoalConstants {
                                 blueNearWallShoot
                         )
                 )
-                .addParametricCallback(0.90, () -> {
+                .addParametricCallback(.95, () -> {
                     robot.shotController.setState(ShotCycleState.SHOOTING);
                 })
                 .setLinearHeadingInterpolation(
