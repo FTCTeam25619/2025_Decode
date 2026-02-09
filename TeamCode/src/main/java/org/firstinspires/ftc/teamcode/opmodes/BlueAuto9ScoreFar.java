@@ -62,7 +62,6 @@ public class BlueAuto9ScoreFar extends CommandOpMode {
         });
     }
 
-
     private InstantCommand prepareShot() {
         return new InstantCommand(() -> {
             robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
@@ -125,20 +124,21 @@ public class BlueAuto9ScoreFar extends CommandOpMode {
                         new RunCommand(follower::update),
                         new SequentialCommandGroup(
                                 // Score preload
+                                // Prepare shot before starting
                                 new FollowPathCommand(follower, paths.blueWallToFarZonePrescore).beforeStarting(prepareShot()),
                                 new ParallelRaceGroup(
-                                        new WaitCommand(TimingConstants.waitBeforeShootingMS), // 0.750 second timeout
+                                        new WaitCommand(TimingConstants.waitBeforeShootingMS), // 0.700 second timeout
                                         new WaitUntilCommand(() -> robot.shotController.readyToShoot()) // wait until shooter is ready
                                 ),
                                 shoot(),
                                 new WaitCommand(TimingConstants.waitForShootingMS).andThen(idleState()),
 
 
-                                // Intake from row closest to far wall from goal -- intake starts after 50% of path complete
+                                // Intake from row closest to far wall from goal -- intake starts after 25% of path complete
                                 new FollowPathCommand(follower, paths.blueFarZonePrescoreToFarIntake, false),
 
 
-                                // Score -- preparing shot after 50% of path complete. Begin shooting after 80% of path complete
+                                // Score -- preparing shot after 50% of path complete. Begin shooting after 85% of path complete
                                 new FollowPathCommand(follower, paths.blueFarWallIntakeToFarScore),
                                 new WaitCommand(TimingConstants.waitForShootingMS).andThen(idleState()),
 
@@ -146,16 +146,17 @@ public class BlueAuto9ScoreFar extends CommandOpMode {
                                 new FollowPathCommand(follower, paths.blueFarZoneScoreToMidIntake, false),
 
 
-                                // Score 3 -- preparing shot after 50% of path complete. Begin shooting after 80% of path complete
+                                // Score 3 -- preparing shot after 50% of path complete. Begin shooting after 90% of path complete
                                 new FollowPathCommand(follower, paths.blueMidWallIntakeToFarScore),
                                 new WaitCommand(TimingConstants.waitForShootingMS).andThen(idleState()),
 
-                                // Intake from loading station -- intake starts after 50% of path complete
+                                // Intake from loading station -- intake starts after 25% of path complete
                                 new FollowPathCommand(follower, paths.blueFarWallToIntakeLoadingStation, false),
 
                                 new ConditionalCommand(
                                         // Shoot if we have time
                                         new SequentialCommandGroup(
+                                                // Score 3 -- preparing shot after 50% of path complete. Begin shooting after 85% of path complete
                                                 new FollowPathCommand(follower, paths.blueFarLoadingStationToFarScore),
                                                 new WaitCommand(TimingConstants.waitForShootingMS).andThen(spinDown()),
                                                 new FollowPathCommand(follower, paths.blueFarScoreToPark, false)
@@ -166,7 +167,7 @@ public class BlueAuto9ScoreFar extends CommandOpMode {
                                                 spinDown()
                                         ),
                                         // Condition
-                                        () -> getRuntime() <= 35.0
+                                        () -> getRuntime() <= 35.0 // TODO Adjust time threshold later
                                 )
                         )
                 )

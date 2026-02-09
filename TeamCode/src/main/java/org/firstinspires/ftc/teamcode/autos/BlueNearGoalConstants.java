@@ -7,6 +7,9 @@ import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 
+import org.firstinspires.ftc.teamcode.NovaPyraRobot;
+import org.firstinspires.ftc.teamcode.lib.orchestration.ShotCycleState;
+
 @Configurable
 public class BlueNearGoalConstants {
 
@@ -31,7 +34,8 @@ public class BlueNearGoalConstants {
     public PathChain blueMidWallIntakeToNearScore;
     public PathChain blueNearWallToPark;
 
-    public BlueNearGoalConstants(Follower follower) {
+    public NovaPyraRobot robot;
+    public BlueNearGoalConstants(Follower follower, NovaPyraRobot robot) {
         buildPaths(follower);
     }
 
@@ -64,6 +68,9 @@ public class BlueNearGoalConstants {
                         Math.toRadians(blueNearWallShootHeading),
                         Math.toRadians(blueNearWallRowIntakeHeading),
                         0.5)
+                .addParametricCallback(0.25, () -> {
+                    robot.shotController.setState(ShotCycleState.INTAKE);
+                })
                 .build();
 
         blueNearWallIntakeToNearScore = follower
@@ -78,6 +85,13 @@ public class BlueNearGoalConstants {
                         Math.toRadians(blueNearWallRowIntakeHeading),
                         Math.toRadians(blueNearWallShootHeading),
                         0.7)
+                .addParametricCallback(0.50, () -> {
+                    robot.shotController.autoTargetShot();
+                    robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
+                })
+                .addParametricCallback(0.85, () -> {
+                    robot.shotController.setState(ShotCycleState.SHOOTING);
+                })
                 .build();
 
         blueNearZoneScoreToMidIntake = follower
@@ -93,6 +107,9 @@ public class BlueNearGoalConstants {
                         Math.toRadians(blueNearWallShootHeading),
                         Math.toRadians(blueNearWallMidRowIntakeHeading),
                         0.4)
+                .addParametricCallback(0.25, () -> {
+                    robot.shotController.setState(ShotCycleState.INTAKE);
+                })
                 .build();
 
         blueMidWallIntakeToNearScore = follower
@@ -107,6 +124,9 @@ public class BlueNearGoalConstants {
                         Math.toRadians(blueNearWallRowIntakeHeading),
                         Math.toRadians(blueNearWallShootHeading),
                         0.7)
+                .addParametricCallback(0.25, () -> {
+                    robot.shotController.setState(ShotCycleState.INTAKE);
+                })
                 .build();
 
         blueNearWallToPark = follower
