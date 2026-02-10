@@ -152,7 +152,7 @@ public class BlueAuto6ScoreFar extends CommandOpMode {
                                 /**
                                  PARK
                                  **/
-                                new FollowPathCommand(follower, paths.blueFarScoreToPark, false),
+                                new FollowPathCommand(follower, paths.blueFarScoreToPark, false)
                         )
                 )
         );
