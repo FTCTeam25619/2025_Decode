@@ -27,7 +27,7 @@ import org.firstinspires.ftc.teamcode.lib.triggers.SupplierTrigger;
 import org.firstinspires.ftc.teamcode.lib.util.BlackboardHelpers;
 import org.firstinspires.ftc.teamcode.triggers.RobotTriggers;
 
-@Autonomous(name = "Red 6-Score Near Goal", group = "Autonomous")
+@Autonomous(name = "Red 6 Near", group = "Autonomous")
 @Configurable // Panels
 public class RedAuto6ScoreNear extends CommandOpMode {
     private NovaPyraRobot robot;
@@ -47,6 +47,12 @@ public class RedAuto6ScoreNear extends CommandOpMode {
     private InstantCommand intake() {
         return new InstantCommand(() -> {
             robot.shotController.setState(ShotCycleState.INTAKE);
+        });
+    }
+
+    private InstantCommand idleState() {
+        return new InstantCommand(() -> {
+            robot.shotController.setState(ShotCycleState.IDLE);
         });
     }
 
@@ -78,7 +84,7 @@ public class RedAuto6ScoreNear extends CommandOpMode {
 
         alliance = Alliance.RED;
 
-        telemetry.addData("Robot Status", "Initializing Auto 9 Ball Near " + alliance.name());
+        telemetry.addData("Robot Status", "Initializing Auto 12 Ball Near " + alliance.name());
         telemetry.update();
 
         // Setup Dashboard if setup for shop debugging
@@ -98,7 +104,7 @@ public class RedAuto6ScoreNear extends CommandOpMode {
         );
 
         this.follower = robot.pedroFollower;
-        this.paths = new RedNearGoalConstants(follower);
+        this.paths = new RedNearGoalConstants(follower, robot);
 
         // Initialize follower
         follower.setStartingPose(paths.redNearWallStart.withHeading(Math.toRadians(paths.redNearWallStartHeading)));
@@ -110,33 +116,35 @@ public class RedAuto6ScoreNear extends CommandOpMode {
                         new RunCommand(follower::update),
                         new SequentialCommandGroup(
 
-                                // Score preload
-                                prepareShot(),
-                                new FollowPathCommand(follower, paths.redWallToNearZonePrescore),
-                                new WaitCommand(TimingConstants.waitBeforeShootingMS),
-                                shoot(),
-                                new WaitCommand(TimingConstants.waitForShootingMS),
+                                /**
+                                 FIRST CYCLE - Preload
+                                 **/
 
-                                // Intake 3 from row closest to far wall from goal
-                                intake(),
-                                new FollowPathCommand(follower, paths.redNearZonePrescoreToNearIntake),
-                                new WaitCommand(TimingConstants.waitForIntakeMS),
+                                // Prepare shot before starting - Begin shooting after 95% of path complete
+                                new FollowPathCommand(follower, paths.redWallToNearZonePrescore).beforeStarting(prepareShot()),
 
-                                // Score 3
-                                prepareShot(),
+                                new WaitCommand(TimingConstants.waitForShootingNearMS).andThen(idleState()),
+
+
+                                /**
+                                 SECOND CYCLE - NEAR row
+                                 **/
+
+                                // Intake from row closest to goal -- intake starts after 25% of path complete
+                                new FollowPathCommand(follower, paths.redNearZoneToNearIntakeredRed, false),
+
+                                // Score -- preparing shot after 30% of path complete. Begin shooting after 90% of path complete
                                 new FollowPathCommand(follower, paths.redNearWallIntakeToNearScore),
-                                new WaitCommand(TimingConstants.waitBeforeShootingMS),
-                                shoot(),
-                                new WaitCommand(TimingConstants.waitForShootingMS),
+                                new WaitCommand(TimingConstants.waitForShootingNearMS).andThen(spinDown()),
 
+                                /**
+                                 * PARK
+                                 */
                                 // Park
-                                new FollowPathCommand(follower, paths.redNearWallToPark, false),
-                                spinDown()
+                                new FollowPathCommand(follower, paths.redNearWallToPark, false)
                         )
                 )
         );
-
-//        readyToShootPreload().whenActive(shoot());
 
         telemetry.addData("Robot Status", "Initialized Auto 9 Ball Near " + alliance.name());
         telemetry.update();

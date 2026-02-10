@@ -6,17 +6,20 @@ import com.bylazar.telemetry.PanelsTelemetry;
 import com.pedropathing.follower.Follower;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
+import com.seattlesolvers.solverslib.command.ConditionalCommand;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
+import com.seattlesolvers.solverslib.command.ParallelRaceGroup;
 import com.seattlesolvers.solverslib.command.RunCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
+import com.seattlesolvers.solverslib.command.WaitUntilCommand;
 import com.seattlesolvers.solverslib.command.button.Trigger;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 import com.seattlesolvers.solverslib.util.TelemetryData;
 
 import org.firstinspires.ftc.teamcode.NovaPyraRobot;
-import org.firstinspires.ftc.teamcode.autos.BlueFarDDConstants;
+import org.firstinspires.ftc.teamcode.autos.RedFarFromGoalConstants;
 import org.firstinspires.ftc.teamcode.autos.TimingConstants;
 import org.firstinspires.ftc.teamcode.constants.Alliance;
 import org.firstinspires.ftc.teamcode.constants.Constants;
@@ -28,17 +31,17 @@ import org.firstinspires.ftc.teamcode.lib.triggers.SupplierTrigger;
 import org.firstinspires.ftc.teamcode.lib.util.BlackboardHelpers;
 import org.firstinspires.ftc.teamcode.triggers.RobotTriggers;
 
-//@Autonomous(name = "Blue Far 12 DD", group = "Autonomous")
+@Autonomous(name = "Red 12 Far F-M-LS", group = "Autonomous")
 @Configurable // Panels
-public class BlueFarDD extends CommandOpMode {
+public class RedAuto12ScoreFar extends CommandOpMode {
     private NovaPyraRobot robot;
     private RobotTriggers robotTriggers;
     private Follower follower;
-    private BlueFarDDConstants paths;
+    private RedFarFromGoalConstants paths;
     protected TelemetryData telemetryData;
     private Alliance alliance;
 
-    // Mechanism commands
+    // Mechanism commands - replace these with your actual subsystem commands
     private InstantCommand setupFarWallPresetShot() {
         return new InstantCommand(() -> {
             robot.shotController.setupPresetShot(PresetShot.FarWall);
@@ -48,6 +51,12 @@ public class BlueFarDD extends CommandOpMode {
     private InstantCommand intake() {
         return new InstantCommand(() -> {
             robot.shotController.setState(ShotCycleState.INTAKE);
+        });
+    }
+
+    private InstantCommand idleState() {
+        return new InstantCommand(() -> {
+            robot.shotController.setState(ShotCycleState.IDLE);
         });
     }
 
@@ -77,9 +86,9 @@ public class BlueFarDD extends CommandOpMode {
     public void initialize() {
         super.reset();
 
-        alliance = Alliance.BLUE;
+        alliance = Alliance.RED;
 
-        telemetry.addData("Robot Status", "Initializing Auto 12 Ball Far " + alliance.name());
+        telemetry.addData("Robot Status", "Initializing Auto Red 12 Far F-M-LS " + alliance.name());
         telemetry.update();
 
         // Setup Dashboard if setup for shop debugging
@@ -94,17 +103,17 @@ public class BlueFarDD extends CommandOpMode {
         this.robotTriggers = new RobotTriggers(robot);
         this.robotTriggers.setupNonControllerTriggers();
 
-        this.follower = robot.pedroFollower;
-        this.paths = new BlueFarDDConstants(follower);
-
         robot.vision.setTargetingTag(
                 alliance == Alliance.BLUE ?
                         VisionConstants.AprilTags.BlueGoal :
                         VisionConstants.AprilTags.RedGoal
         );
 
+        this.follower = robot.pedroFollower;
+        this.paths = new RedFarFromGoalConstants(follower, robot);
+
         // Initialize follower
-        follower.setStartingPose(paths.startPose.withHeading(paths.startPose.getHeading()));
+        follower.setStartingPose(paths.redFarWallStart.withHeading(Math.toRadians(paths.redFarWallStartHeading)));
         BlackboardHelpers.setAutoEndPose(blackboard, follower.getPose());
 
         // Schedule the autonomous sequence
@@ -112,67 +121,74 @@ public class BlueFarDD extends CommandOpMode {
                 new ParallelCommandGroup(
                         new RunCommand(follower::update),
                         new SequentialCommandGroup(
+
+                                /**
+                                 FIRST CYCLE - Preload
+                                 **/
+
                                 // Score preload
-                                setupFarWallPresetShot(),
-                                prepareShot(),
-                                new FollowPathCommand(follower, paths.preloadScore),
-                                new WaitCommand(TimingConstants.waitBeforeShootingMS),
+                                // Prepare shot before starting
+                                new FollowPathCommand(follower, paths.redWallToFarZonePrescore).beforeStarting(prepareShot()),
+                                new ParallelRaceGroup(
+                                        new WaitCommand(TimingConstants.waitBeforeShootingMS), // 0.700 second timeout
+                                        new WaitUntilCommand(() -> robot.shotController.readyToShoot()) // wait until shooter is ready
+                                ),
                                 shoot(),
-                                new WaitCommand(TimingConstants.waitForShootingMS),
-                                // Intake 3 from mid row
-                                intake(),
-                                new FollowPathCommand(follower, paths.intakeMid),
-                                new WaitCommand(TimingConstants.waitForIntakeMS),
-                                // Score 3
-                                setupFarWallPresetShot(),
-                                prepareShot(),
-                                new FollowPathCommand(follower, paths.scoreMid),
-                                new WaitCommand(TimingConstants.waitBeforeShootingMS),
-                                shoot(),
-                                new WaitCommand(TimingConstants.waitForShootingMS),
-                                // Intake 3 from close (far) row
-                                intake(),
-                                new FollowPathCommand(follower, paths.intakeNear),
-                                new WaitCommand(TimingConstants.waitForIntakeMS),
-                                // Score 3
-                                setupFarWallPresetShot(),
-                                prepareShot(),
-                                new FollowPathCommand(follower, paths.scoreNear),
-                                new WaitCommand(TimingConstants.waitBeforeShootingMS),
-                                shoot(),
-                                new WaitCommand(TimingConstants.waitForShootingMS),
-                                // Intake 3 from corner
-                                intake(),
-                                new FollowPathCommand(follower, paths.intakeCorner),
-                                new WaitCommand(TimingConstants.waitForIntakeMS),
-                                // Score 3
-                                setupFarWallPresetShot(),
-                                prepareShot(),
-                                new FollowPathCommand(follower, paths.scoreCorner),
-                                new WaitCommand(TimingConstants.waitBeforeShootingMS),
-                                shoot(),
-                                new WaitCommand(TimingConstants.waitForShootingMS),
-                                // Intake 3 from corner
-                                intake(),
-                                new FollowPathCommand(follower, paths.intakeCorner),
-                                new WaitCommand(TimingConstants.waitForIntakeMS),
-                                // Score 3
-                                setupFarWallPresetShot(),
-                                prepareShot(),
-                                new FollowPathCommand(follower, paths.scoreCorner),
-                                new WaitCommand(TimingConstants.waitBeforeShootingMS),
-                                shoot(),
-                                new WaitCommand(TimingConstants.waitForShootingMS),
-                                // Park
-                                new FollowPathCommand(follower, paths.park, false),
-                                spinDown()
+                                new WaitCommand(TimingConstants.waitForShootingMS).andThen(idleState()),
+
+
+                                /**
+                                 SECOND CYCLE  - intake FAR
+                                 **/
+
+                                // Intake from row closest to far wall from goal -- intake starts after 25% of path complete
+                                new FollowPathCommand(follower, paths.redFarZonePrescoreToFarIntake, false),
+
+
+                                // Score -- preparing shot after 50% of path complete. Begin shooting after 85% of path complete
+                                new FollowPathCommand(follower, paths.redFarWallIntakeToFarScore),
+                                new WaitCommand(TimingConstants.waitForShootingMS).andThen(idleState()),
+
+                                /**
+                                 THIRD CYCLE - intake MID
+                                 **/
+
+                                // Intake from from mid row -- intake starts after 50% of path complete
+                                new FollowPathCommand(follower, paths.redFarZoneScoreToMidIntake, false),
+
+
+                                // Score -- preparing shot after 50% of path complete. Begin shooting after 90% of path complete
+                                new FollowPathCommand(follower, paths.redMidWallIntakeToFarScore),
+                                new WaitCommand(TimingConstants.waitForShootingMS).andThen(idleState()),
+
+                                /**
+                                 FOURTH CYCLE - intake Loading Station
+                                 **/
+
+                                // Intake from loading station -- intake starts after 25% of path complete
+                                new FollowPathCommand(follower, paths.redFarWallToIntakeLoadingStation, false),
+
+                                new ConditionalCommand(
+                                        // Shoot if we have time
+                                        new SequentialCommandGroup(
+                                                // Score -- preparing shot after 50% of path complete. Begin shooting after 85% of path complete
+                                                new FollowPathCommand(follower, paths.redFarLoadingStationToFarScore),
+                                                new WaitCommand(TimingConstants.waitForShootingMS).andThen(spinDown()),
+                                                new FollowPathCommand(follower, paths.redFarScoreToPark, false)
+                                        ),
+                                        // Otherwise just park and spin down
+                                        new SequentialCommandGroup(
+                                                new FollowPathCommand(follower, paths.redLoadingStationToPark, false),
+                                                spinDown()
+                                        ),
+                                        // Condition
+                                        () -> getRuntime() <= 35.0 // TODO Adjust time threshold later
+                                )
                         )
                 )
         );
 
-//        readyToShootPreload().whenActive(shoot());
-
-        telemetry.addData("Robot Status", "Initialized Auto 12 Ball Far " + alliance.name());
+        telemetry.addData("Robot Status", "Initialized Auto 9 Ball Far " + alliance.name());
         telemetry.update();
     }
 
@@ -217,13 +233,11 @@ public class BlueFarDD extends CommandOpMode {
     }
 
     private void drawPaths() {
-        PanelsUtils.Drawing.drawPath(paths.preloadScore);
-        PanelsUtils.Drawing.drawPath(paths.intakeMid);
-        PanelsUtils.Drawing.drawPath(paths.scoreMid);
-        PanelsUtils.Drawing.drawPath(paths.intakeNear);
-        PanelsUtils.Drawing.drawPath(paths.scoreNear);
-        PanelsUtils.Drawing.drawPath(paths.intakeCorner);
-        PanelsUtils.Drawing.drawPath(paths.scoreCorner);
-        PanelsUtils.Drawing.drawPath(paths.park);
+        PanelsUtils.Drawing.drawPath(paths.redWallToFarZonePrescore);
+        PanelsUtils.Drawing.drawPath(paths.redFarZonePrescoreToFarIntake);
+        PanelsUtils.Drawing.drawPath(paths.redFarWallIntakeToFarScore);
+        PanelsUtils.Drawing.drawPath(paths.redFarZoneScoreToMidIntake);
+        PanelsUtils.Drawing.drawPath(paths.redMidWallIntakeToFarScore);
+        PanelsUtils.Drawing.drawPath(paths.redFarWallToIntakeLoadingStation);
     }
 }

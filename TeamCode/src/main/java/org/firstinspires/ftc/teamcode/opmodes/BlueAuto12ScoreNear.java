@@ -16,7 +16,7 @@ import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 import com.seattlesolvers.solverslib.util.TelemetryData;
 
 import org.firstinspires.ftc.teamcode.NovaPyraRobot;
-import org.firstinspires.ftc.teamcode.autos.RedNearGoalConstants;
+import org.firstinspires.ftc.teamcode.autos.BlueNearGoalConstants;
 import org.firstinspires.ftc.teamcode.autos.TimingConstants;
 import org.firstinspires.ftc.teamcode.constants.Alliance;
 import org.firstinspires.ftc.teamcode.constants.Constants;
@@ -27,13 +27,13 @@ import org.firstinspires.ftc.teamcode.lib.triggers.SupplierTrigger;
 import org.firstinspires.ftc.teamcode.lib.util.BlackboardHelpers;
 import org.firstinspires.ftc.teamcode.triggers.RobotTriggers;
 
-@Autonomous(name = "Red 9-Score Near Goal", group = "Autonomous")
+@Autonomous(name = "Blue 12 Near M-G-N", group = "Autonomous")
 @Configurable // Panels
-public class RedAuto9ScoreNear extends CommandOpMode {
+public class BlueAuto12ScoreNear extends CommandOpMode {
     private NovaPyraRobot robot;
     private RobotTriggers robotTriggers;
     private Follower follower;
-    private RedNearGoalConstants paths;
+    private BlueNearGoalConstants paths;
     protected TelemetryData telemetryData;
     private Alliance alliance;
 
@@ -47,6 +47,12 @@ public class RedAuto9ScoreNear extends CommandOpMode {
     private InstantCommand intake() {
         return new InstantCommand(() -> {
             robot.shotController.setState(ShotCycleState.INTAKE);
+        });
+    }
+
+    private InstantCommand idleState() {
+        return new InstantCommand(() -> {
+            robot.shotController.setState(ShotCycleState.IDLE);
         });
     }
 
@@ -76,9 +82,9 @@ public class RedAuto9ScoreNear extends CommandOpMode {
     public void initialize() {
         super.reset();
 
-        alliance = Alliance.RED;
+        alliance = Alliance.BLUE;
 
-        telemetry.addData("Robot Status", "Initializing Auto 9 Ball Near " + alliance.name());
+        telemetry.addData("Robot Status", "Initializing Auto 12 Ball Near " + alliance.name());
         telemetry.update();
 
         // Setup Dashboard if setup for shop debugging
@@ -98,10 +104,10 @@ public class RedAuto9ScoreNear extends CommandOpMode {
         );
 
         this.follower = robot.pedroFollower;
-        this.paths = new RedNearGoalConstants(follower);
+        this.paths = new BlueNearGoalConstants(follower, robot);
 
         // Initialize follower
-        follower.setStartingPose(paths.redNearWallStart.withHeading(Math.toRadians(paths.redNearWallStartHeading)));
+        follower.setStartingPose(paths.blueNearWallStart.withHeading(Math.toRadians(paths.blueNearWallStartHeading)));
         BlackboardHelpers.setAutoEndPose(blackboard, follower.getPose());
 
         // Schedule the autonomous sequence
@@ -110,37 +116,58 @@ public class RedAuto9ScoreNear extends CommandOpMode {
                         new RunCommand(follower::update),
                         new SequentialCommandGroup(
 
-                                // Score preload
-                                prepareShot(),
-                                new FollowPathCommand(follower, paths.redWallToNearZonePrescore),
-                                new WaitCommand(TimingConstants.waitBeforeShootingMS),
-                                shoot(),
-                                new WaitCommand(TimingConstants.waitForShootingMS),
+                                /**
+                                 FIRST CYCLE - Preload
+                                 **/
 
-                                // Intake 3 from row closest to far wall from goal
-                                intake(),
-                                new FollowPathCommand(follower, paths.redNearZonePrescoreToNearIntake),
+                                // Prepare shot before starting - Begin shooting after 95% of path complete
+                                new FollowPathCommand(follower, paths.blueWallToNearZonePrescore).beforeStarting(prepareShot()),
 
-                                // Score 3
-                                prepareShot(),
-                                new FollowPathCommand(follower, paths.redNearWallIntakeToNearScore),
-                                new WaitCommand(TimingConstants.waitBeforeShootingMS),
-                                shoot(),
-                                new WaitCommand(TimingConstants.waitForShootingMS),
+                                new WaitCommand(TimingConstants.waitForShootingNearMS).andThen(idleState()),
 
-                                // Intake 3 from from mid row
-                                intake(),
-                                new FollowPathCommand(follower, paths.redNearZoneScoreToMidIntake),
 
-                                // Score 3
-                                prepareShot(),
-                                new FollowPathCommand(follower, paths.redMidWallIntakeToNearScore),
-                                new WaitCommand(TimingConstants.waitBeforeShootingMS),
-                                shoot(),
-                                new WaitCommand(TimingConstants.waitForShootingMS),
+                                /**
+                                 SECOND CYCLE - MID row
+                                 **/
 
+                                // Intake from from mid row -- intake starts after 25% of path complete
+                                new FollowPathCommand(follower, paths.blueNearZoneScoreToMidIntake, false),
+
+                                // Score -- preparing shot after 30% of path complete. Begin shooting after 90% of path complete
+                                new FollowPathCommand(follower, paths.blueMidWallIntakeToNearScore),
+                                new WaitCommand(TimingConstants.waitForShootingNearMS),
+
+                                /**
+                                 THIRD CYCLE - Gate Open and Intake
+                                 **/
+
+                                new FollowPathCommand(follower, paths.blueScoreToOpenGate,false).beforeStarting(idleState()),
+                                new FollowPathCommand(follower, paths.blueOpenGateToIntakeGate).beforeStarting(intake()),
+
+                                new WaitCommand(TimingConstants.waitForIntakeByGateMS),
+
+                                // Score -- preparing shot after 30% of path complete. Begin shooting after 90% of path complete
+                                new FollowPathCommand(follower, paths.blueMidWallIntakeToNearScore),
+                                new WaitCommand(TimingConstants.waitForShootingNearMS),
+
+                                /**
+                                FOURTH CYCLE - row NEAR goal
+                                 **/
+
+                                // Intake from row closest to goal -- intake starts after 25% of path complete
+                                new FollowPathCommand(follower, paths.blueNearZoneToNearIntakeblueBlue, false),
+
+                                // Score -- preparing shot after 30% of path complete. Begin shooting after 90% of path complete
+                                new FollowPathCommand(follower, paths.blueNearWallIntakeToNearScore),
+                                new WaitCommand(TimingConstants.waitForShootingNearMS).andThen(idleState()),
+
+                                /**
+                                 FIFTH CYCLE - intake randoms by gate
+                                 **/
+                                new FollowPathCommand(follower, paths.blueNearShootToIntakeFromGate),
+                                new WaitCommand(TimingConstants.waitForIntakeByGateMS),
                                 // Park
-                                new FollowPathCommand(follower, paths.redNearWallToPark, false),
+                                // new FollowPathCommand(follower, paths.blueNearWallToPark, false),
                                 spinDown()
                         )
                 )

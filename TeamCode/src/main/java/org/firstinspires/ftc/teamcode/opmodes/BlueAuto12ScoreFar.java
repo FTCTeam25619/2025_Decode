@@ -4,7 +4,6 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.JoinedTelemetry;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.pedropathing.follower.Follower;
-import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.ConditionalCommand;
@@ -17,7 +16,6 @@ import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.command.WaitUntilCommand;
 import com.seattlesolvers.solverslib.command.button.Trigger;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
-import com.seattlesolvers.solverslib.pedroCommand.HoldPointCommand;
 import com.seattlesolvers.solverslib.util.TelemetryData;
 
 import org.firstinspires.ftc.teamcode.NovaPyraRobot;
@@ -33,9 +31,9 @@ import org.firstinspires.ftc.teamcode.lib.triggers.SupplierTrigger;
 import org.firstinspires.ftc.teamcode.lib.util.BlackboardHelpers;
 import org.firstinspires.ftc.teamcode.triggers.RobotTriggers;
 
-@Autonomous(name = "Blue 9-Score Far Wall", group = "Autonomous")
+@Autonomous(name = "Blue 12 Far F-M-LS", group = "Autonomous")
 @Configurable // Panels
-public class BlueAuto9ScoreFar extends CommandOpMode {
+public class BlueAuto12ScoreFar extends CommandOpMode {
     private NovaPyraRobot robot;
     private RobotTriggers robotTriggers;
     private Follower follower;
@@ -90,7 +88,7 @@ public class BlueAuto9ScoreFar extends CommandOpMode {
 
         alliance = Alliance.BLUE;
 
-        telemetry.addData("Robot Status", "Initializing Auto 9 Ball Far " + alliance.name());
+        telemetry.addData("Robot Status", "Initializing Auto Blue 12 Far F-M-LS " + alliance.name());
         telemetry.update();
 
         // Setup Dashboard if setup for shop debugging
@@ -123,6 +121,11 @@ public class BlueAuto9ScoreFar extends CommandOpMode {
                 new ParallelCommandGroup(
                         new RunCommand(follower::update),
                         new SequentialCommandGroup(
+
+                                /**
+                                FIRST CYCLE - Preload
+                                 **/
+
                                 // Score preload
                                 // Prepare shot before starting
                                 new FollowPathCommand(follower, paths.blueWallToFarZonePrescore).beforeStarting(prepareShot()),
@@ -134,6 +137,10 @@ public class BlueAuto9ScoreFar extends CommandOpMode {
                                 new WaitCommand(TimingConstants.waitForShootingMS).andThen(idleState()),
 
 
+                                /**
+                                 SECOND CYCLE  - intake FAR
+                                 **/
+
                                 // Intake from row closest to far wall from goal -- intake starts after 25% of path complete
                                 new FollowPathCommand(follower, paths.blueFarZonePrescoreToFarIntake, false),
 
@@ -142,13 +149,21 @@ public class BlueAuto9ScoreFar extends CommandOpMode {
                                 new FollowPathCommand(follower, paths.blueFarWallIntakeToFarScore),
                                 new WaitCommand(TimingConstants.waitForShootingMS).andThen(idleState()),
 
+                                /**
+                                 THIRD CYCLE - intake MID
+                                 **/
+
                                 // Intake from from mid row -- intake starts after 50% of path complete
                                 new FollowPathCommand(follower, paths.blueFarZoneScoreToMidIntake, false),
 
 
-                                // Score 3 -- preparing shot after 50% of path complete. Begin shooting after 90% of path complete
+                                // Score -- preparing shot after 50% of path complete. Begin shooting after 90% of path complete
                                 new FollowPathCommand(follower, paths.blueMidWallIntakeToFarScore),
                                 new WaitCommand(TimingConstants.waitForShootingMS).andThen(idleState()),
+
+                                /**
+                                 FOURTH CYCLE - intake Loading Station
+                                 **/
 
                                 // Intake from loading station -- intake starts after 25% of path complete
                                 new FollowPathCommand(follower, paths.blueFarWallToIntakeLoadingStation, false),
@@ -156,7 +171,7 @@ public class BlueAuto9ScoreFar extends CommandOpMode {
                                 new ConditionalCommand(
                                         // Shoot if we have time
                                         new SequentialCommandGroup(
-                                                // Score 3 -- preparing shot after 50% of path complete. Begin shooting after 85% of path complete
+                                                // Score -- preparing shot after 50% of path complete. Begin shooting after 85% of path complete
                                                 new FollowPathCommand(follower, paths.blueFarLoadingStationToFarScore),
                                                 new WaitCommand(TimingConstants.waitForShootingMS).andThen(spinDown()),
                                                 new FollowPathCommand(follower, paths.blueFarScoreToPark, false)

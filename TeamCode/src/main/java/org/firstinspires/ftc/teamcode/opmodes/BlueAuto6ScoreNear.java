@@ -8,11 +8,9 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
-import com.seattlesolvers.solverslib.command.ParallelRaceGroup;
 import com.seattlesolvers.solverslib.command.RunCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
-import com.seattlesolvers.solverslib.command.WaitUntilCommand;
 import com.seattlesolvers.solverslib.command.button.Trigger;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 import com.seattlesolvers.solverslib.util.TelemetryData;
@@ -29,7 +27,7 @@ import org.firstinspires.ftc.teamcode.lib.triggers.SupplierTrigger;
 import org.firstinspires.ftc.teamcode.lib.util.BlackboardHelpers;
 import org.firstinspires.ftc.teamcode.triggers.RobotTriggers;
 
-@Autonomous(name = "Blue 6-Score Near Goal", group = "Autonomous")
+@Autonomous(name = "Blue 6 Near", group = "Autonomous")
 @Configurable // Panels
 public class BlueAuto6ScoreNear extends CommandOpMode {
     private NovaPyraRobot robot;
@@ -51,11 +49,13 @@ public class BlueAuto6ScoreNear extends CommandOpMode {
             robot.shotController.setState(ShotCycleState.INTAKE);
         });
     }
+
     private InstantCommand idleState() {
         return new InstantCommand(() -> {
             robot.shotController.setState(ShotCycleState.IDLE);
         });
     }
+
     private InstantCommand prepareShot() {
         return new InstantCommand(() -> {
             robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
@@ -84,7 +84,7 @@ public class BlueAuto6ScoreNear extends CommandOpMode {
 
         alliance = Alliance.BLUE;
 
-        telemetry.addData("Robot Status", "Initializing Auto 9 Ball Near " + alliance.name());
+        telemetry.addData("Robot Status", "Initializing Auto 12 Ball Near " + alliance.name());
         telemetry.update();
 
         // Setup Dashboard if setup for shop debugging
@@ -116,32 +116,37 @@ public class BlueAuto6ScoreNear extends CommandOpMode {
                         new RunCommand(follower::update),
                         new SequentialCommandGroup(
 
-                                // Score preload
-                                // Prepare shot before starting
+                                /**
+                                 FIRST CYCLE - Preload
+                                 **/
+
+                                // Prepare shot before starting - Begin shooting after 95% of path complete
                                 new FollowPathCommand(follower, paths.blueWallToNearZonePrescore).beforeStarting(prepareShot()),
-                                new ParallelRaceGroup(
-                                        new WaitCommand(TimingConstants.waitBeforeShootingMS), // 0.700 second timeout
-                                        new WaitUntilCommand(() -> robot.shotController.readyToShoot()) // wait until shooter is ready
-                                ),
-                                shoot(),
-                                new WaitCommand(TimingConstants.waitForShootingMS).andThen(idleState()),
+
+                                new WaitCommand(TimingConstants.waitForShootingNearMS).andThen(idleState()),
+
+
+                                /**
+                                 SECOND CYCLE - NEAR row
+                                 **/
 
                                 // Intake from row closest to goal -- intake starts after 25% of path complete
-                                new FollowPathCommand(follower, paths.blueNearZoneToNearIntakeblueBlue),
+                                new FollowPathCommand(follower, paths.blueNearZoneToNearIntakeblueBlue, false),
 
-                                // Score 3
-                                prepareShot(),
+                                // Score -- preparing shot after 30% of path complete. Begin shooting after 90% of path complete
                                 new FollowPathCommand(follower, paths.blueNearWallIntakeToNearScore),
-                                new WaitCommand(TimingConstants.waitBeforeShootingMS),
-                                shoot(),
-                                new WaitCommand(TimingConstants.waitForShootingMS),
+                                new WaitCommand(TimingConstants.waitForShootingNearMS).andThen(spinDown()),
 
+                                /**
+                                 PARK
+                                 **/
                                 // Park
-                                new FollowPathCommand(follower, paths.blueNearWallToPark, false),
-                                spinDown()
+                                new FollowPathCommand(follower, paths.blueNearWallToPark, false)
                         )
                 )
         );
+
+//        readyToShootPreload().whenActive(shoot());
 
         telemetry.addData("Robot Status", "Initialized Auto 9 Ball Near " + alliance.name());
         telemetry.update();
@@ -171,3 +176,4 @@ public class BlueAuto6ScoreNear extends CommandOpMode {
         BlackboardHelpers.setAutoEndPose(blackboard, follower.getPose());
     }
 }
+

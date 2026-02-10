@@ -7,31 +7,50 @@ import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 
+import org.firstinspires.ftc.teamcode.NovaPyraRobot;
+import org.firstinspires.ftc.teamcode.lib.orchestration.ShotCycleState;
+
 @Configurable
 public class RedNearGoalConstants {
-    public Pose redNearWallStart = new Pose(128.587, 114.055);
-    public Pose redNearWallToShootCP = new Pose(115.376, 109.431);
-    public Pose redNearWallShoot = new Pose(95.394, 101.009);
+
+    public Pose redNearWallStart = new Pose(128.25, 112.3);
+    public Pose redNearWallToShootCP = new Pose(102.5, 112.0);
+    public Pose redNearWallShoot = new Pose(90.0, 84.0);
     public Pose redNearWallShootToNearIntakeCP = new Pose(80.807, 63.615);
-    public Pose redNearWallNearIntake = new Pose(125.5, 87.0);
-    public Pose redNearWallShootToMidIntakeCP = new Pose(79.706, 38.514);
-    public Pose redNearWallMidIntake = new Pose(124.0, 56.5);
+    public Pose redNearWallNearIntake = new Pose(125.5, 86.532);
+    public Pose redNearWallShootToMidIntakeCP = new Pose(90.0, 53.0);
+    public Pose redNearWallMidIntake = new Pose(132.0, 58.0);
     public Pose redNearWallPark = new Pose(89.394, 114.275);
 
+    public Pose redGateOpenPose = new Pose(129.5, 61);
+    public Pose redGateOpenPoseCP = new Pose(103, 64.25);
+    public Pose redGateIntakePose = new Pose(131.5, 50.0);
+    public Pose redGateIntakePoseCP = new Pose(127.4, 55.0);
 
+    public double redGateOpenHeading = 210;
+    public double redGateIntakeHeading = 220;
     public double redNearWallStartHeading = 90.0;
-    public double redNearWallShootHeading = 42.0;
-    public double redNearWallRowIntakeHeading = 175.0;
-    public double redNearWallMidRowIntakeHeading = 190.0;
+    public double redNearWallShootHeading = 47.0;
+    public double redNearWallRowIntakeHeading = 180.0;
+    public double redNearWallMidRowIntakeHeading = 180.0;
+
 
     public PathChain redWallToNearZonePrescore;
-    public PathChain redNearZonePrescoreToNearIntake;
+    public PathChain redNearZoneToNearIntakeredRed;
     public PathChain redNearWallIntakeToNearScore;
     public PathChain redNearZoneScoreToMidIntake;
     public PathChain redMidWallIntakeToNearScore;
+
+    public PathChain redNearShootToIntakeFromGate;
+
+    public PathChain redScoreToOpenGate;
+    public PathChain redOpenGateToIntakeGate;
+
     public PathChain redNearWallToPark;
-    
-    public RedNearGoalConstants(Follower follower) {
+
+    public NovaPyraRobot robot;
+    public RedNearGoalConstants(Follower follower, NovaPyraRobot robot) {
+        this.robot = robot;
         buildPaths(follower);
     }
 
@@ -45,25 +64,31 @@ public class RedNearGoalConstants {
                                 redNearWallShoot
                         )
                 )
+                .addParametricCallback(.95, () -> {
+                    robot.shotController.setState(ShotCycleState.SHOOTING);
+                })
                 .setLinearHeadingInterpolation(
                         Math.toRadians(redNearWallStartHeading),
                         Math.toRadians(redNearWallShootHeading),
                         0.7)
                 .build();
 
-        redNearZonePrescoreToNearIntake = follower
+        redNearZoneToNearIntakeredRed = follower
                 .pathBuilder()
                 .addPath(
-                        new BezierCurve(
+                        new BezierLine(
                                 redNearWallShoot,
-                                redNearWallShootToNearIntakeCP,
+                                //redNearWallShootToNearIntakeCP,
                                 redNearWallNearIntake
                         )
                 )
                 .setLinearHeadingInterpolation(
                         Math.toRadians(redNearWallShootHeading),
                         Math.toRadians(redNearWallRowIntakeHeading),
-                        0.5)
+                        0.1)
+                .addParametricCallback(.1, () -> {
+                    robot.shotController.setState(ShotCycleState.INTAKE);
+                })
                 .build();
 
         redNearWallIntakeToNearScore = follower
@@ -78,6 +103,13 @@ public class RedNearGoalConstants {
                         Math.toRadians(redNearWallRowIntakeHeading),
                         Math.toRadians(redNearWallShootHeading),
                         0.7)
+                .addParametricCallback(.30, () -> {
+                    robot.shotController.autoTargetShot();
+                    robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
+                })
+                .addParametricCallback(0.90, () -> {
+                    robot.shotController.setState(ShotCycleState.SHOOTING);
+                })
                 .build();
 
         redNearZoneScoreToMidIntake = follower
@@ -93,13 +125,17 @@ public class RedNearGoalConstants {
                         Math.toRadians(redNearWallShootHeading),
                         Math.toRadians(redNearWallMidRowIntakeHeading),
                         0.4)
+                .addParametricCallback(0.25, () -> {
+                    robot.shotController.setState(ShotCycleState.INTAKE);
+                })
                 .build();
 
         redMidWallIntakeToNearScore = follower
                 .pathBuilder()
                 .addPath(
-                        new BezierLine(
+                        new BezierCurve(
                                 redNearWallMidIntake,
+                                redNearWallShootToMidIntakeCP,
                                 redNearWallShoot
                         )
                 )
@@ -107,6 +143,13 @@ public class RedNearGoalConstants {
                         Math.toRadians(redNearWallRowIntakeHeading),
                         Math.toRadians(redNearWallShootHeading),
                         0.7)
+                .addParametricCallback(0.30, () -> {
+                    robot.shotController.autoTargetShot();
+                    robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
+                })
+                .addParametricCallback(0.90, () -> {
+                    robot.shotController.setState(ShotCycleState.SHOOTING);
+                })
                 .build();
 
         redNearWallToPark = follower
@@ -121,6 +164,55 @@ public class RedNearGoalConstants {
                         Math.toRadians(redNearWallShootHeading),
                         Math.toRadians(redNearWallShootHeading),
                         0.7)
+                .build();
+
+
+        redScoreToOpenGate = follower
+                .pathBuilder()
+                .addPath(
+                        new BezierCurve(
+                                redNearWallShoot,
+                                redGateOpenPoseCP,
+                                redGateOpenPose
+                        )
+                )
+                .setLinearHeadingInterpolation(
+                        Math.toRadians(redNearWallShootHeading),
+                        Math.toRadians(redGateOpenHeading),
+                        0.5)
+                .build();
+
+        redOpenGateToIntakeGate = follower
+                .pathBuilder()
+                .addPath(
+                        new BezierCurve(
+                                redGateOpenPose,
+                                redGateIntakePoseCP,
+                                redGateIntakePose
+                        )
+                )
+                .setLinearHeadingInterpolation(
+                        Math.toRadians(redGateOpenHeading),
+                        Math.toRadians(redGateIntakeHeading),
+                        0.5)
+                .build();
+
+        redNearShootToIntakeFromGate = follower
+                .pathBuilder()
+                .addPath(
+                        new BezierCurve(
+                                redNearWallShoot,
+                                redNearWallShootToNearIntakeCP,
+                                redGateIntakePose
+                        )
+                )
+                .addParametricCallback(0.25, () -> {
+                    robot.shotController.setState(ShotCycleState.INTAKE);
+                })
+                .setLinearHeadingInterpolation(
+                        Math.toRadians(redNearWallShootHeading),
+                        Math.toRadians(180.0),
+                        0.5)
                 .build();
     }
 }
