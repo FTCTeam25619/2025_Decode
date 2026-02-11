@@ -16,11 +16,11 @@ public class BlueFarFromGoalConstants {
     public Pose blueFarWallToShootCP = new Pose(56.265, 12.397);
     public Pose blueFarWallShoot = new Pose(56.742, 14.543);
     public Pose blueFarWallShootToFarIntakeCP = new Pose(65.086, 36.454);
-    public Pose blueFarWallFarIntake = new Pose(15.5, 36.454);
+    public Pose blueFarWallFarIntake = new Pose(15.0, 36.454);
     public Pose blueFarWallShootToMidIntakeCP = new Pose(65.324, 72.238);
-    public Pose blueFarWallMidIntake = new Pose(15.5, 55.192);
+    public Pose blueFarWallMidIntake = new Pose(15.0, 55.192);
     public Pose blueFarWallIntakeLoadingStationCP = new Pose(51,25);
-    public Pose blueFarWallIntakeLoadingStation = new Pose(12.0, 8.00);
+    public Pose blueFarWallIntakeLoadingStation = new Pose(12.0, 8.5);
     public Pose blueFarWallParkPose = new Pose(30.00, 46.00);
     public double blueFarWallStartHeading = 90.0;
     public double blueFarWallFirstShotHeading = 113.0;
@@ -98,9 +98,7 @@ public class BlueFarFromGoalConstants {
                     robot.shotController.autoTargetShot();
                     robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
                 })
-                .addParametricCallback(0.95, () -> {
-                    robot.shotController.setState(ShotCycleState.SHOOTING);
-                })
+
                 .build();
 
         blueFarZoneScoreToMidIntake = follower
@@ -137,9 +135,7 @@ public class BlueFarFromGoalConstants {
                     robot.shotController.autoTargetShot();
                     robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
                 })
-                .addParametricCallback(0.95, () -> {
-                    robot.shotController.setState(ShotCycleState.SHOOTING);
-                })
+
                 .build();
 
         blueFarWallToIntakeLoadingStation = follower
@@ -173,13 +169,11 @@ public class BlueFarFromGoalConstants {
                         Math.toRadians(blueLoadingZoneIntakeHeading),
                         Math.toRadians(blueFarWallShootHeading),
                         0.5)
-                .addParametricCallback(0.40, () -> {
+                .addParametricCallback(0.30, () -> {
                     robot.shotController.autoTargetShot();
                     robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
                 })
-                .addParametricCallback(0.95, () -> {
-                    robot.shotController.setState(ShotCycleState.SHOOTING);
-                })
+
                 .build();
 
         blueLoadingStationToPark = follower

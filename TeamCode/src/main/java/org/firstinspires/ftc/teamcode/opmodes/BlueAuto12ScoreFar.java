@@ -41,6 +41,7 @@ public class BlueAuto12ScoreFar extends CommandOpMode {
     protected TelemetryData telemetryData;
     private Alliance alliance;
 
+
     private static boolean firstRun = true;
 
     // Mechanism commands - replace these with your actual subsystem commands
@@ -148,7 +149,7 @@ public class BlueAuto12ScoreFar extends CommandOpMode {
 
 
                                 // Score -- preparing shot after 50% of path complete. Begin shooting after 85% of path complete
-                                new FollowPathCommand(follower, paths.blueFarWallIntakeToFarScore),
+                                new FollowPathCommand(follower, paths.blueFarWallIntakeToFarScore).andThen(shoot()),
                                 new WaitCommand(TimingConstants.waitForShootingMS).andThen(idleState()),
 
                                 /**
@@ -160,7 +161,7 @@ public class BlueAuto12ScoreFar extends CommandOpMode {
 
 
                                 // Score -- preparing shot after 50% of path complete. Begin shooting after 90% of path complete
-                                new FollowPathCommand(follower, paths.blueMidWallIntakeToFarScore),
+                                new FollowPathCommand(follower, paths.blueMidWallIntakeToFarScore).andThen(shoot()),
                                 new WaitCommand(TimingConstants.waitForShootingMS).andThen(idleState()),
 
                                 /**
@@ -169,31 +170,18 @@ public class BlueAuto12ScoreFar extends CommandOpMode {
 
                                 // Intake from loading station -- intake starts after 25% of path complete
                                 new FollowPathCommand(follower, paths.blueFarWallToIntakeLoadingStation, false),
-                                new WaitCommand(TimingConstants.waitForIntakeMS),
+                                new WaitCommand(TimingConstants.waitForIntakeLoadingStationMS),
 
-                                new ConditionalCommand(
-                                        // Shoot if we have time
-                                        new SequentialCommandGroup(
-                                                // Score -- preparing shot after 50% of path complete. Begin shooting after 85% of path complete
-                                                new FollowPathCommand(follower, paths.blueFarLoadingStationToFarScore),
-                                                new WaitCommand(TimingConstants.waitForShootingMS).andThen(spinDown()),
-                                                new FollowPathCommand(follower, paths.blueFarScoreToPark, false)
-                                        ),
-                                        // Otherwise just park and spin down
-                                        new SequentialCommandGroup(
-                                                new FollowPathCommand(follower, paths.blueLoadingStationToPark, false),
-                                                spinDown()
-                                        ),
-                                        // Condition
-                                        () -> getRuntime() <= 35.0 // TODO Adjust time threshold later
-                                )
+                                // Score -- preparing shot after 30% of path complete. Begin shooting after 90% of path complete
+                                new FollowPathCommand(follower, paths.blueFarLoadingStationToFarScore).andThen(shoot()),
+                                new WaitCommand(TimingConstants.waitForShootingMS).andThen(spinDown()),
+                                new FollowPathCommand(follower, paths.blueFarScoreToPark, false)
+
                         )
                 )
         );
 
-//        readyToShootPreload().whenActive(shoot());
-
-        telemetry.addData("Robot Status", "Initialized Auto 9 Ball Far " + alliance.name());
+        telemetry.addData("Robot Status", "Initialized Auto 12 Ball Far " + alliance.name());
         telemetry.update();
     }
 
@@ -205,16 +193,12 @@ public class BlueAuto12ScoreFar extends CommandOpMode {
             drawPaths();
             PanelsUtils.Drawing.sendPacket();
         }
+        resetRuntime();
     }
 
     @Override
     public void run() {
         super.run();
-
-        if (firstRun){
-            resetRuntime();
-            firstRun = false;
-        }
 
         this.robot.shotController.updateState();
 
