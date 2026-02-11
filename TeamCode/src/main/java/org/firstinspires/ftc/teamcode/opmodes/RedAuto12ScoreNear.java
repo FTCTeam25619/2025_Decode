@@ -155,7 +155,7 @@ public class RedAuto12ScoreNear extends CommandOpMode {
                                  **/
 
                                 // Intake from row closest to goal -- intake starts after 25% of path complete
-                                new FollowPathCommand(follower, paths.redNearZoneToNearIntakeredRed, false),
+                                new FollowPathCommand(follower, paths.redNearZoneToNearIntake, false),
 
                                 // Score -- preparing shot after 30% of path complete. Begin shooting after 90% of path complete
                                 new FollowPathCommand(follower, paths.redNearWallIntakeToNearScore),
