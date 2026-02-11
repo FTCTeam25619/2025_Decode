@@ -37,7 +37,7 @@ public class LiftConstants {
     public static class Positions {
         @Configurable
         public static class LeftServo {
-            public static double engagedDegrees = 60.0;
+            public static double engagedDegrees = 10.0;
             public static double disengagedDegrees = 160.0;
             public static double middleOfRange =
                     (Limits.LeftServo.hardStopMin + Limits.LeftServo.hardStopMax) / 2.0;
@@ -47,7 +47,7 @@ public class LiftConstants {
         }
         @Configurable
         public static class RightServo {
-            public static double engagedDegrees = 60.0;
+            public static double engagedDegrees = 10.0;
             public static double disengagedDegrees = 160.0;
             public static double middleOfRange =
                     (Limits.RightServo.hardStopMin + Limits.RightServo.hardStopMax) / 2.0;
