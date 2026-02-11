@@ -98,7 +98,7 @@ public class BlueFarFromGoalConstants {
                     robot.shotController.autoTargetShot();
                     robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
                 })
-                .addParametricCallback(0.85, () -> {
+                .addParametricCallback(0.95, () -> {
                     robot.shotController.setState(ShotCycleState.SHOOTING);
                 })
                 .build();
@@ -133,11 +133,11 @@ public class BlueFarFromGoalConstants {
                         Math.toRadians(blueFarWallRowIntakeHeading),
                         Math.toRadians(blueFarWallShootHeading),
                 .5)
-                .addParametricCallback(0.50, () -> {
+                .addParametricCallback(0.40, () -> {
                     robot.shotController.autoTargetShot();
                     robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
                 })
-                .addParametricCallback(0.90, () -> {
+                .addParametricCallback(0.95, () -> {
                     robot.shotController.setState(ShotCycleState.SHOOTING);
                 })
                 .build();
@@ -173,11 +173,11 @@ public class BlueFarFromGoalConstants {
                         Math.toRadians(blueLoadingZoneIntakeHeading),
                         Math.toRadians(blueFarWallShootHeading),
                         0.5)
-                .addParametricCallback(0.50, () -> {
+                .addParametricCallback(0.40, () -> {
                     robot.shotController.autoTargetShot();
                     robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
                 })
-                .addParametricCallback(0.85, () -> {
+                .addParametricCallback(0.95, () -> {
                     robot.shotController.setState(ShotCycleState.SHOOTING);
                 })
                 .build();

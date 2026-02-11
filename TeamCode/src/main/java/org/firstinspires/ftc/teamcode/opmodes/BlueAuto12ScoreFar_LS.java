@@ -31,7 +31,7 @@ import org.firstinspires.ftc.teamcode.lib.triggers.SupplierTrigger;
 import org.firstinspires.ftc.teamcode.lib.util.BlackboardHelpers;
 import org.firstinspires.ftc.teamcode.triggers.RobotTriggers;
 
-@Autonomous(name = "Blue 12 Far F-LS-LS", group = "Autonomous")
+@Autonomous(name = "Blue Far 12 Loading Station", group = "Autonomous")
 @Configurable // Panels
 public class BlueAuto12ScoreFar_LS extends CommandOpMode {
     private NovaPyraRobot robot;

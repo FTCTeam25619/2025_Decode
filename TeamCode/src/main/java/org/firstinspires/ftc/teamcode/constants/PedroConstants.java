@@ -18,6 +18,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.lib.pedroExtensions.PoseEstFollower;
 import org.firstinspires.ftc.teamcode.lib.pedroExtensions.PoseEstFollowerBuilder;
 
+
 public class PedroConstants {
     public static MecanumConstants mecanumConstants = new MecanumConstants()
             .leftFrontMotorName(Devices.Drivetrain.driveMotorFrontLeft)
@@ -52,9 +53,11 @@ public class PedroConstants {
             .useSecondaryHeadingPIDF(true)
             .headingPIDFCoefficients(new PIDFCoefficients(0.9, 0.0, 0.045, 0.025))
             .secondaryHeadingPIDFCoefficients(new PIDFCoefficients(1.5, 0.0, 0.035, 0.025))
-            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.02, 0.0, 0.00005, 0.6, 0.015))
+            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.5, 0.0, 0.00005, 0.6, 0.015))
             .secondaryDrivePIDFCoefficients(new FilteredPIDFCoefficients(0.02, 0.0, 0.00005, 0.6, 0.015))
+            .drivePIDFSwitch(10)
             .centripetalScaling(0.0012);
+
 
     public static PathConstraints pathConstraints = new PathConstraints(
             0.99, 100, .05, 1.0);

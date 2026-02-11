@@ -27,7 +27,7 @@ import org.firstinspires.ftc.teamcode.lib.triggers.SupplierTrigger;
 import org.firstinspires.ftc.teamcode.lib.util.BlackboardHelpers;
 import org.firstinspires.ftc.teamcode.triggers.RobotTriggers;
 
-@Autonomous(name = "Blue 12 Near M-G-N", group = "Autonomous")
+@Autonomous(name = "Blue Near 12", group = "Autonomous")
 @Configurable // Panels
 public class BlueAuto12ScoreNear extends CommandOpMode {
     private NovaPyraRobot robot;

@@ -31,7 +31,7 @@ import org.firstinspires.ftc.teamcode.lib.triggers.SupplierTrigger;
 import org.firstinspires.ftc.teamcode.lib.util.BlackboardHelpers;
 import org.firstinspires.ftc.teamcode.triggers.RobotTriggers;
 
-@Autonomous(name = "Blue 12 Far F-M-LS", group = "Autonomous")
+@Autonomous(name = "Blue Far 12", group = "Autonomous")
 @Configurable // Panels
 public class BlueAuto12ScoreFar extends CommandOpMode {
     private NovaPyraRobot robot;
@@ -40,6 +40,8 @@ public class BlueAuto12ScoreFar extends CommandOpMode {
     private BlueFarFromGoalConstants paths;
     protected TelemetryData telemetryData;
     private Alliance alliance;
+
+    private static boolean firstRun = true;
 
     // Mechanism commands - replace these with your actual subsystem commands
     private InstantCommand setupFarWallPresetShot() {
@@ -167,6 +169,7 @@ public class BlueAuto12ScoreFar extends CommandOpMode {
 
                                 // Intake from loading station -- intake starts after 25% of path complete
                                 new FollowPathCommand(follower, paths.blueFarWallToIntakeLoadingStation, false),
+                                new WaitCommand(TimingConstants.waitForIntakeMS),
 
                                 new ConditionalCommand(
                                         // Shoot if we have time
@@ -207,6 +210,11 @@ public class BlueAuto12ScoreFar extends CommandOpMode {
     @Override
     public void run() {
         super.run();
+
+        if (firstRun){
+            resetRuntime();
+            firstRun = false;
+        }
 
         this.robot.shotController.updateState();
 

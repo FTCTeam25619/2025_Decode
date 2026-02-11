@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.triggers;
 
 import com.seattlesolvers.solverslib.command.InstantCommand;
+import com.seattlesolvers.solverslib.command.button.Trigger;
 
 import org.firstinspires.ftc.teamcode.NovaPyraRobot;
 import org.firstinspires.ftc.teamcode.constants.IndicatorLightsConstants;
@@ -16,7 +17,25 @@ public class RobotTriggers {
     public void setupNonControllerTriggers() {
         setupNonShootingBallPatternDisplayTriggers();
         setupShootingReadinessDisplayTriggers();
+        setupIntakeStallDisplayTriggers();
         this.robot.shotController.setupStateTransitionTriggers();
+    }
+    public void setupIntakeStallDisplayTriggers() {
+        //trigger that activates when intake is stalled
+        Trigger intakeStalled = new Trigger(() -> this.robot.intake.isStalled());
+
+        // Set all lights to BLUE when intake stalls (indicating 3 balls)
+        intakeStalled.whenActive(new InstantCommand(() -> {
+            this.robot.indicatorLights.setLightColor(
+                    IndicatorLights.Indicators.Light1,
+                    IndicatorLightsConstants.IndicatorColors.BLUE);
+            this.robot.indicatorLights.setLightColor(
+                    IndicatorLights.Indicators.Light2,
+                    IndicatorLightsConstants.IndicatorColors.BLUE);
+            this.robot.indicatorLights.setLightColor(
+                    IndicatorLights.Indicators.Light3,
+                    IndicatorLightsConstants.IndicatorColors.BLUE);
+        }));
     }
 
     public void setupNonShootingBallPatternDisplayTriggers() {

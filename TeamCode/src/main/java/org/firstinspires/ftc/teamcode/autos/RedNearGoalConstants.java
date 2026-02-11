@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.lib.orchestration.ShotCycleState;
 @Configurable
 public class RedNearGoalConstants {
 
-    public Pose redNearWallStart = new Pose(128.25, 112.3);
+    public Pose redNearWallStart = new Pose(128.25, 114.8);
     public Pose redNearWallToShootCP = new Pose(102.5, 112.0);
     public Pose redNearWallShoot = new Pose(90.0, 84.0);
     public Pose redNearWallShootToNearIntakeCP = new Pose(80.807, 63.615);
