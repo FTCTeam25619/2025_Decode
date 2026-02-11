@@ -23,8 +23,8 @@ public class BlueFarFromGoalConstants {
     public Pose blueFarWallIntakeLoadingStation = new Pose(12.0, 8.5);
     public Pose blueFarWallParkPose = new Pose(30.00, 46.00);
     public double blueFarWallStartHeading = 90.0;
-    public double blueFarWallFirstShotHeading = 113.0;
-    public double blueFarWallShootHeading = 113.0;
+    public double blueFarWallFirstShotHeading = 114.0;
+    public double blueFarWallShootHeading = 114.0;
     public double blueFarWallRowIntakeHeading = 0.0;
     public double blueFarWallMidIntakeHeading = 0.0;
     public double blueLoadingZoneIntakeHeading = 0.0;
@@ -98,7 +98,6 @@ public class BlueFarFromGoalConstants {
                     robot.shotController.autoTargetShot();
                     robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
                 })
-
                 .build();
 
         blueFarZoneScoreToMidIntake = follower
@@ -135,7 +134,6 @@ public class BlueFarFromGoalConstants {
                     robot.shotController.autoTargetShot();
                     robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
                 })
-
                 .build();
 
         blueFarWallToIntakeLoadingStation = follower
@@ -173,7 +171,6 @@ public class BlueFarFromGoalConstants {
                     robot.shotController.autoTargetShot();
                     robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
                 })
-
                 .build();
 
         blueLoadingStationToPark = follower
