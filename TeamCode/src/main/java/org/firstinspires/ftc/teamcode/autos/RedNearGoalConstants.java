@@ -36,7 +36,7 @@ public class RedNearGoalConstants {
 
 
     public PathChain redWallToNearZonePrescore;
-    public PathChain redNearZoneToNearIntakeredRed;
+    public PathChain redNearZoneToNearIntake;
     public PathChain redNearWallIntakeToNearScore;
     public PathChain redNearZoneScoreToMidIntake;
     public PathChain redMidWallIntakeToNearScore;
@@ -73,7 +73,7 @@ public class RedNearGoalConstants {
                         0.7)
                 .build();
 
-        redNearZoneToNearIntakeredRed = follower
+        redNearZoneToNearIntake = follower
                 .pathBuilder()
                 .addPath(
                         new BezierLine(
