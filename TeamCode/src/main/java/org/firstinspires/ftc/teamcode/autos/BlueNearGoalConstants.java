@@ -22,19 +22,28 @@ public class BlueNearGoalConstants {
     public Pose blueNearWallMidIntake = new Pose(15.0, 58.0);
     public Pose blueNearWallPark = new Pose(54.606, 114.275);
 
+    public Pose blueParkByGate = new Pose (20.0, 55);
+
     public Pose blueGateOpenPose = new Pose(14.5, 61);
     public Pose blueGateOpenPoseCP = new Pose (41,64.25);
     public Pose blueGateIntakePose = new Pose(12.5,50.0);
     public Pose blueGateIntakePoseCP = new Pose(16.6,55.0);
     public Pose blueNearWallShootClose = new Pose(49.101, 117.769);
 
+
+    public Pose blueSweepIntakePoseCP1 = new Pose(25.22, 34.22);
+    public Pose blueSweepIntakePoseCP2 = new Pose(5.9, 98.8);
+
+    public Pose blueSweepEndPose = new Pose(12.5, 9.0);
+
     public double blueNearWallShootCloseHeading = 145.0;
 
     public double blueGateOpenHeading = 330;
     public double blueGateIntakeHeading = 320;
     public double blueNearWallStartHeading = 90.0;
-    public double blueNearWallShootHeading = 133.0;
+    public double blueNearWallShootHeading = 132.0;
     public double blueNearWallRowIntakeHeading = 0.0;
+    public double blueSweepIntakeHeading = 25.0;
     public double blueNearWallMidRowIntakeHeading = 0.0;
 
 
@@ -49,6 +58,8 @@ public class BlueNearGoalConstants {
     public PathChain blueOpenGateToIntakeGate;
     public PathChain blueGateIntakeToNearShoot;
     public PathChain blueNearWallToPark;
+    public PathChain blueNearShootToSweep;
+    public PathChain blueSweepToPark;
 
     public NovaPyraRobot robot;
     public BlueNearGoalConstants(Follower follower, NovaPyraRobot robot) {
@@ -106,7 +117,6 @@ public class BlueNearGoalConstants {
                         Math.toRadians(blueNearWallShootHeading),
                 0.7)
                 .addParametricCallback(.30, () -> {
-                    robot.shotController.autoTargetShot();
                     robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
                 })
                 .addParametricCallback(0.90, () -> {
@@ -146,7 +156,6 @@ public class BlueNearGoalConstants {
                         Math.toRadians(blueNearWallShootHeading),
                         0.7)
                 .addParametricCallback(0.30, () -> {
-                    robot.shotController.autoTargetShot();
                     robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
                 })
                 .addParametricCallback(0.90, () -> {
@@ -168,7 +177,6 @@ public class BlueNearGoalConstants {
                         Math.toRadians(blueNearWallShootHeading),
                         0.7)
                 .addParametricCallback(0.30, () -> {
-                    robot.shotController.autoTargetShot();
                     robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
                 })
                 .addParametricCallback(0.90, () -> {
@@ -190,7 +198,6 @@ public class BlueNearGoalConstants {
                         Math.toRadians(blueNearWallShootCloseHeading),
                         0.2)
                 .addParametricCallback(0.20, () -> {
-                    robot.shotController.autoTargetShot();
                     robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
                 })
                 .addParametricCallback(0.80, () -> {
@@ -260,5 +267,37 @@ public class BlueNearGoalConstants {
                         Math.toRadians(0.0),
                         0.5)
                 .build();
+
+        blueNearShootToSweep = follower
+                .pathBuilder()
+                .addPath(
+                        new BezierCurve(
+                                blueNearWallShoot,
+                                blueSweepIntakePoseCP1,
+                                blueSweepIntakePoseCP2,
+                                blueSweepEndPose
+                        )
+                )
+                .setLinearHeadingInterpolation(
+                        Math.toRadians(blueNearWallShootHeading),
+                        Math.toRadians(blueSweepIntakeHeading),
+                0.2)
+                .build();
+
+        blueSweepToPark = follower
+                .pathBuilder()
+                .addPath(
+                        new BezierLine(
+                                blueSweepEndPose,
+                                blueParkByGate
+                        )
+                )
+                .setLinearHeadingInterpolation(
+                        Math.toRadians(blueSweepIntakeHeading),
+                        Math.toRadians(90.0),
+                        0.2)
+                .build();
+
+
     }
 }

@@ -12,6 +12,7 @@ import org.firstinspires.ftc.teamcode.lib.orchestration.ShotCycleState;
 
 @Configurable
 public class BlueFarFromGoalConstants {
+    // Shared poses (used by both regular and gate paths)
     public Pose blueFarWallStart = new Pose(56.000, 8.000);
     public Pose blueFarWallToShootCP = new Pose(56.265, 12.397);
     public Pose blueFarWallShoot = new Pose(56.742, 14.543);
@@ -19,15 +20,26 @@ public class BlueFarFromGoalConstants {
     public Pose blueFarWallFarIntake = new Pose(13.75, 36.454);
     public Pose blueFarWallShootToMidIntakeCP = new Pose(65.324, 72.238);
     public Pose blueFarWallMidIntake = new Pose(13.75, 55.192);
-    public Pose blueFarWallIntakeLoadingStationCP = new Pose(51,25);
+    public Pose blueFarWallIntakeLoadingStationCP = new Pose(51, 25);
     public Pose blueFarWallIntakeLoadingStation = new Pose(11.5, 7.75);
     public Pose blueFarWallParkPose = new Pose(30.00, 46.00);
+
+    // Gate-specific poses
+
+    public Pose blueGateOpenCP = new Pose(23.321, 62.764);
+    public Pose blueGateOpen = new Pose(16.5, 65.000);
+    public Pose blueWallIntakeGate = new Pose(15.0, 58.0);
+    // Shared headings
     public double blueFarWallStartHeading = 90.0;
     public double blueFarWallFirstShotHeading = 113.5;
     public double blueFarWallShootHeading = 113.25;
     public double blueFarWallRowIntakeHeading = 0.0;
     public double blueFarWallMidIntakeHeading = 0.0;
     public double blueLoadingZoneIntakeHeading = 0.0;
+
+    // Gate-specific headings
+    public double blueGateOpenHeading = 90.0;
+    public double blueGateParkHeading = 90.0;
 
     public PathChain blueWallToFarZonePrescore;
     public PathChain blueFarZonePrescoreToFarIntake;
@@ -39,6 +51,15 @@ public class BlueFarFromGoalConstants {
 
     public PathChain blueFarScoreToPark;
     public PathChain blueLoadingStationToPark;
+
+    public PathChain blueNearShootToIntakeFar;
+
+    // Gate paths
+
+    public PathChain blueOpenGate;
+    public PathChain blueParkGate;
+
+
 
     public NovaPyraRobot robot;
 
@@ -76,10 +97,10 @@ public class BlueFarFromGoalConstants {
                 .setLinearHeadingInterpolation(
                         Math.toRadians(blueFarWallShootHeading),
                         Math.toRadians(blueFarWallRowIntakeHeading),
-                .5)
+                        .5)
                 .addParametricCallback(0.25, () -> {
                     robot.shotController.setState(ShotCycleState.INTAKE);
-                 })
+                })
                 .build();
 
         blueFarWallIntakeToFarScore = follower
@@ -94,7 +115,7 @@ public class BlueFarFromGoalConstants {
                 .setLinearHeadingInterpolation(
                         Math.toRadians(blueFarWallRowIntakeHeading),
                         Math.toRadians(blueFarWallShootHeading),
-                .5)
+                        .5)
                 .setBrakingStrength(0.035)
                 .addParametricCallback(0.50, () -> {
                     robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
@@ -113,7 +134,7 @@ public class BlueFarFromGoalConstants {
                 .setLinearHeadingInterpolation(
                         Math.toRadians(blueFarWallShootHeading),
                         Math.toRadians(blueFarWallMidIntakeHeading),
-                .5)
+                        .5)
                 .addParametricCallback(0.25, () -> {
                     robot.shotController.setState(ShotCycleState.INTAKE);
                 })
@@ -130,7 +151,7 @@ public class BlueFarFromGoalConstants {
                 .setLinearHeadingInterpolation(
                         Math.toRadians(blueFarWallRowIntakeHeading),
                         Math.toRadians(blueFarWallShootHeading),
-                .5)
+                        .5)
                 .setBrakingStrength(0.035)
                 .addParametricCallback(0.40, () -> {
                     robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
@@ -149,7 +170,7 @@ public class BlueFarFromGoalConstants {
                 .setLinearHeadingInterpolation(
                         Math.toRadians(blueFarWallShootHeading),
                         Math.toRadians(blueLoadingZoneIntakeHeading),
-                0.5)
+                        0.5)
                 .addParametricCallback(0.20, () -> {
                     robot.shotController.setState(ShotCycleState.INTAKE);
                 })
@@ -201,5 +222,43 @@ public class BlueFarFromGoalConstants {
                         Math.toRadians(90.0),
                         0.5)
                 .build();
+
+        // Gate paths
+
+
+        blueOpenGate = follower
+                .pathBuilder()
+                .addPath(
+                        new BezierCurve(
+                                blueFarWallMidIntake,
+                                blueGateOpenCP,
+                                blueGateOpen
+                        )
+                )
+                .setLinearHeadingInterpolation(
+                        Math.toRadians(blueFarWallRowIntakeHeading),
+                        Math.toRadians(blueGateOpenHeading),
+                        0.5)
+                .build();
+
+
+        blueNearShootToIntakeFar = follower
+                .pathBuilder()
+                .addPath(
+                        new BezierLine(
+                                new Pose(54,84),
+                                blueFarWallFarIntake
+                        )
+                )
+                .setLinearHeadingInterpolation(
+                        Math.toRadians(132.0),
+                        Math.toRadians(blueFarWallRowIntakeHeading),
+                        0.5)
+                .addParametricCallback(0.20, () -> {
+                    robot.shotController.setState(ShotCycleState.INTAKE);
+                })
+                .build();
+
+
     }
 }

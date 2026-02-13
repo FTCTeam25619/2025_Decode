@@ -44,6 +44,11 @@ public class BlueAuto12ScoreNear extends CommandOpMode {
         });
     }
 
+    private InstantCommand setupNearMidPresetShot() {
+        return new InstantCommand(() -> {
+            robot.shotController.setupPresetShot(PresetShot.NearZoneMid);
+        });
+    }
     private InstantCommand intake() {
         return new InstantCommand(() -> {
             robot.shotController.setState(ShotCycleState.INTAKE);
@@ -121,6 +126,7 @@ public class BlueAuto12ScoreNear extends CommandOpMode {
                                  **/
 
                                 // Prepare shot before starting - Begin shooting after 95% of path complete
+                                setupNearMidPresetShot(),
                                 new FollowPathCommand(follower, paths.blueWallToNearZonePrescore).beforeStarting(prepareShot()),
                                 new WaitCommand(TimingConstants.waitForShootingNearMS).andThen(idleState()),
 
@@ -158,15 +164,13 @@ public class BlueAuto12ScoreNear extends CommandOpMode {
 
                                 // Score -- preparing shot after 30% of path complete. Begin shooting after 90% of path complete
                                 new FollowPathCommand(follower, paths.blueNearWallIntakeToNearScore),
-                                new WaitCommand(TimingConstants.waitForShootingNearMS).andThen(idleState()),
+                                new WaitCommand(TimingConstants.waitForShootingNearMS).andThen(intake()),
 
                                 /**
-                                 FIFTH CYCLE - intake randoms by gate
+                                 FIFTH CYCLE - sweep and intake randoms along secret tunnel to loading station
                                  **/
-                                new FollowPathCommand(follower, paths.blueNearShootToIntakeFromGate),
-                                new WaitCommand(TimingConstants.waitForIntakeByGateMS),
-                                // Park
-                                // new FollowPathCommand(follower, paths.blueNearWallToPark, false),
+                                new FollowPathCommand(follower, paths.blueNearShootToSweep, false),
+                                new FollowPathCommand(follower, paths.blueSweepToPark),
                                 spinDown()
                         )
                 )

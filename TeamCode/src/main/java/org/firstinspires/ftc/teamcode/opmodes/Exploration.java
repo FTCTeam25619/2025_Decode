@@ -246,19 +246,6 @@ public class Exploration extends CommandOpMode {
             // The drivetrain will handle converting from field to robot coordinates
             driveVector.rotateVector(headingOffset);
 
-            // DEBUG: Log vectors
-            if (Constants.DebugModes.Telemetry.DEBUG_AUTO_AIM) {
-                telemetry.addLine("═══ FIELD-CENTRIC (FIXED) ═══");
-                telemetry.addData("Alliance", alliance.name());
-                telemetry.addData("Joystick", "Fwd: %.3f, Strafe: %.3f", driveAxes[0], driveAxes[1]);
-                telemetry.addData("Current Heading", "%.1f°", Math.toDegrees(currentPose.getHeading()));
-                telemetry.addData("Heading Offset", "%.1f°", Math.toDegrees(headingOffset));
-                telemetry.addData("Drive Vector", "X: %.3f, Y: %.3f, Theta: %.1f°, Mag: %.3f",
-                        driveVector.getXComponent(),
-                        driveVector.getYComponent(),
-                        Math.toDegrees(driveVector.getTheta()),
-                        driveVector.getMagnitude());
-            }
 
             // Get Pedro's heading correction
             Vector headingVector = robot.pedroFollower.getHeadingVector();
