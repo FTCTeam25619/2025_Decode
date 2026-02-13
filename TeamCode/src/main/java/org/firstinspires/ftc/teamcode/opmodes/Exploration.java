@@ -324,16 +324,7 @@ public class Exploration extends CommandOpMode {
     private double calculateAutoAimTargetHeading() {
         Pose currentPose = robot.pedroFollower.getPose();
 
-       /*
-        // Priority 1: Use Limelight if seeing target
-        if (robot.vision.isSeeingTarget()) {
-            double angleErrorDeg = robot.vision.angleToTarget();
-            double angleErrorRad = Math.toRadians(angleErrorDeg);
-            return currentPose.getHeading() + angleErrorRad;
-        }
-        */
-
-        // Priority 2: Use odometry if vision pose estimate is enabled
+       // Use odometry if vision pose estimate is enabled
         if (DriveConstants.PoseEstimator.useVisionPoseEstimate) {
             Pose targetPose = robot.vision.getTargetTagPose();
             double dx = targetPose.getX() - currentPose.getX();

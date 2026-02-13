@@ -4,17 +4,17 @@ import com.bylazar.configurables.annotations.Configurable;
 
 @Configurable
 public class ShooterConstants {
-    public static final double flywheelRPMTolerance = 100.00;
-    public static final double minFlywheelRPM = 0.0;
-    public static final double maxFlywheelRPM = 8000.0;
-    public static final double gearRatio = 1.0;
+    public static double flywheelRPMTolerance = 160.0;
+    public static double minFlywheelRPM = 0.0;
+    public static double maxFlywheelRPM = 8000.0;
+    public static double gearRatio = 1.0;
 
     @Configurable
     public static class VelocityPID {
-        public static final double kP = 600.0;
-        public static final double kI = 0.0;
-        public static final double kD = 5.0;
-        public static final double kF = 21.0;
+        public static double kP = 630.0;
+        public static double kI = 0.0;
+        public static double kD = 5.0;
+        public static double kF = 21.0;
     }
 
     @Configurable
@@ -23,7 +23,7 @@ public class ShooterConstants {
         public static double atGoalShot = 1850.0;
         public static double nearZoneMidShot = 2225.0;
         public static double nearZoneEndShot = 2400.0;
-        public static double farWallShot = 3000.0;
+        public static double farWallShot = 2960.0;
     }
 }
 

@@ -122,7 +122,6 @@ public class BlueAuto12ScoreNear extends CommandOpMode {
 
                                 // Prepare shot before starting - Begin shooting after 95% of path complete
                                 new FollowPathCommand(follower, paths.blueWallToNearZonePrescore).beforeStarting(prepareShot()),
-
                                 new WaitCommand(TimingConstants.waitForShootingNearMS).andThen(idleState()),
 
 

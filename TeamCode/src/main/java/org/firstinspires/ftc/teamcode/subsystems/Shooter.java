@@ -78,15 +78,16 @@ public class Shooter extends SubsystemBase {
                 break;
         }
 
-
-        this.telemetry.addData("Shooter: Target RPM", this.flywheelTargetRPM);
-        this.telemetry.addData("Shooter: At Speed", this.atRPM());
+        this.telemetry.addData("Shooter At Speed", this.atRPM());
+        this.telemetry.addData("Shooter Target RPM", this.flywheelTargetRPM);
+        this.telemetry.addData("Shooter Actual RPM", this.getFlywheelRPM());
         if (Constants.DebugModes.Telemetry.DEBUG_SHOOTER) {
-            this.telemetry.addData("Shooter: State", this.subsystemState.toString());
-            this.telemetry.addData("Shooter: Power", this.motorPower);
-            this.telemetry.addData("Shooter: Motor RPM", this.getFlywheelRPM());
-            this.telemetry.addData("Shooter: L Motor Power", this.motorLeft.motorEx.getPower());
-            this.telemetry.addData("Shooter: R Motor Power", this.motorRight.motorEx.getPower());
+            this.telemetry.addData("Shooter RPM Thr Above", this.flywheelTargetRPM + ShooterConstants.flywheelRPMTolerance);
+            this.telemetry.addData("Shooter RPM Thr Below", this.flywheelTargetRPM - ShooterConstants.flywheelRPMTolerance);
+            this.telemetry.addData("Shooter State", this.subsystemState.toString());
+            this.telemetry.addData("Shooter Power", this.motorPower);
+            this.telemetry.addData("Shooter L Motor Power", this.motorLeft.motorEx.getPower());
+            this.telemetry.addData("Shooter R Motor Power", this.motorRight.motorEx.getPower());
         }
     }
 

@@ -131,7 +131,8 @@ public class BlueAuto12ScoreFar extends CommandOpMode {
 
                                 // Score preload
                                 // Prepare shot before starting
-                                new FollowPathCommand(follower, paths.blueWallToFarZonePrescore, 0.8).beforeStarting(prepareShot()),
+                                setupFarWallPresetShot(),
+                                new FollowPathCommand(follower, paths.blueWallToFarZonePrescore, 0.5).beforeStarting(prepareShot()),
                                 new ParallelRaceGroup(
                                         new WaitCommand(TimingConstants.waitBeforeShootingMS), // 0.700 second timeout
                                         new WaitUntilCommand(() -> robot.shotController.readyToShoot()) // wait until shooter is ready
