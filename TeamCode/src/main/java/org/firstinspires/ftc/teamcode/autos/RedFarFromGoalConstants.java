@@ -16,15 +16,15 @@ public class RedFarFromGoalConstants {
     public Pose redFarWallToShootCP = new Pose(87.735, 12.397);
     public Pose redFarWallShoot = new Pose(87.258, 14.543);
     public Pose redFarWallShootToFarIntakeCP = new Pose(78.914, 36.454);
-    public Pose redFarWallFarIntake = new Pose(128.5, 36.454);
+    public Pose redFarWallFarIntake = new Pose(130.25, 36.454);
     public Pose redFarWallShootToMidIntakeCP = new Pose(78.676, 72.238);
-    public Pose redFarWallMidIntake = new Pose(128.5, 55.192);
+    public Pose redFarWallMidIntake = new Pose(130.25, 55.192);
     public Pose redFarWallIntakeLoadingStationCP = new Pose(93, 25);
-    public Pose redFarWallIntakeLoadingStation = new Pose(132.0, 8.00);
+    public Pose redFarWallIntakeLoadingStation = new Pose(132.5, 7.75);
     public Pose redFarWallParkPose = new Pose(114.00, 46.00);
     public double redFarWallStartHeading = 90.0;
-    public double redFarWallFirstShotHeading = 67.0;
-    public double redFarWallShootHeading = 67.0;
+    public double redFarWallFirstShotHeading = 66.5;
+    public double redFarWallShootHeading = 66.75;
     public double redFarWallRowIntakeHeading = 180.0;
     public double redFarWallMidIntakeHeading = 180.0;
     public double redLoadingZoneIntakeHeading = 180.0;
@@ -61,6 +61,7 @@ public class RedFarFromGoalConstants {
                         Math.toRadians(redFarWallStartHeading),
                         Math.toRadians(redFarWallFirstShotHeading),
                         0.5)
+                .setBrakingStrength(0.025)
                 .build();
 
         redFarZonePrescoreToFarIntake = follower
@@ -94,12 +95,9 @@ public class RedFarFromGoalConstants {
                         Math.toRadians(redFarWallRowIntakeHeading),
                         Math.toRadians(redFarWallShootHeading),
                         .5)
+                .setBrakingStrength(0.035)
                 .addParametricCallback(0.50, () -> {
-                    robot.shotController.autoTargetShot();
                     robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
-                })
-                .addParametricCallback(0.85, () -> {
-                    robot.shotController.setState(ShotCycleState.SHOOTING);
                 })
                 .build();
 
@@ -133,12 +131,9 @@ public class RedFarFromGoalConstants {
                         Math.toRadians(redFarWallRowIntakeHeading),
                         Math.toRadians(redFarWallShootHeading),
                         .5)
-                .addParametricCallback(0.50, () -> {
-                    robot.shotController.autoTargetShot();
+                .setBrakingStrength(0.035)
+                .addParametricCallback(0.40, () -> {
                     robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
-                })
-                .addParametricCallback(0.90, () -> {
-                    robot.shotController.setState(ShotCycleState.SHOOTING);
                 })
                 .build();
 
@@ -173,12 +168,9 @@ public class RedFarFromGoalConstants {
                         Math.toRadians(redLoadingZoneIntakeHeading),
                         Math.toRadians(redFarWallShootHeading),
                         0.5)
-                .addParametricCallback(0.50, () -> {
-                    robot.shotController.autoTargetShot();
+                .setBrakingStrength(0.035)
+                .addParametricCallback(0.30, () -> {
                     robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
-                })
-                .addParametricCallback(0.85, () -> {
-                    robot.shotController.setState(ShotCycleState.SHOOTING);
                 })
                 .build();
 

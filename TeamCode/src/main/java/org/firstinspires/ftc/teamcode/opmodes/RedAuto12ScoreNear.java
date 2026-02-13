@@ -122,7 +122,6 @@ public class RedAuto12ScoreNear extends CommandOpMode {
 
                                 // Prepare shot before starting - Begin shooting after 95% of path complete
                                 new FollowPathCommand(follower, paths.redWallToNearZonePrescore).beforeStarting(prepareShot()),
-
                                 new WaitCommand(TimingConstants.waitForShootingNearMS).andThen(idleState()),
 
 
@@ -172,6 +171,8 @@ public class RedAuto12ScoreNear extends CommandOpMode {
                         )
                 )
         );
+
+//        readyToShootPreload().whenActive(shoot());
 
         telemetry.addData("Robot Status", "Initialized Auto 9 Ball Near " + alliance.name());
         telemetry.update();
