@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.constants;
 
+
+
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.geometry.Pose;
 
@@ -17,11 +19,23 @@ public class VisionConstants {
         public static double locationYawDeg = 0.0;
     }
 
-    public static double headingAngleThresholdDeg = 1.0;
+
+
+    public static double headingAngleThresholdDeg = 1.5;
+
+
+    @Configurable
+    public static class targetOffsets{
+        // Tunable offsets for aiming adjustments
+        public static double blueGoalXOffset = 0.0;      // inches
+        public static double blueGoalYOffset = 0.0;      // inches
+        public static double redGoalXOffset = 0.0;       // inches
+        public static double redGoalYOffset = 0.0;       // inches
+    }
 
     public enum AprilTags {
-        BlueGoal(20, new Pose(126.316, 129.047, 0.0)),
-        RedGoal(24, new Pose(15.032, 129.047, 0.0)),
+        BlueGoal(20, new Pose(15.032, 129.047, 0.0)),
+        RedGoal(24, new Pose(126.316, 129.047, 0.0)),
         PatternGPP(21, new Pose(0.0, 0.0, 0.0)),
         PatternPGP(22, new Pose(0.0, 0.0, 0.0)),
         PatternPPG(23, new Pose(0.0, 0.0, 0.0));

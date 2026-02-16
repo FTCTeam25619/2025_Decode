@@ -80,9 +80,33 @@ public class Vision extends SubsystemBase {
     }
 
     public Pose getTargetTagPose() {
-        return targetTag.pose;
-    }
+        Pose basePose = targetTag.pose;
 
+        // Apply tunable offsets based on which tag
+        double xOffset = 0.0;
+        double yOffset = 0.0;
+
+        switch (targetTag) {
+            case BlueGoal:
+                xOffset = VisionConstants.targetOffsets.blueGoalXOffset;
+                yOffset = VisionConstants.targetOffsets.blueGoalYOffset;
+                break;
+            case RedGoal:
+                xOffset = VisionConstants.targetOffsets.redGoalXOffset;
+                yOffset = VisionConstants.targetOffsets.redGoalYOffset;
+                break;
+            default:
+
+                break;
+        }
+
+        return new Pose(
+                basePose.getX() + xOffset,
+                basePose.getY() + yOffset,
+                basePose.getHeading(),
+                basePose.getCoordinateSystem()
+        );
+    }
     public boolean isSeeingTarget() {
         return seeingTarget;
     }

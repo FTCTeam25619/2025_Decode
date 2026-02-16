@@ -21,6 +21,7 @@ import org.firstinspires.ftc.teamcode.autos.BlueNearGoalConstants;
 import org.firstinspires.ftc.teamcode.autos.TimingConstants;
 import org.firstinspires.ftc.teamcode.constants.Alliance;
 import org.firstinspires.ftc.teamcode.constants.Constants;
+import org.firstinspires.ftc.teamcode.constants.VisionConstants;
 import org.firstinspires.ftc.teamcode.lib.orchestration.PresetShot;
 import org.firstinspires.ftc.teamcode.lib.orchestration.ShotCycleState;
 import org.firstinspires.ftc.teamcode.lib.triggers.SupplierTrigger;
@@ -91,6 +92,12 @@ public class BlueAuto9ScoreNear extends CommandOpMode {
         this.robotTriggers = new RobotTriggers(robot);
         this.robotTriggers.setupNonControllerTriggers();
 
+        robot.vision.setTargetingTag(
+                alliance == Alliance.BLUE ?
+                        VisionConstants.AprilTags.BlueGoal :
+                        VisionConstants.AprilTags.RedGoal
+        );
+
         this.follower = robot.pedroFollower;
         this.paths = new BlueNearGoalConstants(follower);
 
@@ -104,34 +111,34 @@ public class BlueAuto9ScoreNear extends CommandOpMode {
                         new RunCommand(follower::update),
                         new SequentialCommandGroup(
                                 // Score preload
-                                setupNearWallPresetShot(),
                                 prepareShot(),
-                                new FollowPathCommand(follower, paths.blueWallToNearZonePrescore),
+                                new FollowPathCommand(follower, paths.blueWallToNearZonePrescore).setGlobalMaxPower(0.8),
                                 new WaitCommand(TimingConstants.waitBeforeShootingMS),
                                 shoot(),
                                 new WaitCommand(TimingConstants.waitForShootingMS),
+
                                 // Intake 3 from row closest to far wall from goal
                                 intake(),
                                 new FollowPathCommand(follower, paths.blueNearZonePrescoreToNearIntake),
-                                new WaitCommand(TimingConstants.waitForIntakeMS),
+
                                 // Score 3
-                                setupNearWallPresetShot(),
                                 prepareShot(),
                                 new FollowPathCommand(follower, paths.blueNearWallIntakeToNearScore),
                                 new WaitCommand(TimingConstants.waitBeforeShootingMS),
                                 shoot(),
                                 new WaitCommand(TimingConstants.waitForShootingMS),
+
                                 // Intake 3 from from mid row
                                 intake(),
                                 new FollowPathCommand(follower, paths.blueNearZoneScoreToMidIntake),
-                                new WaitCommand(TimingConstants.waitForIntakeMS),
+
                                 // Score 3
-                                setupNearWallPresetShot(),
                                 prepareShot(),
                                 new FollowPathCommand(follower, paths.blueMidWallIntakeToNearScore),
                                 new WaitCommand(TimingConstants.waitBeforeShootingMS),
                                 shoot(),
                                 new WaitCommand(TimingConstants.waitForShootingMS),
+
                                 // Park
                                 new FollowPathCommand(follower, paths.blueNearWallToPark, false),
                                 spinDown()
