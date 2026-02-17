@@ -49,8 +49,8 @@ public class PedroConstants {
             .lateralZeroPowerAcceleration(-66.285)
             //Translational
             .useSecondaryTranslationalPIDF(true)
-            .translationalPIDFCoefficients(new PIDFCoefficients(0.12, 0.0, 0.01, 0.028))
-            .secondaryTranslationalPIDFCoefficients(new PIDFCoefficients(0.18, 0.0, 0.01, 0.035))
+            .translationalPIDFCoefficients(new PIDFCoefficients(.3, 0.0, .03, .02))
+            .secondaryTranslationalPIDFCoefficients(new PIDFCoefficients(.1, 0.0, .015, .015))
             //Heading
             .useSecondaryHeadingPIDF(true)
             .headingPIDFCoefficients(new PIDFCoefficients(.45, 0.0, 0.05, 0.025))

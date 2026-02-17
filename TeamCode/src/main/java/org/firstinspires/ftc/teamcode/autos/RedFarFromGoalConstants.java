@@ -12,6 +12,7 @@ import org.firstinspires.ftc.teamcode.lib.orchestration.ShotCycleState;
 
 @Configurable
 public class RedFarFromGoalConstants {
+    // Shared poses (used by both regular and gate paths)
     public Pose redFarWallStart = new Pose(88.000, 8.000);
     public Pose redFarWallToShootCP = new Pose(87.735, 12.397);
     public Pose redFarWallShoot = new Pose(87.258, 14.543);
@@ -22,12 +23,23 @@ public class RedFarFromGoalConstants {
     public Pose redFarWallIntakeLoadingStationCP = new Pose(93, 25);
     public Pose redFarWallIntakeLoadingStation = new Pose(132.5, 7.75);
     public Pose redFarWallParkPose = new Pose(114.00, 46.00);
+
+    // Gate-specific poses
+
+    public Pose redGateOpenCP = new Pose(120.679, 62.764);
+    public Pose redGateOpen = new Pose(127.5, 65.000);
+    public Pose redWallIntakeGate = new Pose(129.0, 58.0);
+    // Shared headings
     public double redFarWallStartHeading = 90.0;
     public double redFarWallFirstShotHeading = 66.5;
     public double redFarWallShootHeading = 66.75;
     public double redFarWallRowIntakeHeading = 180.0;
     public double redFarWallMidIntakeHeading = 180.0;
     public double redLoadingZoneIntakeHeading = 180.0;
+
+    // Gate-specific headings
+    public double redGateOpenHeading = 90.0;
+    public double redGateParkHeading = 90.0;
 
     public PathChain redWallToFarZonePrescore;
     public PathChain redFarZonePrescoreToFarIntake;
@@ -39,6 +51,15 @@ public class RedFarFromGoalConstants {
 
     public PathChain redFarScoreToPark;
     public PathChain redLoadingStationToPark;
+
+    public PathChain redNearShootToIntakeFar;
+
+    // Gate paths
+
+    public PathChain redOpenGate;
+    public PathChain redParkGate;
+
+
 
     public NovaPyraRobot robot;
 
@@ -201,5 +222,43 @@ public class RedFarFromGoalConstants {
                         Math.toRadians(90.0),
                         0.5)
                 .build();
+
+        // Gate paths
+
+
+        redOpenGate = follower
+                .pathBuilder()
+                .addPath(
+                        new BezierCurve(
+                                redFarWallMidIntake,
+                                redGateOpenCP,
+                                redGateOpen
+                        )
+                )
+                .setLinearHeadingInterpolation(
+                        Math.toRadians(redFarWallRowIntakeHeading),
+                        Math.toRadians(redGateOpenHeading),
+                        0.5)
+                .build();
+
+
+        redNearShootToIntakeFar = follower
+                .pathBuilder()
+                .addPath(
+                        new BezierLine(
+                                new Pose(90, 84),
+                                redFarWallFarIntake
+                        )
+                )
+                .setLinearHeadingInterpolation(
+                        Math.toRadians(48.0),
+                        Math.toRadians(redFarWallRowIntakeHeading),
+                        0.5)
+                .addParametricCallback(0.20, () -> {
+                    robot.shotController.setState(ShotCycleState.INTAKE);
+                })
+                .build();
+
+
     }
 }

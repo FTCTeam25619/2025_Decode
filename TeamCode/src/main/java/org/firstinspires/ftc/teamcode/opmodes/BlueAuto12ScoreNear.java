@@ -159,10 +159,10 @@ public class BlueAuto12ScoreNear extends CommandOpMode {
                                 FOURTH CYCLE - row NEAR goal
                                  **/
 
-                                // Intake from row closest to goal -- intake starts after 25% of path complete
+                                // Intake from row closest to goal -- intake starts after 10% of path complete
                                 new FollowPathCommand(follower, paths.blueNearZoneToNearIntake, false),
 
-                                // Score -- preparing shot after 30% of path complete. Begin shooting after 90% of path complete
+                                // Score -- preparing shot after 30% of path complete. Begin shooting after 95% of path complete
                                 new FollowPathCommand(follower, paths.blueNearWallIntakeToNearScore),
                                 new WaitCommand(TimingConstants.waitForShootingNearMS).andThen(intake()),
 
@@ -176,7 +176,6 @@ public class BlueAuto12ScoreNear extends CommandOpMode {
                 )
         );
 
-//        readyToShootPreload().whenActive(shoot());
 
         telemetry.addData("Robot Status", "Initialized Auto 9 Ball Near " + alliance.name());
         telemetry.update();

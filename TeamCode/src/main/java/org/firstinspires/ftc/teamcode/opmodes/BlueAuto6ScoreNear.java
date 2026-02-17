@@ -74,6 +74,11 @@ public class BlueAuto6ScoreNear extends CommandOpMode {
         });
     }
 
+    private InstantCommand setupNearMidPresetShot() {
+        return new InstantCommand(() -> {
+            robot.shotController.setupPresetShot(PresetShot.NearZoneMid);
+        });
+    }
     private Trigger readyToShootPreload() {
         return new SupplierTrigger(() -> (!follower.isBusy()) && robot.shotController.readyToShoot());
     }
@@ -121,32 +126,31 @@ public class BlueAuto6ScoreNear extends CommandOpMode {
                                  **/
 
                                 // Prepare shot before starting - Begin shooting after 95% of path complete
+                                setupNearMidPresetShot(),
                                 new FollowPathCommand(follower, paths.blueWallToNearZonePrescore).beforeStarting(prepareShot()),
-
                                 new WaitCommand(TimingConstants.waitForShootingNearMS).andThen(idleState()),
 
 
                                 /**
-                                 SECOND CYCLE - NEAR row
+                                 SECOND CYCLE - row NEAR goal
                                  **/
 
-                                // Intake from row closest to goal -- intake starts after 25% of path complete
+                                // Intake from row closest to goal -- intake starts after 10% of path complete
                                 new FollowPathCommand(follower, paths.blueNearZoneToNearIntake, false),
 
-                                // Score -- preparing shot after 30% of path complete. Begin shooting after 90% of path complete
+                                // Score -- preparing shot after 30% of path complete. Begin shooting after 95% of path complete
                                 new FollowPathCommand(follower, paths.blueNearWallIntakeToNearScore),
-                                new WaitCommand(TimingConstants.waitForShootingNearMS).andThen(spinDown()),
+                                new WaitCommand(TimingConstants.waitForShootingNearMS).andThen(intake()),
 
                                 /**
                                  PARK
                                  **/
-                                // Park
-                                new FollowPathCommand(follower, paths.blueNearWallToPark, false)
+                                new FollowPathCommand(follower, paths.blueNearWallToPark, false),
+                                spinDown()
                         )
                 )
         );
 
-//        readyToShootPreload().whenActive(shoot());
 
         telemetry.addData("Robot Status", "Initialized Auto 9 Ball Near " + alliance.name());
         telemetry.update();

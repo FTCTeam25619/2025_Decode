@@ -128,7 +128,8 @@ public class RedAuto12ScoreFar_LS extends CommandOpMode {
 
                                 // Score preload
                                 // Prepare shot before starting
-                                new FollowPathCommand(follower, paths.redWallToFarZonePrescore).beforeStarting(prepareShot()),
+                                setupFarWallPresetShot(),
+                                new FollowPathCommand(follower, paths.redWallToFarZonePrescore, 0.5).beforeStarting(prepareShot()),
                                 new ParallelRaceGroup(
                                         new WaitCommand(TimingConstants.waitBeforeShootingMS), // 0.700 second timeout
                                         new WaitUntilCommand(() -> robot.shotController.readyToShoot()) // wait until shooter is ready
@@ -146,7 +147,7 @@ public class RedAuto12ScoreFar_LS extends CommandOpMode {
 
 
                                 // Score -- preparing shot after 50% of path complete. Begin shooting after 85% of path complete
-                                new FollowPathCommand(follower, paths.redFarWallIntakeToFarScore),
+                                new FollowPathCommand(follower, paths.redFarWallIntakeToFarScore).andThen(shoot()),
                                 new WaitCommand(TimingConstants.waitForShootingMS).andThen(idleState()),
 
                                 /**
@@ -155,11 +156,11 @@ public class RedAuto12ScoreFar_LS extends CommandOpMode {
 
                                 // Intake from loading station -- intake starts after 25% of path complete
                                 new FollowPathCommand(follower, paths.redFarWallToIntakeLoadingStation, false),
+                                new WaitCommand(TimingConstants.waitForIntakeLoadingStationMS),
 
-
-                                // Score -- preparing shot after 50% of path complete. Begin shooting after 85% of path complete
-                                new FollowPathCommand(follower, paths.redFarLoadingStationToFarScore),
-                                new WaitCommand(TimingConstants.waitForShootingMS).andThen(idleState()),
+                                // Score -- preparing shot after 30% of path complete. Begin shooting after 90% of path complete
+                                new FollowPathCommand(follower, paths.redFarLoadingStationToFarScore).andThen(shoot()),
+                                new WaitCommand(TimingConstants.waitForShootingMS),
 
                                 /**
                                  FOURTH CYCLE - intake Loading Station
@@ -167,28 +168,18 @@ public class RedAuto12ScoreFar_LS extends CommandOpMode {
 
                                 // Intake from loading station -- intake starts after 25% of path complete
                                 new FollowPathCommand(follower, paths.redFarWallToIntakeLoadingStation, false),
+                                new WaitCommand(TimingConstants.waitForIntakeLoadingStationMS),
 
-                                new ConditionalCommand(
-                                        // Shoot if we have time
-                                        new SequentialCommandGroup(
-                                                // Score -- preparing shot after 50% of path complete. Begin shooting after 85% of path complete
-                                                new FollowPathCommand(follower, paths.redFarLoadingStationToFarScore),
-                                                new WaitCommand(TimingConstants.waitForShootingMS).andThen(spinDown()),
-                                                new FollowPathCommand(follower, paths.redFarScoreToPark, false)
-                                        ),
-                                        // Otherwise just park and spin down
-                                        new SequentialCommandGroup(
-                                                new FollowPathCommand(follower, paths.redLoadingStationToPark, false),
-                                                spinDown()
-                                        ),
-                                        // Condition
-                                        () -> getRuntime() <= 35.0 // TODO Adjust time threshold later
-                                )
+                                // Score -- preparing shot after 30% of path complete. Begin shooting after 90% of path complete
+                                new FollowPathCommand(follower, paths.redFarLoadingStationToFarScore).andThen(shoot()),
+                                new WaitCommand(TimingConstants.waitForShootingMS).andThen(spinDown()),
+                                new FollowPathCommand(follower, paths.redFarScoreToPark, false)
+
                         )
                 )
         );
 
-        telemetry.addData("Robot Status", "Initialized Auto 9 Ball Far " + alliance.name());
+        telemetry.addData("Robot Status", "Initialized Auto 12 Ball Far " + alliance.name());
         telemetry.update();
     }
 

@@ -128,7 +128,8 @@ public class RedAuto6ScoreFar extends CommandOpMode {
 
                                 // Score preload
                                 // Prepare shot before starting
-                                new FollowPathCommand(follower, paths.redWallToFarZonePrescore).beforeStarting(prepareShot()),
+                                setupFarWallPresetShot(),
+                                new FollowPathCommand(follower, paths.redWallToFarZonePrescore, 0.5).beforeStarting(prepareShot()),
                                 new ParallelRaceGroup(
                                         new WaitCommand(TimingConstants.waitBeforeShootingMS), // 0.700 second timeout
                                         new WaitUntilCommand(() -> robot.shotController.readyToShoot()) // wait until shooter is ready
@@ -146,18 +147,18 @@ public class RedAuto6ScoreFar extends CommandOpMode {
 
 
                                 // Score -- preparing shot after 50% of path complete. Begin shooting after 85% of path complete
-                                new FollowPathCommand(follower, paths.redFarWallIntakeToFarScore),
-                                new WaitCommand(TimingConstants.waitForShootingMS).andThen(spinDown()),
+                                new FollowPathCommand(follower, paths.redFarWallIntakeToFarScore).andThen(shoot()),
+                                new WaitCommand(7000).beforeStarting(spinDown()),
 
                                 /**
-                                 PARK
-                                 **/
+                                 * PARK
+                                 */
+
                                 new FollowPathCommand(follower, paths.redFarScoreToPark, false)
 
                         )
                 )
         );
-
         telemetry.addData("Robot Status", "Initialized Auto 9 Ball Far " + alliance.name());
         telemetry.update();
     }
