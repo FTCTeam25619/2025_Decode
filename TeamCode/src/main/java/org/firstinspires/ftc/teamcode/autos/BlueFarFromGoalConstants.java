@@ -16,8 +16,8 @@ public class BlueFarFromGoalConstants {
     public Pose blueFarWallStart = new Pose(56.000, 8.000);
     public Pose blueFarWallToShootCP = new Pose(56.265, 12.397);
     public Pose blueFarWallShoot = new Pose(56.742, 14.543);
-    public Pose blueFarWallShootToFarIntakeCP = new Pose(65.086, 36.454);
-    public Pose blueFarWallFarIntake = new Pose(13.75, 36.454);
+    public Pose blueFarWallShootToFarIntakeCP = new Pose(65.086, 35.0);
+    public Pose blueFarWallFarIntake = new Pose(13.75, 35.0);
     public Pose blueFarWallShootToMidIntakeCP = new Pose(65.324, 72.238);
     public Pose blueFarWallMidIntake = new Pose(13.75, 55.192);
     public Pose blueFarWallIntakeLoadingStationCP = new Pose(51, 25);
@@ -97,7 +97,7 @@ public class BlueFarFromGoalConstants {
                 .setLinearHeadingInterpolation(
                         Math.toRadians(blueFarWallShootHeading),
                         Math.toRadians(blueFarWallRowIntakeHeading),
-                        .5)
+                .3)
                 .addParametricCallback(0.25, () -> {
                     robot.shotController.setState(ShotCycleState.INTAKE);
                 })

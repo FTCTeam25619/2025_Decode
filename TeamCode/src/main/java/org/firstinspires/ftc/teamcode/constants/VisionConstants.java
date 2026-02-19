@@ -35,7 +35,7 @@ public class VisionConstants {
 
     public enum AprilTags {
         BlueGoal(20, new Pose(15.032, 129.047, 0.0)),
-        RedGoal(24, new Pose(126.316, 129.047, 0.0)),
+        RedGoal(24, new Pose(128.968, 129.047, 0.0)),
         PatternGPP(21, new Pose(0.0, 0.0, 0.0)),
         PatternPGP(22, new Pose(0.0, 0.0, 0.0)),
         PatternPPG(23, new Pose(0.0, 0.0, 0.0));

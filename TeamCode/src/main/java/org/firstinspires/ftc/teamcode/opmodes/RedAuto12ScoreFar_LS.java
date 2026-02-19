@@ -158,7 +158,7 @@ public class RedAuto12ScoreFar_LS extends CommandOpMode {
                                 new FollowPathCommand(follower, paths.redFarWallToIntakeLoadingStation, false),
                                 new WaitCommand(TimingConstants.waitForIntakeLoadingStationMS),
 
-                                // Score -- preparing shot after 30% of path complete. Begin shooting after 90% of path complete
+                                // Score -- preparing shot after 30% of path complete. Begin shooting after path complete
                                 new FollowPathCommand(follower, paths.redFarLoadingStationToFarScore).andThen(shoot()),
                                 new WaitCommand(TimingConstants.waitForShootingMS),
 
@@ -170,7 +170,7 @@ public class RedAuto12ScoreFar_LS extends CommandOpMode {
                                 new FollowPathCommand(follower, paths.redFarWallToIntakeLoadingStation, false),
                                 new WaitCommand(TimingConstants.waitForIntakeLoadingStationMS),
 
-                                // Score -- preparing shot after 30% of path complete. Begin shooting after 90% of path complete
+                                // Score -- preparing shot after 30% of path complete. Begin shooting after path complete
                                 new FollowPathCommand(follower, paths.redFarLoadingStationToFarScore).andThen(shoot()),
                                 new WaitCommand(TimingConstants.waitForShootingMS).andThen(spinDown()),
                                 new FollowPathCommand(follower, paths.redFarScoreToPark, false)

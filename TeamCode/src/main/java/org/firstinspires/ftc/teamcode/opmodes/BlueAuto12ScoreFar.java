@@ -149,7 +149,7 @@ public class BlueAuto12ScoreFar extends CommandOpMode {
                                 new FollowPathCommand(follower, paths.blueFarZonePrescoreToFarIntake, false),
 
 
-                                // Score -- preparing shot after 50% of path complete. Begin shooting after 85% of path complete
+                                // Score -- preparing shot after 50% of path complete. Begin shooting after path complete
                                 new FollowPathCommand(follower, paths.blueFarWallIntakeToFarScore).andThen(shoot()),
                                 new WaitCommand(TimingConstants.waitForShootingMS).andThen(idleState()),
 

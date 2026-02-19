@@ -16,8 +16,8 @@ public class RedFarFromGoalConstants {
     public Pose redFarWallStart = new Pose(88.000, 8.000);
     public Pose redFarWallToShootCP = new Pose(87.735, 12.397);
     public Pose redFarWallShoot = new Pose(87.258, 14.543);
-    public Pose redFarWallShootToFarIntakeCP = new Pose(78.914, 36.454);
-    public Pose redFarWallFarIntake = new Pose(130.25, 36.454);
+    public Pose redFarWallShootToFarIntakeCP = new Pose(78.914, 35.0);
+    public Pose redFarWallFarIntake = new Pose(130.25, 35.0);
     public Pose redFarWallShootToMidIntakeCP = new Pose(78.676, 72.238);
     public Pose redFarWallMidIntake = new Pose(130.25, 55.192);
     public Pose redFarWallIntakeLoadingStationCP = new Pose(93, 25);
@@ -32,7 +32,7 @@ public class RedFarFromGoalConstants {
     // Shared headings
     public double redFarWallStartHeading = 90.0;
     public double redFarWallFirstShotHeading = 66.5;
-    public double redFarWallShootHeading = 66.75;
+    public double redFarWallShootHeading = 68.0;
     public double redFarWallRowIntakeHeading = 180.0;
     public double redFarWallMidIntakeHeading = 180.0;
     public double redLoadingZoneIntakeHeading = 180.0;
@@ -97,7 +97,7 @@ public class RedFarFromGoalConstants {
                 .setLinearHeadingInterpolation(
                         Math.toRadians(redFarWallShootHeading),
                         Math.toRadians(redFarWallRowIntakeHeading),
-                        .5)
+                        .3)
                 .addParametricCallback(0.25, () -> {
                     robot.shotController.setState(ShotCycleState.INTAKE);
                 })
