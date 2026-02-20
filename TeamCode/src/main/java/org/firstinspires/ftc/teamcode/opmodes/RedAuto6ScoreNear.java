@@ -88,7 +88,7 @@ public class RedAuto6ScoreNear extends CommandOpMode {
 
         alliance = Alliance.RED;
 
-        telemetry.addData("Robot Status", "Initializing Auto 12 Ball Near " + alliance.name());
+        telemetry.addData("Robot Status", "Initializing Auto 6 Ball Near " + alliance.name());
         telemetry.update();
 
         // Setup Dashboard if setup for shop debugging

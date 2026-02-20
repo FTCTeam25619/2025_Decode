@@ -31,8 +31,8 @@ public class RedFarFromGoalConstants {
     public Pose redWallIntakeGate = new Pose(129.0, 58.0);
     // Shared headings
     public double redFarWallStartHeading = 90.0;
-    public double redFarWallFirstShotHeading = 66.5;
-    public double redFarWallShootHeading = 68.0;
+    public double redFarWallFirstShotHeading = 69.0;
+    public double redFarWallShootHeading = 69.0;
     public double redFarWallRowIntakeHeading = 180.0;
     public double redFarWallMidIntakeHeading = 180.0;
     public double redLoadingZoneIntakeHeading = 180.0;
