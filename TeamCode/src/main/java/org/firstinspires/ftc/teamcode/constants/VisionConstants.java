@@ -27,15 +27,15 @@ public class VisionConstants {
     @Configurable
     public static class targetOffsets{
         // Tunable offsets for aiming adjustments
-        public static double blueGoalXOffset = 0.0;      // inches
-        public static double blueGoalYOffset = 0.0;      // inches
-        public static double redGoalXOffset = 0.0;       // inches
-        public static double redGoalYOffset = 0.0;       // inches
+        public static double blueGoalXOffset = 7.0;      // inches
+        public static double blueGoalYOffset = 142.0;      // inches
+        public static double redGoalXOffset = 137.0;       // inches
+        public static double redGoalYOffset = 142.0;       // inches
     }
 
     public enum AprilTags {
-        BlueGoal(20, new Pose(15.032, 129.047, 0.0)),
-        RedGoal(24, new Pose(128.968, 129.047, 0.0)),
+        BlueGoal(20, new Pose(0, 0, 0.0)),
+        RedGoal(24, new Pose(0, 0, 0.0)),
         PatternGPP(21, new Pose(0.0, 0.0, 0.0)),
         PatternPGP(22, new Pose(0.0, 0.0, 0.0)),
         PatternPPG(23, new Pose(0.0, 0.0, 0.0));
