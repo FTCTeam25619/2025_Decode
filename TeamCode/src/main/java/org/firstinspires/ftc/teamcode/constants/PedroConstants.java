@@ -54,7 +54,7 @@ public class PedroConstants {
             //Heading
             .useSecondaryHeadingPIDF(true)
             .headingPIDFCoefficients(new PIDFCoefficients(.45, 0.0, 0.05, 0.025))
-            .secondaryHeadingPIDFCoefficients(new PIDFCoefficients(.20, 0.0, 0.05, 0.05))
+            .secondaryHeadingPIDFCoefficients(new PIDFCoefficients(.30, 0.5, 0.05, 0.06))
             //Drive
             .useSecondaryDrivePIDF(true)
             .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.50, 0.0, 0.00005, 0.6, 0.015))
