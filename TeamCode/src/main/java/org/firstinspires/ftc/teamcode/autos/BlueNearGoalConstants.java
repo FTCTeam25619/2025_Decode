@@ -5,6 +5,7 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
+import com.pedropathing.paths.HeadingInterpolator;
 import com.pedropathing.paths.PathChain;
 
 import org.firstinspires.ftc.teamcode.NovaPyraRobot;
@@ -47,6 +48,10 @@ public class BlueNearGoalConstants {
     public double blueSweepIntakeHeading = 40.0;
     public double blueNearWallMidRowIntakeHeading = 0.0;
 
+    // Target-Poses
+
+    public double goalTargetX = 7.0;
+    public double goalTargetY = 142.0;
 
     public PathChain blueWallToNearZonePrescore;
     public PathChain blueNearZoneToNearIntake;
@@ -81,10 +86,23 @@ public class BlueNearGoalConstants {
                 .addParametricCallback(.95, () -> {
                     robot.shotController.setState(ShotCycleState.SHOOTING);
                 })
-                .setLinearHeadingInterpolation(
-                        Math.toRadians(blueNearWallStartHeading),
-                        Math.toRadians(blueNearWallShootHeading),
-                        0.7)
+                .setHeadingInterpolation(
+                        HeadingInterpolator.piecewise(
+                                new HeadingInterpolator.PiecewiseNode(
+                                        0.0,
+                                        0.7, // first half: rotate from intake heading toward shoot heading linearly
+                                        HeadingInterpolator.linear(
+                                                Math.toRadians(blueNearWallStartHeading),
+                                                Math.toRadians(blueNearWallShootHeading)
+                                        )
+                                ),
+                                new HeadingInterpolator.PiecewiseNode(
+                                        0.7,
+                                        1.0, // second half: face the actual goal point dynamically
+                                        HeadingInterpolator.facingPoint(goalTargetX, goalTargetY)
+                                )
+                        )
+                )
                 .build();
 
         blueNearZoneToNearIntake = follower
@@ -113,10 +131,23 @@ public class BlueNearGoalConstants {
                                 blueNearWallShoot
                         )
                 )
-                .setLinearHeadingInterpolation(
-                        Math.toRadians(blueNearWallRowIntakeHeading),
-                        Math.toRadians(blueNearWallLastShootHeading),
-                0.7)
+               .setHeadingInterpolation(
+                        HeadingInterpolator.piecewise(
+                                new HeadingInterpolator.PiecewiseNode(
+                                        0.0,
+                                        0.7, // first half: rotate from intake heading toward shoot heading linearly
+                                        HeadingInterpolator.linear(
+                                                Math.toRadians(blueNearWallRowIntakeHeading),
+                                                Math.toRadians(blueNearWallLastShootHeading)
+                                        )
+                                ),
+                                new HeadingInterpolator.PiecewiseNode(
+                                        0.7,
+                                        1.0, // second half: face the actual goal point dynamically
+                                        HeadingInterpolator.facingPoint(goalTargetX, goalTargetY)
+                                )
+                        )
+                )
                 .addParametricCallback(.30, () -> {
                     robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
                 })
@@ -152,10 +183,23 @@ public class BlueNearGoalConstants {
                                 blueNearWallShoot
                         )
                 )
-                .setLinearHeadingInterpolation(
-                        Math.toRadians(blueNearWallRowIntakeHeading),
-                        Math.toRadians(blueNearWallShootHeading),
-                        0.5)
+                .setHeadingInterpolation(
+                        HeadingInterpolator.piecewise(
+                                new HeadingInterpolator.PiecewiseNode(
+                                        0.0,
+                                        0.5, // first half: rotate from intake heading toward shoot heading linearly
+                                        HeadingInterpolator.linear(
+                                                Math.toRadians(blueNearWallRowIntakeHeading),
+                                                Math.toRadians(blueNearWallShootHeading)
+                                        )
+                                ),
+                                new HeadingInterpolator.PiecewiseNode(
+                                        0.5,
+                                        1.0, // second half: face the actual goal point dynamically
+                                        HeadingInterpolator.facingPoint(goalTargetX, goalTargetY)
+                                )
+                        )
+                )
                 .addParametricCallback(0.30, () -> {
                     robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
                 })
@@ -173,10 +217,23 @@ public class BlueNearGoalConstants {
                                 blueNearWallShoot
                         )
                 )
-                .setLinearHeadingInterpolation(
-                        Math.toRadians(blueGateIntakeHeading),
-                        Math.toRadians(blueNearWallShootHeading),
-                        0.5)
+                .setHeadingInterpolation(
+                        HeadingInterpolator.piecewise(
+                                new HeadingInterpolator.PiecewiseNode(
+                                        0.0,
+                                        0.5, // first half: rotate from intake heading toward shoot heading linearly
+                                        HeadingInterpolator.linear(
+                                                Math.toRadians(blueGateIntakeHeading),
+                                                Math.toRadians(blueNearWallShootHeading)
+                                        )
+                                ),
+                                new HeadingInterpolator.PiecewiseNode(
+                                        0.5,
+                                        1.0, // second half: face the actual goal point dynamically
+                                        HeadingInterpolator.facingPoint(goalTargetX, goalTargetY)
+                                )
+                        )
+                )
                 .addParametricCallback(0.30, () -> {
                     robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
                 })
@@ -194,10 +251,23 @@ public class BlueNearGoalConstants {
                                 blueNearWallShootClose
                         )
                 )
-                .setLinearHeadingInterpolation(
-                        Math.toRadians(blueNearWallRowIntakeHeading),
-                        Math.toRadians(blueNearWallShootCloseHeading),
-                        0.2)
+                .setHeadingInterpolation(
+                        HeadingInterpolator.piecewise(
+                                new HeadingInterpolator.PiecewiseNode(
+                                        0.0,
+                                        0.2, // first half: rotate from intake heading toward shoot heading linearly
+                                        HeadingInterpolator.linear(
+                                                Math.toRadians(blueNearWallRowIntakeHeading),
+                                                Math.toRadians(blueNearWallShootCloseHeading)
+                                        )
+                                ),
+                                new HeadingInterpolator.PiecewiseNode(
+                                        0.2,
+                                        1.0, // second half: face the actual goal point dynamically
+                                        HeadingInterpolator.facingPoint(goalTargetX, goalTargetY)
+                                )
+                        )
+                )
                 .addParametricCallback(0.20, () -> {
                     robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
                 })

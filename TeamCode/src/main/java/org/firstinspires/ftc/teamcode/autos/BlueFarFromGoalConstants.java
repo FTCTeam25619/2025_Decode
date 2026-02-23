@@ -5,6 +5,7 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
+import com.pedropathing.paths.HeadingInterpolator;
 import com.pedropathing.paths.PathChain;
 
 import org.firstinspires.ftc.teamcode.NovaPyraRobot;
@@ -23,6 +24,12 @@ public class BlueFarFromGoalConstants {
     public Pose blueFarWallIntakeLoadingStationCP = new Pose(51, 25);
     public Pose blueFarWallIntakeLoadingStation = new Pose(11.5, 7.75);
     public Pose blueFarWallParkPose = new Pose(30.00, 46.00);
+
+
+    // Target-Poses
+
+    public double goalTargetX = 7.0;
+    public double goalTargetY = 142.0;
 
     // Gate-specific poses
 
@@ -68,6 +75,7 @@ public class BlueFarFromGoalConstants {
         buildPaths(follower);
     }
 
+
     private void buildPaths(Follower follower) {
         blueWallToFarZonePrescore = follower
                 .pathBuilder()
@@ -97,11 +105,12 @@ public class BlueFarFromGoalConstants {
                 .setLinearHeadingInterpolation(
                         Math.toRadians(blueFarWallShootHeading),
                         Math.toRadians(blueFarWallRowIntakeHeading),
-                .3)
+                        .3)
                 .addParametricCallback(0.25, () -> {
                     robot.shotController.setState(ShotCycleState.INTAKE);
                 })
                 .build();
+
 
         blueFarWallIntakeToFarScore = follower
                 .pathBuilder()
@@ -110,12 +119,24 @@ public class BlueFarFromGoalConstants {
                                 blueFarWallFarIntake,
                                 blueFarWallShoot
                         )
-
                 )
-                .setLinearHeadingInterpolation(
-                        Math.toRadians(blueFarWallRowIntakeHeading),
-                        Math.toRadians(blueFarWallShootHeading),
-                        .5)
+                .setHeadingInterpolation(
+                        HeadingInterpolator.piecewise(
+                                new HeadingInterpolator.PiecewiseNode(
+                                        0.0,
+                                        0.5, // first half: rotate from intake heading toward shoot heading linearly
+                                        HeadingInterpolator.linear(
+                                                Math.toRadians(blueFarWallRowIntakeHeading),
+                                                Math.toRadians(blueFarWallShootHeading)
+                                        )
+                                ),
+                                new HeadingInterpolator.PiecewiseNode(
+                                        0.5,
+                                        1.0, // second half: face the actual goal point dynamically
+                                        HeadingInterpolator.facingPoint(goalTargetX, goalTargetY)
+                                )
+                        )
+                )
                 .setBrakingStrength(0.035)
                 .addParametricCallback(0.50, () -> {
                     robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
@@ -148,10 +169,23 @@ public class BlueFarFromGoalConstants {
                                 blueFarWallShoot
                         )
                 )
-                .setLinearHeadingInterpolation(
-                        Math.toRadians(blueFarWallRowIntakeHeading),
-                        Math.toRadians(blueFarWallShootHeading),
-                        .5)
+                .setHeadingInterpolation(
+                        HeadingInterpolator.piecewise(
+                                new HeadingInterpolator.PiecewiseNode(
+                                        0.0,
+                                        0.5,// first half: rotate from intake heading toward shoot heading linearly
+                                        HeadingInterpolator.linear(
+                                                Math.toRadians(blueFarWallRowIntakeHeading),
+                                                Math.toRadians(blueFarWallShootHeading)
+                                        )
+                                ),
+                                new HeadingInterpolator.PiecewiseNode(
+                                        0.5,
+                                        1.0,// second half: face the actual goal point dynamically
+                                        HeadingInterpolator.facingPoint(goalTargetX, goalTargetY)
+                                )
+                        )
+                )
                 .setBrakingStrength(0.035)
                 .addParametricCallback(0.40, () -> {
                     robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
@@ -185,10 +219,23 @@ public class BlueFarFromGoalConstants {
                                 blueFarWallShoot
                         )
                 )
-                .setLinearHeadingInterpolation(
-                        Math.toRadians(blueLoadingZoneIntakeHeading),
-                        Math.toRadians(blueFarWallShootHeading),
-                        0.5)
+                .setHeadingInterpolation(
+                        HeadingInterpolator.piecewise(
+                                new HeadingInterpolator.PiecewiseNode(
+                                        0.0,
+                                        0.5,// first half: rotate from intake heading toward shoot heading linearly
+                                        HeadingInterpolator.linear(
+                                                Math.toRadians(blueLoadingZoneIntakeHeading),
+                                                Math.toRadians(blueFarWallShootHeading)
+                                        )
+                                ),
+                                new HeadingInterpolator.PiecewiseNode(
+                                        0.5,
+                                        1.0,// second half: face the actual goal point dynamically
+                                        HeadingInterpolator.facingPoint(goalTargetX, goalTargetY)
+                                )
+                        )
+                )
                 .setBrakingStrength(0.035)
                 .addParametricCallback(0.30, () -> {
                     robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
