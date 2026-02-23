@@ -196,11 +196,12 @@ public class ShotController {
      * - If Limelight sees tag, use LL distance (Vision.distanceToTarget()).
      * - Otherwise, use odometry distance to a known goal point on the field.
      */
-    private double getDistanceToTarget() {
-        if (robot.vision.isSeeingTarget()) {
-            // Limelight reports distance in cm.
-            return robot.vision.distanceToTarget();
-        }
+    public double getDistanceToTarget() {
+        //if (robot.vision.isSeeingTarget()) {
+           // Limelight reports distance in cm.
+         // return robot.vision.distanceToTarget();
+        //}
+
         // Odometry/Pedro fallback (field distance): poses are in inches, so convert to cm
         Pose robotPose  = robot.pedroFollower.getPose();
         Pose targetPose = robot.vision.getTargetTagPose();
@@ -500,18 +501,18 @@ public class ShotController {
         table.add(0, 1850);
 
         // Big Triangle / Close Shots
-        table.add(60, 1950);
-        table.add(81, 2050);
-        table.add(107, 2100);
-        table.add(140, 2200);
-        table.add(170, 2375);
-        table.add(208, 2550);
-        table.add(223, 2550);
+        table.add(97, 1950);
+        table.add(118, 2050);
+        table.add(144, 2100);
+        table.add(177, 2200);
+        table.add(207, 2375);
+        table.add(245, 2550);
+        table.add(260, 2550);
         // Small Triangle / Far Shots
-        table.add(280, 2875);
-        table.add(295, 2900);
-        table.add(315, 3000);
-        table.add(330, 3100);
+        table.add(317, 2875);
+        table.add(332, 2900);
+        table.add(352, 3000);
+        table.add(367, 3100);
 
 
         table.add(600, 3200);
