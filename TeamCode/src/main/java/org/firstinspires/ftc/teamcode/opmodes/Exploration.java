@@ -378,6 +378,7 @@ public class Exploration extends CommandOpMode {
         }
 
         // Auto-aim calculation
+        telemetry.addData("  Odom Distance", "%.1f cm", robot.shotController.getDistanceToTarget());
         telemetry.addData("Target Heading", "%.1f°", Math.toDegrees(targetHeading));
         telemetry.addData("Heading Error", "%.1f°", Math.toDegrees(headingError));
         telemetry.addData("Aligned", isAutoAimAligned() ? "✓ YES" : "✗ NO");
