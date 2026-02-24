@@ -38,8 +38,8 @@ public class BlueFarFromGoalConstants {
     public Pose blueWallIntakeGate = new Pose(15.0, 58.0);
     // Shared headings
     public double blueFarWallStartHeading = 90.0;
-    public double blueFarWallFirstShotHeading = 113.5;
-    public double blueFarWallShootHeading = 113.25;
+    public double blueFarWallFirstShotHeading = 111.0;
+    public double blueFarWallShootHeading = 111.0;
     public double blueFarWallRowIntakeHeading = 0.0;
     public double blueFarWallMidIntakeHeading = 0.0;
     public double blueLoadingZoneIntakeHeading = 0.0;
@@ -86,10 +86,23 @@ public class BlueFarFromGoalConstants {
                                 blueFarWallShoot
                         )
                 )
-                .setLinearHeadingInterpolation(
-                        Math.toRadians(blueFarWallStartHeading),
-                        Math.toRadians(blueFarWallFirstShotHeading),
-                        0.5)
+                .setHeadingInterpolation(
+                        HeadingInterpolator.piecewise(
+                                new HeadingInterpolator.PiecewiseNode(
+                                        0.0,
+                                        0.5, // first half: rotate toward goal
+                                        HeadingInterpolator.linear(
+                                                Math.toRadians(blueFarWallStartHeading),
+                                                Math.toRadians(blueFarWallFirstShotHeading)
+                                        )
+                                ),
+                                new HeadingInterpolator.PiecewiseNode(
+                                        0.5,
+                                        1.0, // second half: face the actual goal point dynamically
+                                        HeadingInterpolator.facingPoint(goalTargetX, goalTargetY)
+                                )
+                        )
+                )
                 .setBrakingStrength(0.025)
                 .build();
 
