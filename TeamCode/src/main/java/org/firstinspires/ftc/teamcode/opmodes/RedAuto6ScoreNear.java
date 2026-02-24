@@ -127,6 +127,7 @@ public class RedAuto6ScoreNear extends CommandOpMode {
                                 // Prepare shot before starting - Begin shooting after 95% of path complete
                                 setupNearMidPresetShot(),
                                 new FollowPathCommand(follower, paths.redWallToNearZonePrescore).beforeStarting(prepareShot()),
+                                shoot(),
                                 new WaitCommand(TimingConstants.waitForShootingNearMS).andThen(idleState()),
 
 

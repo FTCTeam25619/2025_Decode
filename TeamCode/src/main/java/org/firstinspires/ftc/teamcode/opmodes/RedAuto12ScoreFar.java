@@ -91,7 +91,7 @@ public class RedAuto12ScoreFar extends CommandOpMode {
 
         alliance = Alliance.RED;
 
-        telemetry.addData("Robot Status", "Initializing Auto Red 12 Far F-M-LS " + alliance.name());
+        telemetry.addData("Robot Status", "Initializing Auto Red 12 Far" + alliance.name());
         telemetry.update();
 
         // Setup Dashboard if setup for shop debugging

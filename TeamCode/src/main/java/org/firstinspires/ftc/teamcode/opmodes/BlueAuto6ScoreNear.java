@@ -128,6 +128,7 @@ public class BlueAuto6ScoreNear extends CommandOpMode {
                                 // Prepare shot before starting - Begin shooting after 95% of path complete
                                 setupNearMidPresetShot(),
                                 new FollowPathCommand(follower, paths.blueWallToNearZonePrescore).beforeStarting(prepareShot()),
+                                shoot(),
                                 new WaitCommand(TimingConstants.waitForShootingNearMS).andThen(idleState()),
 
 

@@ -27,7 +27,7 @@ import org.firstinspires.ftc.teamcode.lib.triggers.SupplierTrigger;
 import org.firstinspires.ftc.teamcode.lib.util.BlackboardHelpers;
 import org.firstinspires.ftc.teamcode.triggers.RobotTriggers;
 
-@Autonomous(name = "Blue Near 12", group = "Autonomous")
+@Autonomous(name = "Blue Near 12 Sweep", group = "Autonomous")
 @Configurable // Panels
 public class BlueAuto12ScoreNear extends CommandOpMode {
     private NovaPyraRobot robot;
@@ -89,7 +89,7 @@ public class BlueAuto12ScoreNear extends CommandOpMode {
 
         alliance = Alliance.BLUE;
 
-        telemetry.addData("Robot Status", "Initializing Auto 12 Ball Near " + alliance.name());
+        telemetry.addData("Robot Status", "Initializing Auto 12 Ball Near Sweep" + alliance.name());
         telemetry.update();
 
         // Setup Dashboard if setup for shop debugging
@@ -128,6 +128,7 @@ public class BlueAuto12ScoreNear extends CommandOpMode {
                                 // Prepare shot before starting - Begin shooting after 95% of path complete
                                 setupNearMidPresetShot(),
                                 new FollowPathCommand(follower, paths.blueWallToNearZonePrescore).beforeStarting(prepareShot()),
+                                shoot(),
                                 new WaitCommand(TimingConstants.waitForShootingNearMS).andThen(idleState()),
 
 
