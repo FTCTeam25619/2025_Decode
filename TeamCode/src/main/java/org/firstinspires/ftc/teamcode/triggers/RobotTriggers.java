@@ -28,92 +28,36 @@ public class RobotTriggers {
         intakeStalled.whenActive(new InstantCommand(() -> {
             this.robot.indicatorLights.setLightColor(
                     IndicatorLights.Indicators.Light1,
-                    IndicatorLightsConstants.IndicatorColors.BLUE);
+                    IndicatorLightsConstants.IndicatorColors.WHITE);
             this.robot.indicatorLights.setLightColor(
                     IndicatorLights.Indicators.Light2,
-                    IndicatorLightsConstants.IndicatorColors.BLUE);
+                    IndicatorLightsConstants.IndicatorColors.WHITE);
             this.robot.indicatorLights.setLightColor(
                     IndicatorLights.Indicators.Light3,
-                    IndicatorLightsConstants.IndicatorColors.BLUE);
+                    IndicatorLightsConstants.IndicatorColors.WHITE);
         }));
     }
 
     public void setupNonShootingBallPatternDisplayTriggers() {
-        // Light 1 reflects color of ball seen by intake sensor, if any
-        // If intake sensor sees green, Light 1 GREEN
+        //  Light 1 OFF
         robot.shotController.isShootingTrigger().negate()
-                .and(this.robot.sensors.intakeSeesGreen)
-                .whenActive(new InstantCommand(() -> {
-                    this.robot.indicatorLights.setLightColor(
-                            IndicatorLights.Indicators.Light1,
-                            IndicatorLightsConstants.IndicatorColors.GREEN);
-                }));
-        // If intake sensor sees purple, Light 1 PURPLE
-        robot.shotController.isShootingTrigger().negate()
-                .and(this.robot.sensors.intakeSeesPurple)
-                .whenActive(new InstantCommand(() -> {
-                    this.robot.indicatorLights.setLightColor(
-                            IndicatorLights.Indicators.Light1,
-                            IndicatorLightsConstants.IndicatorColors.PURPLE);
-                }));
-        // If intake sensor sees neither, Light 1 OFF
-        robot.shotController.isShootingTrigger().negate()
-                .and(this.robot.sensors.intakeSeesGreen.negate())
-                .and(this.robot.sensors.intakeSeesPurple.negate())
                 .whenActive(new InstantCommand(() -> {
                     this.robot.indicatorLights.setLightColor(
                             IndicatorLights.Indicators.Light1,
                             IndicatorLightsConstants.IndicatorColors.OFF);
                 }));
 
-        // Light 2 reflects color of ball seen by feed low sensor, if any
-        // If feed low sensor sees green, Light 2 GREEN
+        //  Light 2 OFF
         robot.shotController.isShootingTrigger().negate()
-                .and(this.robot.sensors.feedLowSeesGreen)
-                .whenActive(new InstantCommand(() -> {
-                    this.robot.indicatorLights.setLightColor(
-                            IndicatorLights.Indicators.Light2,
-                            IndicatorLightsConstants.IndicatorColors.GREEN);
-                }));
-        // If feed low sensor sees purple, Light 2 PURPLE
-        robot.shotController.isShootingTrigger().negate()
-                .and(this.robot.sensors.feedLowSeesPurple)
-                .whenActive(new InstantCommand(() -> {
-                    this.robot.indicatorLights.setLightColor(
-                            IndicatorLights.Indicators.Light2,
-                            IndicatorLightsConstants.IndicatorColors.PURPLE);
-                }));
-        // If feed low sensor sees neither, Light 2 OFF
-        robot.shotController.isShootingTrigger().negate()
-                .and(this.robot.sensors.feedLowSeesGreen.negate())
-                .and(this.robot.sensors.feedLowSeesPurple.negate())
-                .whenActive(new InstantCommand(() -> {
+               .whenActive(new InstantCommand(() -> {
                     this.robot.indicatorLights.setLightColor(
                             IndicatorLights.Indicators.Light2,
                             IndicatorLightsConstants.IndicatorColors.OFF);
                 }));
 
-        // Light 3 reflects color of ball seen by feed high sensor, if any
-        // If feed high sensor sees green, Light 3 GREEN
+
+        //  Light 3 OFF
         robot.shotController.isShootingTrigger().negate()
-                .and(this.robot.sensors.feedHighSeesGreen)
-                .whenActive(new InstantCommand(() -> {
-                    this.robot.indicatorLights.setLightColor(
-                            IndicatorLights.Indicators.Light3,
-                            IndicatorLightsConstants.IndicatorColors.GREEN);
-                }));
-        // If feed high sensor sees purple, Light 3 PURPLE
-        robot.shotController.isShootingTrigger().negate()
-                .and(this.robot.sensors.feedHighSeesPurple)
-                .whenActive(new InstantCommand(() -> {
-                    this.robot.indicatorLights.setLightColor(
-                            IndicatorLights.Indicators.Light3,
-                            IndicatorLightsConstants.IndicatorColors.PURPLE);
-                }));
-        // If feed high sensor sees neither, Light 3 OFF
-        robot.shotController.isShootingTrigger().negate()
-                .and(this.robot.sensors.feedHighSeesGreen.negate())
-                .and(this.robot.sensors.feedHighSeesPurple.negate())
                 .whenActive(new InstantCommand(() -> {
                     this.robot.indicatorLights.setLightColor(
                             IndicatorLights.Indicators.Light3,
