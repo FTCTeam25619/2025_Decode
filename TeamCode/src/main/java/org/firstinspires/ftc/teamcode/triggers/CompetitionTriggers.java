@@ -75,18 +75,16 @@ public class CompetitionTriggers implements ControllerTriggers {
             robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
         }));
 
+        // Left bumper released: reset only if right trigger isn't active
         c1LeftBumper.whenInactive(new InstantCommand(() -> {
-            // If we were in any shooting-related state, drop back to IDLE
-            if (robot.shotController.isShooting()) {
+            if (!c1RightTrigger.get() && robot.shotController.isShooting()) {
                 robot.shotController.setState(ShotCycleState.IDLE);
             }
         }));
 
-        // RIGHT TRIGGER: SHOOT (only when READY_TO_SHOOT)
+        // RIGHT TRIGGER:
         c1RightTrigger.whenActive(new InstantCommand(() -> {
-           // if (robot.shotController.getState() == ShotCycleState.READY_TO_SHOOT) {
-                robot.shotController.setState(ShotCycleState.SHOOTING);
-           // }
+            robot.shotController.setState(ShotCycleState.SHOOTING);
         }));
 
         c1RightTrigger.whenInactive(new InstantCommand(() -> {
