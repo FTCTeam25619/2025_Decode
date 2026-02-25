@@ -47,7 +47,7 @@ public class FeedStop extends SubsystemBase {
         }
         this.feedStopServo.set(this.positionDegrees);
 
-        this.telemetry.addData("Feed Stop: Position (Deg)", this.positionDegrees);
+        //this.telemetry.addData("Feed Stop: Position (Deg)", this.positionDegrees);
     }
 
     public void engage() {

@@ -49,7 +49,7 @@ public class Lift extends SubsystemBase {
                 LiftConstants.DeviceConfig.liftServoAngleMin,
                 LiftConstants.DeviceConfig.liftServoAngleMax);
 
-        // TODO: Check these inversions
+
         liftServoLeft.setInverted(false);
         liftServoRight.setInverted(false);
 
@@ -72,8 +72,8 @@ public class Lift extends SubsystemBase {
         this.liftServoLeft.set(this.leftPositionDegrees);
         this.liftServoRight.set(this.rightPositionDegrees);
 
-        this.telemetry.addData("Lift: Left Pos (Deg)", this.leftPositionDegrees);
-        this.telemetry.addData("Lift: Right Pos (Deg)", this.rightPositionDegrees);
+        //this.telemetry.addData("Lift: Left Pos (Deg)", this.leftPositionDegrees);
+        //this.telemetry.addData("Lift: Right Pos (Deg)", this.rightPositionDegrees);
     }
 
     public void engage() {

@@ -27,7 +27,7 @@ public class Hood extends SubsystemBase {
     public void periodic() {
         hoodServo.set(currentAngle);
 
-        telemetry.addData("Hood: Angle", currentAngle);
+        //telemetry.addData("Hood: Angle", currentAngle);
     }
 
     public void setAngle(double degrees) {

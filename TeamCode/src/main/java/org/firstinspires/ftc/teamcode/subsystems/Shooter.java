@@ -81,6 +81,7 @@ public class Shooter extends SubsystemBase {
         this.telemetry.addData("Shooter At Speed", this.atRPM());
         this.telemetry.addData("Shooter Target RPM", this.flywheelTargetRPM);
         this.telemetry.addData("Shooter Actual RPM", this.getFlywheelRPM());
+
         if (Constants.DebugModes.Telemetry.DEBUG_SHOOTER) {
             this.telemetry.addData("Shooter RPM Thr Above", this.flywheelTargetRPM + ShooterConstants.flywheelRPMTolerance);
             this.telemetry.addData("Shooter RPM Thr Below", this.flywheelTargetRPM - ShooterConstants.flywheelRPMTolerance);

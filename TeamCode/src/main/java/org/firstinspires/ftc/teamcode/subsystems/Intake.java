@@ -69,11 +69,11 @@ public class Intake extends SubsystemBase {
 
         intakeMotor.set(motorPower);
 
-        telemetry.addData("Intake: Motor Power", motorPower);
-        telemetry.addData("Intake: State", subsystemState.toString());
-        telemetry.addData("Intake: Encoder Position", intakeMotor.getCurrentPosition());
-        telemetry.addData("Intake: Stalled", isStalled);
-        telemetry.addData("Intake: Stall Counter", stallCounter);
+       // telemetry.addData("Intake: Motor Power", motorPower);
+       // telemetry.addData("Intake: State", subsystemState.toString());
+       // telemetry.addData("Intake: Encoder Position", intakeMotor.getCurrentPosition());
+       // telemetry.addData("Intake: Stalled", isStalled);
+       // telemetry.addData("Intake: Stall Counter", stallCounter);
     }
 
     private void checkForStall() {
