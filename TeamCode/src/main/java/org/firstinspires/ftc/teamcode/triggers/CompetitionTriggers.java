@@ -72,7 +72,9 @@ public class CompetitionTriggers implements ControllerTriggers {
 
         // LEFT BUMPER: PREPARE SHOT (aim & spin up while driving)
         c1LeftBumper.whenActive(new InstantCommand(() -> {
-            robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
+            if (!c1RightTrigger.get()){
+                robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
+            }
         }));
 
         // Left bumper released: reset only if right trigger isn't active
