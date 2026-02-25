@@ -7,6 +7,8 @@ import com.seattlesolvers.solverslib.util.InterpLUT;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.NovaPyraRobot;
+import org.firstinspires.ftc.teamcode.constants.Constants;
+import org.firstinspires.ftc.teamcode.constants.Devices;
 import org.firstinspires.ftc.teamcode.constants.HoodConstants;
 import org.firstinspires.ftc.teamcode.constants.ShooterConstants;
 import org.firstinspires.ftc.teamcode.constants.ShooterFeedConstants;
@@ -73,6 +75,8 @@ public class ShotController {
             this.stateTransition = false;
         }
 
+
+        /*
         telemetry.addData("ShotController: Prior State", this.priorState.name());
         telemetry.addData("ShotController: Current State", this.currentState.name());
         telemetry.addData("ShotController: Transitioning?", this.stateTransition);
@@ -80,6 +84,8 @@ public class ShotController {
         telemetry.addData("ShotController: Hood Target", this.getTargetHoodAngle());
         telemetry.addData("ShotController: Feed Power Target", this.getTargetFeedPower());
         telemetry.addData("ShotController: Preset Mode?", this.presetShotMode);
+
+         */
 
         this.priorState = this.currentState;
 
@@ -184,7 +190,6 @@ public class ShotController {
 
         setTargetFlywheelRPM(shooterRPMInterpolator.get(distance));
         setTargetHoodAngle(hoodAngleInterpolator.get(distance));
-        // setTargetFeedPower(feedPowerInterpolator.get(distance));
 
         telemetry.addData("Autoshoot Raw Distance (cm)", rawDistance);
         telemetry.addData("Autoshoot LUT Distance (cm)", distance);
@@ -509,10 +514,11 @@ public class ShotController {
         table.add(245, 2550);
         table.add(260, 2550);
         // Small Triangle / Far Shots
-        table.add(317, 2875);
-        table.add(332, 2900);
-        table.add(352, 3000);
-        table.add(367, 3100);
+        table.add(325, 2860);
+        table.add(338, 2900);
+        table.add(355, 3000);
+        table.add(380, 3100);
+        table.add(392, 3140);
 
 
         table.add(600, 3200);
@@ -526,19 +532,20 @@ public class ShotController {
         table.add(0, 275);
 
         // Big Triangle / Close Shots
-        table.add(60, 110);
-        table.add(81, 50);
-        table.add(107, 20);
-        table.add(140, 10);
-        table.add(170, 10);
-        table.add(208, 10);
-        table.add(223, 10);
+        table.add(97, 110);
+        table.add(118, 50);
+        table.add(144, 20);
+        table.add(177, 10);
+        table.add(207, 10);
+        table.add(245, 10);
+        table.add(260, 10);
 
         // Small Triangle / Far Shots
         table.add(280, 10);
         table.add(295, 10);
         table.add(315, 10);
         table.add(330, 10);
+        table.add(392, 10);
 
         table.add(600, 10);
 
