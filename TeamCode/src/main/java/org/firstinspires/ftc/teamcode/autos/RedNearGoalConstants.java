@@ -20,7 +20,7 @@ public class RedNearGoalConstants {
     public Pose redNearWallShootToNearIntakeCP = new Pose(80.807, 63.615);
     public Pose redNearWallNearIntake = new Pose(126.0, 86.532);
     public Pose redNearWallShootToMidIntakeCP = new Pose(90.0, 53.0);
-    public Pose redNearWallMidIntake = new Pose(129.5, 58.0);
+    public Pose redNearWallMidIntake = new Pose(130.5, 58.0);
     public Pose redNearWallPark = new Pose(89.394, 114.275);
 
     public Pose redParkByGate = new Pose(120.0, 73);
@@ -42,15 +42,15 @@ public class RedNearGoalConstants {
     public double redGateOpenHeading = 210;
     public double redGateIntakeHeading = 220;
     public double redNearWallStartHeading = 90.0;
-    public double redNearWallShootHeading = 48.0;
-    public double redNearWallLastShootHeading = 46.0;
+    public double redNearWallShootHeading = 45.0;
+    public double redNearWallLastShootHeading = 45.0;
     public double redNearWallRowIntakeHeading = 180.0;
     public double redSweepIntakeHeading = 140.0;
     public double redNearWallMidRowIntakeHeading = 180.0;
 
     // Target-Poses
 
-    public double goalTargetX = 137.0;
+    public double goalTargetX = 139.0;
     public double goalTargetY = 142.0;
 
     public PathChain redWallToNearZonePrescore;
@@ -90,14 +90,14 @@ public class RedNearGoalConstants {
                         HeadingInterpolator.piecewise(
                                 new HeadingInterpolator.PiecewiseNode(
                                         0.0,
-                                        0.7, // first half: rotate from intake heading toward shoot heading linearly
+                                        0.5, // first half: rotate from intake heading toward shoot heading linearly
                                         HeadingInterpolator.linear(
                                                 Math.toRadians(redNearWallStartHeading),
                                                 Math.toRadians(redNearWallShootHeading)
                                         )
                                 ),
                                 new HeadingInterpolator.PiecewiseNode(
-                                        0.7,
+                                        0.5,
                                         1.0, // second half: face the actual goal point dynamically
                                         HeadingInterpolator.facingPoint(goalTargetX, goalTargetY)
                                 )
@@ -135,14 +135,14 @@ public class RedNearGoalConstants {
                         HeadingInterpolator.piecewise(
                                 new HeadingInterpolator.PiecewiseNode(
                                         0.0,
-                                        0.7, // first half: rotate from intake heading toward shoot heading linearly
+                                        0.5, // first half: rotate from intake heading toward shoot heading linearly
                                         HeadingInterpolator.linear(
                                                 Math.toRadians(redNearWallRowIntakeHeading),
                                                 Math.toRadians(redNearWallLastShootHeading)
                                         )
                                 ),
                                 new HeadingInterpolator.PiecewiseNode(
-                                        0.7,
+                                        0.5,
                                         1.0, // second half: face the actual goal point dynamically
                                         HeadingInterpolator.facingPoint(goalTargetX, goalTargetY)
                                 )

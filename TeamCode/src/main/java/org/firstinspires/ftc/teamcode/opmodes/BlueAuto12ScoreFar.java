@@ -5,6 +5,7 @@ import com.bylazar.telemetry.JoinedTelemetry;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.pedropathing.follower.Follower;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.ConditionalCommand;
 import com.seattlesolvers.solverslib.command.InstantCommand;
@@ -85,6 +86,18 @@ public class BlueAuto12ScoreFar extends CommandOpMode {
         return new SupplierTrigger(() -> (!follower.isBusy()) && robot.shotController.readyToShoot());
     }
 
+    private Command turnToGoal() {
+        return new SequentialCommandGroup(
+                new InstantCommand(() -> {
+                    double dx = paths.goalTargetX - follower.getPose().getX();
+                    double dy = paths.goalTargetY - follower.getPose().getY();
+                    follower.turnTo(Math.atan2(dy, dx));
+                }),
+                new WaitUntilCommand(() -> !follower.isBusy()),
+                new RunCommand(() -> {}) // never completes - keeps race alive until WaitCommand wins
+        );
+    }
+
     @Override
     public void initialize() {
         super.reset();
@@ -126,58 +139,55 @@ public class BlueAuto12ScoreFar extends CommandOpMode {
                         new SequentialCommandGroup(
 
                                 /**
-                                FIRST CYCLE - Preload
+                                 FIRST CYCLE - Preload
                                  **/
-
-                                // Score preload
-                                // Prepare shot before starting
                                 setupFarWallPresetShot(),
                                 new FollowPathCommand(follower, paths.blueWallToFarZonePrescore, 0.5).beforeStarting(prepareShot()),
                                 new ParallelRaceGroup(
-                                        new WaitCommand(TimingConstants.waitBeforeShootingMS), // 0.700 second timeout
-                                        new WaitUntilCommand(() -> robot.shotController.readyToShoot()) // wait until shooter is ready
+                                        new WaitCommand(TimingConstants.waitBeforeShootingMS),
+                                        new WaitUntilCommand(() -> robot.shotController.readyToShoot())
                                 ),
                                 shoot(),
                                 new WaitCommand(TimingConstants.waitForShootingMS).andThen(idleState()),
 
-
                                 /**
-                                 SECOND CYCLE  - intake FAR
+                                 SECOND CYCLE - intake FAR
                                  **/
-
-                                // Intake from row closest to far wall from goal -- intake starts after 25% of path complete
                                 new FollowPathCommand(follower, paths.blueFarZonePrescoreToFarIntake, false),
 
-
-                                // Score -- preparing shot after 50% of path complete. Begin shooting after path complete
-                                new FollowPathCommand(follower, paths.blueFarWallIntakeToFarScore).andThen(shoot()),
-                                new WaitCommand(TimingConstants.waitForShootingMS).andThen(idleState()),
+                                new FollowPathCommand(follower, paths.blueFarWallIntakeToFarScore)
+                                        .andThen(shoot()),
+                                new ParallelRaceGroup(
+                                        new WaitCommand(TimingConstants.waitForShootingMS),
+                                        turnToGoal()
+                                ).andThen(idleState()),
 
                                 /**
                                  THIRD CYCLE - intake MID
                                  **/
-
-                                // Intake from from mid row -- intake starts after 50% of path complete
                                 new FollowPathCommand(follower, paths.blueFarZoneScoreToMidIntake, false),
 
-
-                                // Score -- preparing shot after 50% of path complete. Begin shooting after 90% of path complete
-                                new FollowPathCommand(follower, paths.blueMidWallIntakeToFarScore).andThen(shoot()),
-                                new WaitCommand(TimingConstants.waitForShootingMS).andThen(idleState()),
+                                new FollowPathCommand(follower, paths.blueMidWallIntakeToFarScore)
+                                        .andThen(shoot()),
+                                new ParallelRaceGroup(
+                                        new WaitCommand(TimingConstants.waitForShootingMS),
+                                        turnToGoal()
+                                ).andThen(idleState()),
 
                                 /**
                                  FOURTH CYCLE - intake Loading Station
                                  **/
-
-                                // Intake from loading station -- intake starts after 25% of path complete
                                 new FollowPathCommand(follower, paths.blueFarWallToIntakeLoadingStation, false),
                                 new WaitCommand(TimingConstants.waitForIntakeLoadingStationMS),
 
-                                // Score -- preparing shot after 30% of path complete. Begin shooting after 90% of path complete
-                                new FollowPathCommand(follower, paths.blueFarLoadingStationToFarScore).andThen(shoot()),
-                                new WaitCommand(TimingConstants.waitForShootingMS).andThen(spinDown()),
-                                new FollowPathCommand(follower, paths.blueFarScoreToPark, false)
+                                new FollowPathCommand(follower, paths.blueFarLoadingStationToFarScore)
+                                        .andThen(shoot()),
+                                new ParallelRaceGroup(
+                                        new WaitCommand(TimingConstants.waitForShootingMS),
+                                        turnToGoal()
+                                ).andThen(spinDown()),
 
+                                new FollowPathCommand(follower, paths.blueFarScoreToPark, false)
                         )
                 )
         );

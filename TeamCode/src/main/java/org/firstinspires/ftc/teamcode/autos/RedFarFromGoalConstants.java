@@ -9,6 +9,7 @@ import com.pedropathing.paths.HeadingInterpolator;
 import com.pedropathing.paths.PathChain;
 
 import org.firstinspires.ftc.teamcode.NovaPyraRobot;
+import org.firstinspires.ftc.teamcode.constants.VisionConstants;
 import org.firstinspires.ftc.teamcode.lib.orchestration.ShotCycleState;
 
 @Configurable
@@ -18,18 +19,18 @@ public class RedFarFromGoalConstants {
     public Pose redFarWallToShootCP = new Pose(87.735, 12.397);
     public Pose redFarWallShoot = new Pose(87.258, 14.543);
     public Pose redFarWallShootToFarIntakeCP = new Pose(78.914, 35.0);
-    public Pose redFarWallFarIntake = new Pose(130.25, 35.0);
+    public Pose redFarWallFarIntake = new Pose(130.75, 35.0);
     public Pose redFarWallShootToMidIntakeCP = new Pose(78.676, 72.238);
-    public Pose redFarWallMidIntake = new Pose(130.25, 55.192);
+    public Pose redFarWallMidIntake = new Pose(130.75, 55.192);
     public Pose redFarWallIntakeLoadingStationCP = new Pose(93, 25);
-    public Pose redFarWallIntakeLoadingStation = new Pose(132.5, 7.75);
+    public Pose redFarWallIntakeLoadingStation = new Pose(132.5, 8.25);
     public Pose redFarWallParkPose = new Pose(114.00, 46.00);
 
 
     // Target-Poses
 
-    public double goalTargetX = 129.0;
-    public double goalTargetY = 140.5;
+    public double goalTargetX = VisionConstants.targetOffsets.redGoalXOffset;
+    public double goalTargetY = VisionConstants.targetOffsets.redGoalYOffset;
 
     // Gate-specific poses
 
@@ -38,8 +39,8 @@ public class RedFarFromGoalConstants {
     public Pose redWallIntakeGate = new Pose(129.0, 58.0);
     // Shared headings
     public double redFarWallStartHeading = 90.0;
-    public double redFarWallFirstShotHeading = 69.0;
-    public double redFarWallShootHeading = 69.0;
+    public double redFarWallFirstShotHeading = 70.0;
+    public double redFarWallShootHeading = 70.0;
     public double redFarWallRowIntakeHeading = 180.0;
     public double redFarWallMidIntakeHeading = 180.0;
     public double redLoadingZoneIntakeHeading = 180.0;
@@ -87,6 +88,8 @@ public class RedFarFromGoalConstants {
                         )
                 )
                 .setHeadingInterpolation(HeadingInterpolator.facingPoint(goalTargetX, goalTargetY))
+                //.setHeadingConstraint(Math.toRadians(1.49))
+                //.setTimeoutConstraint(1000)
                 .setBrakingStrength(0.025)
                 .build();
 
@@ -118,6 +121,8 @@ public class RedFarFromGoalConstants {
                         )
                 )
                 .setHeadingInterpolation(HeadingInterpolator.facingPoint(goalTargetX, goalTargetY))
+                //.setHeadingConstraint(Math.toRadians(1.49))
+                //.setTimeoutConstraint(1000)
                 .setBrakingStrength(0.035)
                 .addParametricCallback(0.50, () -> {
                     robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
@@ -151,6 +156,8 @@ public class RedFarFromGoalConstants {
                         )
                 )
                 .setHeadingInterpolation(HeadingInterpolator.facingPoint(goalTargetX, goalTargetY))
+                //.setHeadingConstraint(Math.toRadians(1.49))
+                //.setTimeoutConstraint(1000)
                 .setBrakingStrength(0.035)
                 .addParametricCallback(0.40, () -> {
                     robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
@@ -201,6 +208,8 @@ public class RedFarFromGoalConstants {
                                 )
                         )
                 )
+                //.setHeadingConstraint(Math.toRadians(1.49))
+                //.setTimeoutConstraint(1000)
                 .setBrakingStrength(0.035)
                 .addParametricCallback(0.30, () -> {
                     robot.shotController.setState(ShotCycleState.PREPARE_SHOT);

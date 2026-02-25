@@ -20,7 +20,7 @@ public class BlueNearGoalConstants {
     public Pose blueNearWallShootToNearIntakeCP = new Pose(63.193, 63.615);
     public Pose blueNearWallNearIntake = new Pose(18.0, 86.532);
     public Pose blueNearWallShootToMidIntakeCP = new Pose(54.0, 53.0);
-    public Pose blueNearWallMidIntake = new Pose(14.5, 58.0);
+    public Pose blueNearWallMidIntake = new Pose(13.5, 58.0);
     public Pose blueNearWallPark = new Pose(54.606, 114.275);
 
     public Pose blueParkByGate = new Pose (24.0, 73);
@@ -42,15 +42,15 @@ public class BlueNearGoalConstants {
     public double blueGateOpenHeading = 330;
     public double blueGateIntakeHeading = 320;
     public double blueNearWallStartHeading = 90.0;
-    public double blueNearWallShootHeading = 132.0;
-    public double blueNearWallLastShootHeading = 134.0;
+    public double blueNearWallShootHeading = 135.0;
+    public double blueNearWallLastShootHeading = 135.0;
     public double blueNearWallRowIntakeHeading = 0.0;
     public double blueSweepIntakeHeading = 40.0;
     public double blueNearWallMidRowIntakeHeading = 0.0;
 
     // Target-Poses
 
-    public double goalTargetX = 7.0;
+    public double goalTargetX = 3.0;
     public double goalTargetY = 142.0;
 
     public PathChain blueWallToNearZonePrescore;
@@ -90,14 +90,14 @@ public class BlueNearGoalConstants {
                         HeadingInterpolator.piecewise(
                                 new HeadingInterpolator.PiecewiseNode(
                                         0.0,
-                                        0.7, // first half: rotate from intake heading toward shoot heading linearly
+                                        0.5, // first half: rotate from intake heading toward shoot heading linearly
                                         HeadingInterpolator.linear(
                                                 Math.toRadians(blueNearWallStartHeading),
                                                 Math.toRadians(blueNearWallShootHeading)
                                         )
                                 ),
                                 new HeadingInterpolator.PiecewiseNode(
-                                        0.7,
+                                        0.5,
                                         1.0, // second half: face the actual goal point dynamically
                                         HeadingInterpolator.facingPoint(goalTargetX, goalTargetY)
                                 )
@@ -135,14 +135,14 @@ public class BlueNearGoalConstants {
                         HeadingInterpolator.piecewise(
                                 new HeadingInterpolator.PiecewiseNode(
                                         0.0,
-                                        0.7, // first half: rotate from intake heading toward shoot heading linearly
+                                        0.5, // first half: rotate from intake heading toward shoot heading linearly
                                         HeadingInterpolator.linear(
                                                 Math.toRadians(blueNearWallRowIntakeHeading),
                                                 Math.toRadians(blueNearWallLastShootHeading)
                                         )
                                 ),
                                 new HeadingInterpolator.PiecewiseNode(
-                                        0.7,
+                                        0.5,
                                         1.0, // second half: face the actual goal point dynamically
                                         HeadingInterpolator.facingPoint(goalTargetX, goalTargetY)
                                 )
