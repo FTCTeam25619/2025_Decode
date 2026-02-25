@@ -28,8 +28,8 @@ public class RedFarFromGoalConstants {
 
     // Target-Poses
 
-    public double goalTargetX = 137.0;
-    public double goalTargetY = 142.0;
+    public double goalTargetX = 129.0;
+    public double goalTargetY = 140.5;
 
     // Gate-specific poses
 
@@ -86,23 +86,7 @@ public class RedFarFromGoalConstants {
                                 redFarWallShoot
                         )
                 )
-                .setHeadingInterpolation(
-                        HeadingInterpolator.piecewise(
-                                new HeadingInterpolator.PiecewiseNode(
-                                        0.0,
-                                        0.5, // first half: rotate toward goal
-                                        HeadingInterpolator.linear(
-                                                Math.toRadians(redFarWallStartHeading),
-                                                Math.toRadians(redFarWallFirstShotHeading)
-                                        )
-                                ),
-                                new HeadingInterpolator.PiecewiseNode(
-                                        0.5,
-                                        1.0, // second half: face the actual goal point dynamically
-                                        HeadingInterpolator.facingPoint(goalTargetX, goalTargetY)
-                                )
-                        )
-                )
+                .setHeadingInterpolation(HeadingInterpolator.facingPoint(goalTargetX, goalTargetY))
                 .setBrakingStrength(0.025)
                 .build();
 
@@ -133,23 +117,7 @@ public class RedFarFromGoalConstants {
                                 redFarWallShoot
                         )
                 )
-                .setHeadingInterpolation(
-                        HeadingInterpolator.piecewise(
-                                new HeadingInterpolator.PiecewiseNode(
-                                        0.0,
-                                        0.5, // first half: rotate from intake heading toward shoot heading linearly
-                                        HeadingInterpolator.linear(
-                                                Math.toRadians(redFarWallRowIntakeHeading),
-                                                Math.toRadians(redFarWallShootHeading)
-                                        )
-                                ),
-                                new HeadingInterpolator.PiecewiseNode(
-                                        0.5,
-                                        1.0, // second half: face the actual goal point dynamically
-                                        HeadingInterpolator.facingPoint(goalTargetX, goalTargetY)
-                                )
-                        )
-                )
+                .setHeadingInterpolation(HeadingInterpolator.facingPoint(goalTargetX, goalTargetY))
                 .setBrakingStrength(0.035)
                 .addParametricCallback(0.50, () -> {
                     robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
@@ -182,23 +150,7 @@ public class RedFarFromGoalConstants {
                                 redFarWallShoot
                         )
                 )
-                .setHeadingInterpolation(
-                        HeadingInterpolator.piecewise(
-                                new HeadingInterpolator.PiecewiseNode(
-                                        0.0,
-                                        0.5,// first half: rotate from intake heading toward shoot heading linearly
-                                        HeadingInterpolator.linear(
-                                                Math.toRadians(redFarWallRowIntakeHeading),
-                                                Math.toRadians(redFarWallShootHeading)
-                                        )
-                                ),
-                                new HeadingInterpolator.PiecewiseNode(
-                                        0.5,
-                                        1.0,// second half: face the actual goal point dynamically
-                                        HeadingInterpolator.facingPoint(goalTargetX, goalTargetY)
-                                )
-                        )
-                )
+                .setHeadingInterpolation(HeadingInterpolator.facingPoint(goalTargetX, goalTargetY))
                 .setBrakingStrength(0.035)
                 .addParametricCallback(0.40, () -> {
                     robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
@@ -236,14 +188,14 @@ public class RedFarFromGoalConstants {
                         HeadingInterpolator.piecewise(
                                 new HeadingInterpolator.PiecewiseNode(
                                         0.0,
-                                        0.5,// first half: rotate from intake heading toward shoot heading linearly
+                                        0.3,// first half: rotate from intake heading toward shoot heading linearly
                                         HeadingInterpolator.linear(
                                                 Math.toRadians(redLoadingZoneIntakeHeading),
-                                                Math.toRadians(redFarWallShootHeading)
+                                                Math.toRadians(redFarWallStartHeading)
                                         )
                                 ),
                                 new HeadingInterpolator.PiecewiseNode(
-                                        0.5,
+                                        0.3,
                                         1.0,// second half: face the actual goal point dynamically
                                         HeadingInterpolator.facingPoint(goalTargetX, goalTargetY)
                                 )

@@ -28,8 +28,8 @@ public class BlueFarFromGoalConstants {
 
     // Target-Poses
 
-    public double goalTargetX = 7.0;
-    public double goalTargetY = 142.0;
+    public double goalTargetX = 11.0;
+    public double goalTargetY = 140.5;
 
     // Gate-specific poses
 
@@ -236,14 +236,14 @@ public class BlueFarFromGoalConstants {
                         HeadingInterpolator.piecewise(
                                 new HeadingInterpolator.PiecewiseNode(
                                         0.0,
-                                        0.5,// first half: rotate from intake heading toward shoot heading linearly
+                                        0.3,// first half: rotate from intake heading toward shoot heading linearly
                                         HeadingInterpolator.linear(
                                                 Math.toRadians(blueLoadingZoneIntakeHeading),
                                                 Math.toRadians(blueFarWallShootHeading)
                                         )
                                 ),
                                 new HeadingInterpolator.PiecewiseNode(
-                                        0.5,
+                                        0.3,
                                         1.0,// second half: face the actual goal point dynamically
                                         HeadingInterpolator.facingPoint(goalTargetX, goalTargetY)
                                 )
