@@ -23,7 +23,7 @@ public class ShooterConstants {
         public static double atGoalShot = 1850.0;
         public static double nearZoneMidShot = 2275.0;
         public static double nearZoneEndShot = 2400.0;
-        public static double farWallShot = 3050.0;
+        public static double farWallShot = 2960;
     }
 }
 
