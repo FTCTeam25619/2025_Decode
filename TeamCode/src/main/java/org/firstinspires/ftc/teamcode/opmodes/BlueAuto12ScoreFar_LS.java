@@ -5,6 +5,7 @@ import com.bylazar.telemetry.JoinedTelemetry;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.pedropathing.follower.Follower;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.ConditionalCommand;
 import com.seattlesolvers.solverslib.command.InstantCommand;
@@ -82,6 +83,18 @@ public class BlueAuto12ScoreFar_LS extends CommandOpMode {
         return new SupplierTrigger(() -> (!follower.isBusy()) && robot.shotController.readyToShoot());
     }
 
+    private Command turnToGoal() {
+        return new SequentialCommandGroup(
+                new InstantCommand(() -> {
+                    double dx = paths.goalTargetX - follower.getPose().getX();
+                    double dy = paths.goalTargetY - follower.getPose().getY();
+                    follower.turnTo(Math.atan2(dy, dx));
+                }),
+                new WaitUntilCommand(() -> !follower.isBusy()),
+                new RunCommand(() -> {}) // never completes - keeps race alive until WaitCommand wins
+        );
+    }
+
     @Override
     public void initialize() {
         super.reset();
@@ -145,10 +158,15 @@ public class BlueAuto12ScoreFar_LS extends CommandOpMode {
                                 // Intake from row closest to far wall from goal -- intake starts after 25% of path complete
                                 new FollowPathCommand(follower, paths.blueFarZonePrescoreToFarIntake, false),
 
+                                // Score -- preparing shot after 50% of path complete. Begin shooting after path complete
+                                new FollowPathCommand(follower, paths.blueFarZonePrescoreToFarIntake, false),
 
-                                // Score -- preparing shot after 50% of path complete. Begin shooting after 85% of path complete
-                                new FollowPathCommand(follower, paths.blueFarWallIntakeToFarScore).andThen(shoot()),
-                                new WaitCommand(TimingConstants.waitForShootingMS).andThen(idleState()),
+                                new FollowPathCommand(follower, paths.blueFarWallIntakeToFarScore)
+                                        .andThen(shoot()),
+                                new ParallelRaceGroup(
+                                        new WaitCommand(TimingConstants.waitForShootingMS),
+                                        turnToGoal()
+                                ).andThen(idleState()),
 
                                 /**
                                  THIRD CYCLE - intake Loading Station
@@ -159,8 +177,12 @@ public class BlueAuto12ScoreFar_LS extends CommandOpMode {
                                 new WaitCommand(TimingConstants.waitForIntakeLoadingStationMS),
 
                                 // Score -- preparing shot after 30% of path complete. Begin shooting after path complete
-                                new FollowPathCommand(follower, paths.blueFarLoadingStationToFarScore).andThen(shoot()),
-                                new WaitCommand(TimingConstants.waitForShootingMS),
+                                new FollowPathCommand(follower, paths.blueFarLoadingStationToFarScore)
+                                        .andThen(shoot()),
+                                new ParallelRaceGroup(
+                                        new WaitCommand(TimingConstants.waitForShootingMS),
+                                        turnToGoal()
+                                ).andThen(spinDown()),
 
                                 /**
                                  FOURTH CYCLE - intake Loading Station
@@ -171,8 +193,14 @@ public class BlueAuto12ScoreFar_LS extends CommandOpMode {
                                 new WaitCommand(TimingConstants.waitForIntakeLoadingStationMS),
 
                                 // Score -- preparing shot after 30% of path complete. Begin shooting after path complete
-                                new FollowPathCommand(follower, paths.blueFarLoadingStationToFarScore).andThen(shoot()),
-                                new WaitCommand(TimingConstants.waitForShootingMS).andThen(spinDown()),
+                                new FollowPathCommand(follower, paths.blueFarLoadingStationToFarScore)
+                                        .andThen(shoot()),
+                                new ParallelRaceGroup(
+                                        new WaitCommand(TimingConstants.waitForShootingMS),
+                                        turnToGoal()
+                                ).andThen(spinDown()),
+
+                                // Park
                                 new FollowPathCommand(follower, paths.blueFarScoreToPark, false)
 
                         )
