@@ -88,8 +88,6 @@ public class BlueFarFromGoalConstants {
                         )
                 )
                 .setHeadingInterpolation(HeadingInterpolator.facingPoint(goalTargetX, goalTargetY))
-                //.setHeadingConstraint(Math.toRadians(1.49))
-                //.setTimeoutConstraint(250)
                 .setBrakingStrength(0.025)
                 .build();
 
@@ -122,8 +120,6 @@ public class BlueFarFromGoalConstants {
                 )
                 .setHeadingInterpolation(HeadingInterpolator.facingPoint(goalTargetX, goalTargetY))
                 .setBrakingStrength(0.035)
-                //.setHeadingConstraint(Math.toRadians(1.49))
-                //.setTimeoutConstraint(250)
                 .addParametricCallback(0.50, () -> {
                     robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
                 })
@@ -156,8 +152,6 @@ public class BlueFarFromGoalConstants {
                         )
                 )
                 .setHeadingInterpolation(HeadingInterpolator.facingPoint(goalTargetX, goalTargetY))
-                //.setHeadingConstraint(Math.toRadians(1.49))
-                //.setTimeoutConstraint(250)
                 .setBrakingStrength(0.035)
                 .addParametricCallback(0.40, () -> {
                     robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
@@ -195,8 +189,6 @@ public class BlueFarFromGoalConstants {
                         Math.toRadians(blueLoadingZoneIntakeHeading),
                         Math.toRadians(blueFarWallShootHeading),
                                 0.5)
-                //.setHeadingConstraint(Math.toRadians(1.49))
-                //.setTimeoutConstraint(250)
                 .setBrakingStrength(0.035)
                 .addParametricCallback(0.30, () -> {
                     robot.shotController.setState(ShotCycleState.PREPARE_SHOT);

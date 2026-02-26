@@ -5,12 +5,15 @@ import com.bylazar.telemetry.JoinedTelemetry;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.pedropathing.follower.Follower;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
+import com.seattlesolvers.solverslib.command.ParallelRaceGroup;
 import com.seattlesolvers.solverslib.command.RunCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
+import com.seattlesolvers.solverslib.command.WaitUntilCommand;
 import com.seattlesolvers.solverslib.command.button.Trigger;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 import com.seattlesolvers.solverslib.util.TelemetryData;
@@ -82,6 +85,17 @@ public class RedAuto12ScoreNear extends CommandOpMode {
     private Trigger readyToShootPreload() {
         return new SupplierTrigger(() -> (!follower.isBusy()) && robot.shotController.readyToShoot());
     }
+    private Command turnToGoal() {
+        return new SequentialCommandGroup(
+                new InstantCommand(() -> {
+                    double dx = paths.goalTargetX - follower.getPose().getX();
+                    double dy = paths.goalTargetY - follower.getPose().getY();
+                    follower.turnTo(Math.atan2(dy, dx));
+                }),
+                new WaitUntilCommand(() -> !follower.isBusy()),
+                new RunCommand(() -> {}) // never completes - keeps race alive until WaitCommand wins
+        );
+    }
 
     @Override
     public void initialize() {
@@ -129,8 +143,10 @@ public class RedAuto12ScoreNear extends CommandOpMode {
                                 setupNearMidPresetShot(),
                                 new FollowPathCommand(follower, paths.redWallToNearZonePrescore).beforeStarting(prepareShot()),
                                 shoot(),
-                                new WaitCommand(TimingConstants.waitForShootingNearMS).andThen(idleState()),
-
+                                new ParallelRaceGroup(
+                                        new WaitCommand(TimingConstants.waitForShootingNearMS),
+                                        turnToGoal()
+                                ).andThen(idleState()),
 
                                 /**
                                  SECOND CYCLE - MID row
@@ -141,20 +157,26 @@ public class RedAuto12ScoreNear extends CommandOpMode {
 
                                 // Score -- preparing shot after 30% of path complete. Begin shooting after 90% of path complete
                                 new FollowPathCommand(follower, paths.redMidWallIntakeToNearScore),
-                                new WaitCommand(TimingConstants.waitForShootingNearMS),
+                                new ParallelRaceGroup(
+                                        new WaitCommand(TimingConstants.waitForShootingNearMS),
+                                        turnToGoal()
+                                ).andThen(idleState()),
 
                                 /**
                                  THIRD CYCLE - Gate Open and Intake
                                  **/
 
-                                new FollowPathCommand(follower, paths.redScoreToOpenGate,false).beforeStarting(idleState()),
+                                new FollowPathCommand(follower, paths.redScoreToOpenGate,false)),
                                 new FollowPathCommand(follower, paths.redOpenGateToIntakeGate).beforeStarting(intake()),
 
                                 new WaitCommand(TimingConstants.waitForIntakeByGateMS),
 
                                 // Score -- preparing shot after 30% of path complete. Begin shooting after 90% of path complete
                                 new FollowPathCommand(follower, paths.redMidWallIntakeToNearScore),
-                                new WaitCommand(TimingConstants.waitForShootingNearMS),
+                                new ParallelRaceGroup(
+                                        new WaitCommand(TimingConstants.waitForShootingNearMS),
+                                        turnToGoal()
+                                ).andThen(idleState()),
 
                                 /**
                                  FOURTH CYCLE - row NEAR goal
@@ -165,7 +187,10 @@ public class RedAuto12ScoreNear extends CommandOpMode {
 
                                 // Score -- preparing shot after 30% of path complete. Begin shooting after 95% of path complete
                                 new FollowPathCommand(follower, paths.redNearWallIntakeToNearScore),
-                                new WaitCommand(TimingConstants.waitForShootingNearMS).andThen(intake()),
+                                new ParallelRaceGroup(
+                                        new WaitCommand(TimingConstants.waitForShootingNearMS),
+                                        turnToGoal()
+                                ).andThen(intake()),
 
                                 /**
                                  FIFTH CYCLE - sweep and intake randoms along secret tunnel to loading station
@@ -174,7 +199,6 @@ public class RedAuto12ScoreNear extends CommandOpMode {
                                 new FollowPathCommand(follower, paths.redSweepToPark),
                                 spinDown()
                         )
-                )
         );
 
         telemetry.addData("Robot Status", "Initialized Auto 9 Ball Near " + alliance.name());

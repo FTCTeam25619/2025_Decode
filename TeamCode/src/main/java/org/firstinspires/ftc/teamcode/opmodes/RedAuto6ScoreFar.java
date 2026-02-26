@@ -5,6 +5,7 @@ import com.bylazar.telemetry.JoinedTelemetry;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.pedropathing.follower.Follower;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.ConditionalCommand;
 import com.seattlesolvers.solverslib.command.InstantCommand;
@@ -81,6 +82,17 @@ public class RedAuto6ScoreFar extends CommandOpMode {
     private Trigger readyToShootPreload() {
         return new SupplierTrigger(() -> (!follower.isBusy()) && robot.shotController.readyToShoot());
     }
+    private Command turnToGoal() {
+        return new SequentialCommandGroup(
+                new InstantCommand(() -> {
+                    double dx = paths.goalTargetX - follower.getPose().getX();
+                    double dy = paths.goalTargetY - follower.getPose().getY();
+                    follower.turnTo(Math.atan2(dy, dx));
+                }),
+                new WaitUntilCommand(() -> !follower.isBusy()),
+                new RunCommand(() -> {}) // never completes - keeps race alive until WaitCommand wins
+        );
+    }
 
     @Override
     public void initialize() {
@@ -135,7 +147,10 @@ public class RedAuto6ScoreFar extends CommandOpMode {
                                         new WaitUntilCommand(() -> robot.shotController.readyToShoot()) // wait until shooter is ready
                                 ),
                                 shoot(),
-                                new WaitCommand(TimingConstants.waitForShootingMS).andThen(idleState()),
+                                new ParallelRaceGroup(
+                                        new WaitCommand(TimingConstants.waitForShootingMS),
+                                        turnToGoal()
+                                ).andThen(idleState()),
 
 
                                 /**
@@ -148,7 +163,10 @@ public class RedAuto6ScoreFar extends CommandOpMode {
 
                                 // Score -- preparing shot after 50% of path complete. Begin shooting after 85% of path complete
                                 new FollowPathCommand(follower, paths.redFarWallIntakeToFarScore).andThen(shoot()),
-                                new WaitCommand(7000).beforeStarting(spinDown()),
+                                new ParallelRaceGroup(
+                                        new WaitCommand(TimingConstants.waitForShootingMS),
+                                        turnToGoal()
+                                ).andThen(spinDown()),
 
                                 /**
                                  * PARK

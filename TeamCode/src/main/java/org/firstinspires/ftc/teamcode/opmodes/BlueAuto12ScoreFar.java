@@ -91,10 +91,14 @@ public class BlueAuto12ScoreFar extends CommandOpMode {
                 new InstantCommand(() -> {
                     double dx = paths.goalTargetX - follower.getPose().getX();
                     double dy = paths.goalTargetY - follower.getPose().getY();
+                    follower.constants.holdPointHeadingScaling = 1.0; // full power for turnTo
                     follower.turnTo(Math.atan2(dy, dx));
                 }),
                 new WaitUntilCommand(() -> !follower.isBusy()),
-                new RunCommand(() -> {}) // never completes - keeps race alive until WaitCommand wins
+                new InstantCommand(() -> {
+                    follower.constants.holdPointHeadingScaling = 0.35; // restore for normal hold
+                }),
+                new RunCommand(() -> {})
         );
     }
 
@@ -144,14 +148,17 @@ public class BlueAuto12ScoreFar extends CommandOpMode {
 
                                 // Score preload
                                 // Prepare shot before starting
-                                setupFarWallPresetShot(),
+                                // setupFarWallPresetShot(),
                                 new FollowPathCommand(follower, paths.blueWallToFarZonePrescore, 0.5).beforeStarting(prepareShot()),
                                 new ParallelRaceGroup(
                                         new WaitCommand(TimingConstants.waitBeforeShootingMS),
                                         new WaitUntilCommand(() -> robot.shotController.readyToShoot())
                                 ),
                                 shoot(),
-                                new WaitCommand(TimingConstants.waitForShootingMS).andThen(idleState()),
+                                new ParallelRaceGroup(
+                                        new WaitCommand(TimingConstants.waitForShootingMS),
+                                        turnToGoal()
+                                ).andThen(idleState()),
 
                                 /**
                                  SECOND CYCLE - intake FAR
@@ -197,10 +204,10 @@ public class BlueAuto12ScoreFar extends CommandOpMode {
                                 new ParallelRaceGroup(
                                         new WaitCommand(TimingConstants.waitForShootingMS),
                                         turnToGoal()
-                                ).andThen(spinDown()),
+                                ).andThen(intake()),
 
                                 // Park
-                                new FollowPathCommand(follower, paths.blueFarScoreToPark, false)
+                                new FollowPathCommand(follower, paths.blueFarScoreToPark, false).andThen(spinDown())
                         )
                 )
         );

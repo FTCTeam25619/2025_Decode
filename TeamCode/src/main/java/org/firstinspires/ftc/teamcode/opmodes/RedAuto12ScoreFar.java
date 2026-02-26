@@ -144,14 +144,17 @@ public class RedAuto12ScoreFar extends CommandOpMode {
 
                                 // Score preload
                                 // Prepare shot before starting
-                                setupFarWallPresetShot(),
+                                // setupFarWallPresetShot(),
                                 new FollowPathCommand(follower, paths.redWallToFarZonePrescore, 0.5).beforeStarting(prepareShot()),
                                 new ParallelRaceGroup(
                                         new WaitCommand(TimingConstants.waitBeforeShootingMS),
                                         new WaitUntilCommand(() -> robot.shotController.readyToShoot())
                                 ),
                                 shoot(),
-                                new WaitCommand(TimingConstants.waitForShootingMS).andThen(idleState()),
+                                new ParallelRaceGroup(
+                                        new WaitCommand(TimingConstants.waitForShootingMS),
+                                        turnToGoal()
+                                ).andThen(idleState()),
 
                                 /**
                                  SECOND CYCLE - intake FAR
@@ -197,10 +200,10 @@ public class RedAuto12ScoreFar extends CommandOpMode {
                                 new ParallelRaceGroup(
                                         new WaitCommand(TimingConstants.waitForShootingMS),
                                         turnToGoal()
-                                ).andThen(spinDown()),
+                                ).andThen(intake()),
 
                                 // Park
-                                new FollowPathCommand(follower, paths.redFarScoreToPark, false)
+                                new FollowPathCommand(follower, paths.redFarScoreToPark, false).andThen(spinDown())
 
                         )
                 )

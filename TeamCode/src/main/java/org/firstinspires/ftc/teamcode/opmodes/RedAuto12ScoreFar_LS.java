@@ -141,14 +141,17 @@ public class RedAuto12ScoreFar_LS extends CommandOpMode {
 
                                 // Score preload
                                 // Prepare shot before starting
-                                setupFarWallPresetShot(),
+                                // setupFarWallPresetShot(),
                                 new FollowPathCommand(follower, paths.redWallToFarZonePrescore, 0.5).beforeStarting(prepareShot()),
                                 new ParallelRaceGroup(
                                         new WaitCommand(TimingConstants.waitBeforeShootingMS), // 0.700 second timeout
                                         new WaitUntilCommand(() -> robot.shotController.readyToShoot()) // wait until shooter is ready
                                 ),
                                 shoot(),
-                                new WaitCommand(TimingConstants.waitForShootingMS).andThen(idleState()),
+                                new ParallelRaceGroup(
+                                        new WaitCommand(TimingConstants.waitForShootingMS),
+                                        turnToGoal()
+                                ).andThen(idleState()),
 
 
                                 /**
@@ -198,10 +201,10 @@ public class RedAuto12ScoreFar_LS extends CommandOpMode {
                                 new ParallelRaceGroup(
                                         new WaitCommand(TimingConstants.waitForShootingMS),
                                         turnToGoal()
-                                ).andThen(spinDown()),
+                                ).andThen(intake()),
 
                                 // Park
-                                new FollowPathCommand(follower, paths.redFarScoreToPark, false)
+                                new FollowPathCommand(follower, paths.redFarScoreToPark, false).andThen(spinDown())
 
                         )
                 )
