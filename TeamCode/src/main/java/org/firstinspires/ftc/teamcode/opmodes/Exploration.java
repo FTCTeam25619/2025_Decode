@@ -383,20 +383,6 @@ public class Exploration extends CommandOpMode {
         telemetry.addData("Heading Error", "%.1f°", Math.toDegrees(headingError));
         telemetry.addData("Aligned", isAutoAimAligned() ? "✓ YES" : "✗ NO");
 
-        // Mode info
-        telemetry.addData("Control Mode", wasAutoAiming ? "AUTO-AIM (followPath)" : "MANUAL (teleop)");
-        if (wasAutoAiming) {
-            telemetry.addData("  Method", "Path following with heading-only PID");
-            telemetry.addData("  Active PIDFs", "Heading ONLY");
 
-            // Show Pedro's heading vector
-            Vector headingVector = robot.pedroFollower.getHeadingVector();
-            telemetry.addData("  Pedro Heading Power", "%.3f", headingVector.getMagnitude());
-
-            // Show which PID is active
-            FollowerConstants constants = robot.pedroFollower.getConstants();
-            boolean usingSecondary = Math.abs(headingError) < constants.headingPIDFSwitch;
-            telemetry.addData("  PID Mode", usingSecondary ? "Secondary (fine)" : "Primary (coarse)");
-        }
     }
 }
