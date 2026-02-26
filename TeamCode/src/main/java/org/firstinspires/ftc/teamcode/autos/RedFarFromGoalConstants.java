@@ -23,7 +23,7 @@ public class RedFarFromGoalConstants {
     public Pose redFarWallShootToMidIntakeCP = new Pose(78.676, 72.238);
     public Pose redFarWallMidIntake = new Pose(130.75, 55.192);
     public Pose redFarWallIntakeLoadingStationCP = new Pose(93, 25);
-    public Pose redFarWallIntakeLoadingStation = new Pose(132.5, 8.25);
+    public Pose redFarWallIntakeLoadingStation = new Pose(132.5, 9.0);
     public Pose redFarWallParkPose = new Pose(114.00, 46.00);
 
 

@@ -20,7 +20,7 @@ public class BlueNearGoalConstants {
     public Pose blueNearWallShootToNearIntakeCP = new Pose(63.193, 63.615);
     public Pose blueNearWallNearIntake = new Pose(18.0, 86.532);
     public Pose blueNearWallShootToMidIntakeCP = new Pose(54.0, 53.0);
-    public Pose blueNearWallMidIntake = new Pose(13.5, 58.0);
+    public Pose blueNearWallMidIntake = new Pose(12.5, 58.0);
     public Pose blueNearWallPark = new Pose(54.606, 114.275);
 
     public Pose blueParkByGate = new Pose (24.0, 73);

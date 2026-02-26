@@ -90,10 +90,14 @@ public class RedAuto12ScoreNear extends CommandOpMode {
                 new InstantCommand(() -> {
                     double dx = paths.goalTargetX - follower.getPose().getX();
                     double dy = paths.goalTargetY - follower.getPose().getY();
+                    follower.constants.holdPointHeadingScaling = .85; // full power for turnTo
                     follower.turnTo(Math.atan2(dy, dx));
                 }),
                 new WaitUntilCommand(() -> !follower.isBusy()),
-                new RunCommand(() -> {}) // never completes - keeps race alive until WaitCommand wins
+                new InstantCommand(() -> {
+                    follower.constants.holdPointHeadingScaling = 0.35; // restore for normal hold
+                }),
+                new RunCommand(() -> {})
         );
     }
 
@@ -144,8 +148,8 @@ public class RedAuto12ScoreNear extends CommandOpMode {
                                 new FollowPathCommand(follower, paths.redWallToNearZonePrescore).beforeStarting(prepareShot()),
                                 shoot(),
                                 new ParallelRaceGroup(
-                                        new WaitCommand(TimingConstants.waitForShootingNearMS),
-                                        turnToGoal()
+                                        new WaitCommand(TimingConstants.waitForShootingNearMS)
+                                       // turnToGoal()
                                 ).andThen(idleState()),
 
                                 /**
@@ -158,8 +162,8 @@ public class RedAuto12ScoreNear extends CommandOpMode {
                                 // Score -- preparing shot after 30% of path complete. Begin shooting after 90% of path complete
                                 new FollowPathCommand(follower, paths.redMidWallIntakeToNearScore),
                                 new ParallelRaceGroup(
-                                        new WaitCommand(TimingConstants.waitForShootingNearMS),
-                                        turnToGoal()
+                                        new WaitCommand(TimingConstants.waitForShootingNearMS)
+                                       // turnToGoal()
                                 ).andThen(idleState()),
 
                                 /**
@@ -174,8 +178,8 @@ public class RedAuto12ScoreNear extends CommandOpMode {
                                 // Score -- preparing shot after 30% of path complete. Begin shooting after 90% of path complete
                                 new FollowPathCommand(follower, paths.redMidWallIntakeToNearScore),
                                 new ParallelRaceGroup(
-                                        new WaitCommand(TimingConstants.waitForShootingNearMS),
-                                        turnToGoal()
+                                        new WaitCommand(TimingConstants.waitForShootingNearMS)
+                                       // turnToGoal()
                                 ).andThen(idleState()),
 
                                 /**
@@ -188,8 +192,8 @@ public class RedAuto12ScoreNear extends CommandOpMode {
                                 // Score -- preparing shot after 30% of path complete. Begin shooting after 95% of path complete
                                 new FollowPathCommand(follower, paths.redNearWallIntakeToNearScore),
                                 new ParallelRaceGroup(
-                                        new WaitCommand(TimingConstants.waitForShootingNearMS),
-                                        turnToGoal()
+                                        new WaitCommand(TimingConstants.waitForShootingNearMS)
+                                       // turnToGoal()
                                 ).andThen(intake()),
 
                                 /**

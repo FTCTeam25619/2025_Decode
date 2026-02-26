@@ -149,8 +149,8 @@ public class BlueAuto12ScoreNear_Park extends CommandOpMode {
                                 new FollowPathCommand(follower, paths.blueWallToNearZonePrescore).beforeStarting(prepareShot()),
                                 shoot(),
                                 new ParallelRaceGroup(
-                                        new WaitCommand(TimingConstants.waitForShootingNearMS),
-                                        turnToGoal()
+                                        new WaitCommand(TimingConstants.waitForShootingNearMS)
+                                        //turnToGoal()
                                 ).andThen(idleState()),
 
 
@@ -164,8 +164,8 @@ public class BlueAuto12ScoreNear_Park extends CommandOpMode {
                                 // Score -- preparing shot after 30% of path complete. Begin shooting after 90% of path complete
                                 new FollowPathCommand(follower, paths.blueMidWallIntakeToNearScore),
                                 new ParallelRaceGroup(
-                                        new WaitCommand(TimingConstants.waitForShootingNearMS),
-                                        turnToGoal()
+                                        new WaitCommand(TimingConstants.waitForShootingNearMS)
+                                       // turnToGoal()
                                 ).andThen(idleState()),
 
                                 /**
@@ -180,8 +180,8 @@ public class BlueAuto12ScoreNear_Park extends CommandOpMode {
                                 // Score -- preparing shot after 30% of path complete. Begin shooting after 90% of path complete
                                 new FollowPathCommand(follower, paths.blueMidWallIntakeToNearScore),
                                 new ParallelRaceGroup(
-                                        new WaitCommand(TimingConstants.waitForShootingNearMS),
-                                        turnToGoal()
+                                        new WaitCommand(TimingConstants.waitForShootingNearMS)
+                                        //turnToGoal()
                                 ).andThen(idleState()),
 
                                 /**
@@ -194,8 +194,8 @@ public class BlueAuto12ScoreNear_Park extends CommandOpMode {
                                 // Score -- preparing shot after 30% of path complete. Begin shooting after 95% of path complete
                                 new FollowPathCommand(follower, paths.blueNearWallIntakeToNearScore),
                                 new ParallelRaceGroup(
-                                        new WaitCommand(TimingConstants.waitForShootingNearMS),
-                                        turnToGoal()
+                                        new WaitCommand(TimingConstants.waitForShootingNearMS)
+                                        //turnToGoal()
                                 ).andThen(intake()),
 
                                 /**
