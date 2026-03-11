@@ -62,4 +62,8 @@ public class Devices {
     public static final class Odometry {
         public static final String pinpointOdometry = "pinpoint_odometry_cpu";
     }
+
+    public static class Kicker {
+        public static final String motor = "kicker_motor";
+    }
 }

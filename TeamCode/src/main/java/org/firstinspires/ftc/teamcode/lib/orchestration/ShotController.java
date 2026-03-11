@@ -15,6 +15,7 @@ import org.firstinspires.ftc.teamcode.constants.ShooterFeedConstants;
 import org.firstinspires.ftc.teamcode.constants.VisionConstants;
 import org.firstinspires.ftc.teamcode.lib.triggers.SupplierTrigger;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
+import org.firstinspires.ftc.teamcode.subsystems.Kicker;
 import org.firstinspires.ftc.teamcode.subsystems.Sensors;
 import org.firstinspires.ftc.teamcode.subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.ShooterFeed;
@@ -166,6 +167,7 @@ public class ShotController {
         }
 
         robot.shooter.setTargetRPM(this.getTargetFlywheelRPM());
+        robot.kicker.setTargetRPMFromFlywheel(this.getTargetFlywheelRPM());
         robot.hood.setAngle(this.getTargetHoodAngle());
         // Feed stays stopped until SHOOTING state.
     }
@@ -203,8 +205,8 @@ public class ShotController {
      */
     public double getDistanceToTarget() {
         //if (robot.vision.isSeeingTarget()) {
-           // Limelight reports distance in cm.
-         // return robot.vision.distanceToTarget();
+        // Limelight reports distance in cm.
+        // return robot.vision.distanceToTarget();
         //}
 
         // Odometry/Pedro fallback (field distance): poses are in inches, so convert to cm
@@ -327,6 +329,7 @@ public class ShotController {
             this.robot.intake.setState(Intake.IntakeState.Stopped);
             this.robot.feedStop.engage();
             this.robot.shooter.setState(Shooter.ShooterState.Stopped);
+            this.robot.kicker.setState(Kicker.KickerState.Stopped);
             this.robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
             this.robot.hood.setAngle(HoodConstants.Limits.hoodHardStopMin);
         }));
@@ -338,6 +341,8 @@ public class ShotController {
             this.robot.feedStop.engage();
             this.robot.shooter.setState(Shooter.ShooterState.Shooting);
             this.robot.shooter.setTargetRPM(ShooterConstants.Targets.idleRPM);
+            this.robot.kicker.setState(Kicker.KickerState.Spinning);
+            this.robot.kicker.setTargetRPMFromFlywheel(ShooterConstants.Targets.idleRPM);
             this.robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
             this.robot.hood.setAngle(HoodConstants.Limits.hoodHardStopMin);
         }));
@@ -350,6 +355,8 @@ public class ShotController {
             // Same as prior state IDLE
             this.robot.shooter.setState(Shooter.ShooterState.Shooting);
             this.robot.shooter.setTargetRPM(ShooterConstants.Targets.idleRPM);
+            this.robot.kicker.setState(Kicker.KickerState.Spinning);
+            this.robot.kicker.setTargetRPMFromFlywheel(ShooterConstants.Targets.idleRPM);
             // Feed wheel turned on during transition to move game pieces up closer to shooter and within alignment of color sensors.
             // When feedhigh sensor detects gamepiece the feedwheel will be set to stopped in the UpdateState loop
             this.robot.shooterFeed.setFeedPower(this.getTargetFeedPower());
@@ -365,6 +372,8 @@ public class ShotController {
             this.robot.feedStop.engage();
             this.robot.shooter.setState(Shooter.ShooterState.Shooting);
             this.robot.shooter.setTargetRPM(ShooterConstants.Targets.idleRPM);
+            this.robot.kicker.setState(Kicker.KickerState.Spinning);
+            this.robot.kicker.setTargetRPMFromFlywheel(ShooterConstants.Targets.idleRPM);
             this.robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
             this.robot.hood.setAngle(HoodConstants.Limits.hoodHardStopMin);
         }));
@@ -375,6 +384,8 @@ public class ShotController {
             this.robot.feedStop.engage();
             this.robot.shooter.setState(Shooter.ShooterState.Shooting);
             this.robot.shooter.setTargetRPM(this.getTargetFlywheelRPM());
+            this.robot.kicker.setState(Kicker.KickerState.Spinning);
+            this.robot.kicker.setTargetRPMFromFlywheel(this.getTargetFlywheelRPM());
             this.robot.hood.setAngle(this.getTargetHoodAngle());
             this.robot.intake.setState(Intake.IntakeState.Stopped);
             // Same as prior state STAGED
@@ -388,6 +399,8 @@ public class ShotController {
             this.robot.feedStop.engage();
             this.robot.shooter.setState(Shooter.ShooterState.Shooting);
             this.robot.shooter.setTargetRPM(this.getTargetFlywheelRPM());
+            this.robot.kicker.setState(Kicker.KickerState.Spinning);
+            this.robot.kicker.setTargetRPMFromFlywheel(this.getTargetFlywheelRPM());
             this.robot.hood.setAngle(this.getTargetHoodAngle());
             this.robot.intake.setState(Intake.IntakeState.Stopped);
             this.robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
@@ -397,10 +410,12 @@ public class ShotController {
         stateTransitionTrigger(ShotCycleState.SHOOTING).whenActive(new InstantCommand(() -> {
             this.robot.feedStop.disengage();
             this.robot.shooter.setState(Shooter.ShooterState.Shooting);
+            this.robot.kicker.setState(Kicker.KickerState.Spinning);
             this.robot.shooterFeed.setFeedPower(this.getTargetFeedPower());
             this.robot.shooterFeed.setState(ShooterFeed.FeedState.Feeding);
             this.robot.intake.setState(Intake.IntakeState.Intake);
             this.robot.shooter.setTargetRPM(this.getTargetFlywheelRPM());
+            this.robot.kicker.setTargetRPMFromFlywheel(this.getTargetFlywheelRPM());
             this.robot.hood.setAngle(this.getTargetHoodAngle());
         }));
         stateTransitionTrigger(ShotCycleState.RECOVERY).whenActive(new InstantCommand(() -> {
@@ -415,6 +430,8 @@ public class ShotController {
 
             this.robot.shooter.setState(Shooter.ShooterState.Shooting);
             this.robot.shooter.setTargetRPM(this.getTargetFlywheelRPM());
+            this.robot.kicker.setState(Kicker.KickerState.Spinning);
+            this.robot.kicker.setTargetRPMFromFlywheel(this.getTargetFlywheelRPM());
             this.robot.hood.setAngle(this.getTargetHoodAngle());
         }));
 
@@ -510,12 +527,14 @@ public class ShotController {
         table.add(118, 2050);
         table.add(144, 2100);
         table.add(177, 2200);
+        table.add(190, 2275);
         table.add(207, 2375);
         table.add(245, 2550);
         table.add(260, 2550);
         // Small Triangle / Far Shots
         table.add(325, 2860);
         table.add(338, 2900);
+        table.add(347, 2960);
         table.add(355, 3000);
         table.add(380, 3100);
         table.add(392, 3140);

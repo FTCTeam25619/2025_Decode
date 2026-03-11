@@ -13,6 +13,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Hood;
 import org.firstinspires.ftc.teamcode.subsystems.IndicatorLights;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Lift;
+import org.firstinspires.ftc.teamcode.subsystems.Kicker;
 import org.firstinspires.ftc.teamcode.subsystems.Odometry;
 import org.firstinspires.ftc.teamcode.subsystems.Power;
 import org.firstinspires.ftc.teamcode.subsystems.Sensors;
@@ -33,6 +34,7 @@ public class NovaPyraRobot extends Robot {
     public final Odometry odometry;
     public final ShooterFeed shooterFeed;
     public final Shooter shooter;
+    public final Kicker kicker;
     public final FeedStop feedStop;
     public final Hood hood;
     public final Intake intake;
@@ -54,6 +56,7 @@ public class NovaPyraRobot extends Robot {
         // Subsystems
         power = new Power(hardwareMap, NovaPyraRobot.telemetry);
         shooter = new Shooter(hardwareMap, NovaPyraRobot.telemetry);
+        kicker = new Kicker(hardwareMap, NovaPyraRobot.telemetry);
         indicatorLights = new IndicatorLights(hardwareMap, NovaPyraRobot.telemetry);
         shooterFeed = new ShooterFeed(hardwareMap,NovaPyraRobot.telemetry);
         feedStop = new FeedStop(hardwareMap, NovaPyraRobot.telemetry);
