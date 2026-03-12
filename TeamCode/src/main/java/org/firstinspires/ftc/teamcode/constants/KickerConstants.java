@@ -15,10 +15,10 @@ public class KickerConstants {
 
     @Configurable
     public static class VelocityPID {
-        public static double kP = 200.0;
+        public static double kP = 30.0;
         public static double kI = 0.0;
         public static double kD = 5.0;
-        public static double kF = 0.0;
+        public static double kF = 14.0;
     }
     @Configurable
     public static class Targets {

@@ -168,6 +168,8 @@ public class ShotController {
 
         robot.shooter.setTargetRPM(this.getTargetFlywheelRPM());
         robot.kicker.setTargetRPMFromFlywheel(this.getTargetFlywheelRPM());
+        //robot.shooter.setTargetRPM(ShooterConstants.Targets.farWallShot);
+        //robot.kicker.setTargetRPMFromFlywheel(ShooterConstants.Targets.farWallShot);
         robot.hood.setAngle(this.getTargetHoodAngle());
         // Feed stays stopped until SHOOTING state.
     }
@@ -274,7 +276,7 @@ public class ShotController {
     }
 
     private boolean atRPM() {
-        return this.robot.shooter.atRPM();
+        return this.robot.shooter.atRPM() && this.robot.kicker.atRPM();
     }
 
     private boolean atTargetAngle() {
@@ -383,9 +385,9 @@ public class ShotController {
             // Transitioning to PREPARE_SHOT state
             this.robot.feedStop.engage();
             this.robot.shooter.setState(Shooter.ShooterState.Shooting);
-            this.robot.shooter.setTargetRPM(this.getTargetFlywheelRPM());
+            //this.robot.shooter.setTargetRPM(this.getTargetFlywheelRPM());
             this.robot.kicker.setState(Kicker.KickerState.Spinning);
-            this.robot.kicker.setTargetRPMFromFlywheel(this.getTargetFlywheelRPM());
+            //this.robot.kicker.setTargetRPMFromFlywheel(this.getTargetFlywheelRPM());
             this.robot.hood.setAngle(this.getTargetHoodAngle());
             this.robot.intake.setState(Intake.IntakeState.Stopped);
             // Same as prior state STAGED
@@ -398,9 +400,9 @@ public class ShotController {
             // Same as prior state PREPARE_SHOT
             this.robot.feedStop.engage();
             this.robot.shooter.setState(Shooter.ShooterState.Shooting);
-            this.robot.shooter.setTargetRPM(this.getTargetFlywheelRPM());
+            //this.robot.shooter.setTargetRPM(this.getTargetFlywheelRPM());
             this.robot.kicker.setState(Kicker.KickerState.Spinning);
-            this.robot.kicker.setTargetRPMFromFlywheel(this.getTargetFlywheelRPM());
+            //this.robot.kicker.setTargetRPMFromFlywheel(this.getTargetFlywheelRPM());
             this.robot.hood.setAngle(this.getTargetHoodAngle());
             this.robot.intake.setState(Intake.IntakeState.Stopped);
             this.robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
@@ -414,8 +416,8 @@ public class ShotController {
             this.robot.shooterFeed.setFeedPower(this.getTargetFeedPower());
             this.robot.shooterFeed.setState(ShooterFeed.FeedState.Feeding);
             this.robot.intake.setState(Intake.IntakeState.Intake);
-            this.robot.shooter.setTargetRPM(this.getTargetFlywheelRPM());
-            this.robot.kicker.setTargetRPMFromFlywheel(this.getTargetFlywheelRPM());
+            //this.robot.shooter.setTargetRPM(this.getTargetFlywheelRPM());
+            //this.robot.kicker.setTargetRPMFromFlywheel(this.getTargetFlywheelRPM());
             this.robot.hood.setAngle(this.getTargetHoodAngle());
         }));
         stateTransitionTrigger(ShotCycleState.RECOVERY).whenActive(new InstantCommand(() -> {
@@ -429,9 +431,9 @@ public class ShotController {
             this.robot.intake.setState(Intake.IntakeState.Stopped);
 
             this.robot.shooter.setState(Shooter.ShooterState.Shooting);
-            this.robot.shooter.setTargetRPM(this.getTargetFlywheelRPM());
+            //this.robot.shooter.setTargetRPM(this.getTargetFlywheelRPM());
             this.robot.kicker.setState(Kicker.KickerState.Spinning);
-            this.robot.kicker.setTargetRPMFromFlywheel(this.getTargetFlywheelRPM());
+            //this.robot.kicker.setTargetRPMFromFlywheel(this.getTargetFlywheelRPM());
             this.robot.hood.setAngle(this.getTargetHoodAngle());
         }));
 
@@ -522,25 +524,19 @@ public class ShotController {
 
         table.add(0, 1850);
 
-        // Big Triangle / Close Shots
-        table.add(97, 1950);
-        table.add(118, 2050);
-        table.add(144, 2100);
-        table.add(177, 2200);
-        table.add(190, 2275);
-        table.add(207, 2375);
-        table.add(245, 2550);
-        table.add(260, 2550);
+
+
+        //Big Triangle / Close Shots
+        table.add(97, 2000);
+
         // Small Triangle / Far Shots
-        table.add(325, 2860);
-        table.add(338, 2900);
-        table.add(347, 2960);
-        table.add(355, 3000);
-        table.add(380, 3100);
-        table.add(392, 3140);
 
+        table.add(326, 2430);
+        table.add(342, 2470);
+        table.add(375, 2550);
+        table.add(385, 2640);
+        table.add(400, 2700);
 
-        table.add(600, 3200);
         table.createLUT();
         return table;
     }

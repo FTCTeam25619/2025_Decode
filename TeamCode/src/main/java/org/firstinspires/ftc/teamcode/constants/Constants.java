@@ -8,7 +8,7 @@ public final class Constants {
         }
         public static final class Telemetry {
             public static final boolean DEBUG_ODOMETRY = false;
-            public static final boolean DEBUG_SHOOTER = false;
+            public static final boolean DEBUG_SHOOTER = true;
             public static final boolean DEBUG_SENSORS = false;
             // Editor complains about simplifying this, but we intentionally want the
             // value to be dependent on whether ENABLE_PANELS_DASHBOARD is true.
