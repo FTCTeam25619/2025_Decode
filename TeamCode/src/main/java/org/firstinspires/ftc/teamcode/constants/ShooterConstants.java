@@ -58,19 +58,6 @@ public class ShooterConstants {
         public static double minDistanceIn = 35.0;   // closest shot (inches)
         public static double maxDistanceIn = 160.0;  // farthest shot (inches)
 
-        // ── Zone threshold ────────────────────────────────────────────────────
-        // Distances at or below this value use baselineRPM_Close.
-        // Distances above use baselineRPM_Far.
-        // Tune after calibration — roughly where close and far shot zones meet.
-        public static double zoneThresholdIn = 80.0;  // inches
-
-        // ── Baseline RPMs ─────────────────────────────────────────────────────
-        // Always commanded to the flywheel regardless of distance.
-        // Set higher than the maximum RPM needed in each zone so the hood
-        // has room to compensate downward for RPM drops between shots.
-        // Tune after reviewing Solver Preview sheet with calibration data.
-        public static double baselineRPM_Far   = 2900.0;  // far zone  (> zoneThresholdIn)
-        public static double baselineRPM_Close = 2400.0;  // close zone (<= zoneThresholdIn)
 
         // ── Empirical v0 curve ────────────────────────────────────────────────
         // Linear fit from calibration: v0 (in/s) = v0Slope * RPM + v0Intercept

@@ -45,6 +45,8 @@ public class ShotController {
     private double targetFeedPower = ShooterFeedConstants.Targets.defaultFeedPower;
     private boolean presetShotMode = false;
 
+    private final InterpLUT baselineRPMLUT;
+
     // v0 correction LUT — keyed on distance (inches), value is a scalar multiplier.
     // All values start at 1.0 (no correction). Tune empirically after calibration
     // if shots deviate from predicted range at specific distances.
@@ -57,6 +59,7 @@ public class ShotController {
         this.telemetry = telemetry;
 
         this.v0CorrectionLUT = setupV0CorrectionLUT();
+        this.baselineRPMLUT  = setupBaselineRPMLUT();
     }
 
     public void setState(ShotCycleState newState) {
@@ -209,10 +212,9 @@ public class ShotController {
                 ShooterConstants.Solver.minDistanceIn,
                 ShooterConstants.Solver.maxDistanceIn);
 
-        // Select and command baseline RPM for this zone
-        double baseline = (distanceIn <= ShooterConstants.Solver.zoneThresholdIn)
-                ? ShooterConstants.Solver.baselineRPM_Close
-                : ShooterConstants.Solver.baselineRPM_Far;
+
+        // Select baseline RPM for this distance from LUT
+        double baseline = baselineRPMLUT.get(distanceIn);
         setTargetFlywheelRPM(baseline);
 
         // Solve hood angle from ACTUAL RPM (not target — may have dropped)
@@ -352,10 +354,26 @@ public class ShotController {
     private InterpLUT setupV0CorrectionLUT() {
         InterpLUT lut = new InterpLUT();
 
+        //TODO Tune after calibration
         lut.add(35,  1.0);
         lut.add(80,  1.0);
         lut.add(120, 1.0);
         lut.add(160, 1.0);
+
+        lut.createLUT();
+        return lut;
+    }
+
+    private InterpLUT setupBaselineRPMLUT() {
+        InterpLUT lut = new InterpLUT();
+
+        //TODO Tune after calibration — set each point ~200 RPM above the minimum
+        // RPM needed at that distance so the hood has downward headroom.
+        // Solver Preview sheet will tell you the minimum needed per distance.
+        lut.add(35,  2400.0);
+        lut.add(80,  2400.0);
+        lut.add(120, 2900.0);
+        lut.add(160, 2900.0);
 
         lut.createLUT();
         return lut;
