@@ -355,10 +355,12 @@ public class ShotController {
         InterpLUT lut = new InterpLUT();
 
         //TODO Tune after calibration
+        lut.add(0, 1.0);
         lut.add(35,  1.0);
         lut.add(80,  1.0);
         lut.add(120, 1.0);
         lut.add(160, 1.0);
+        lut.add(200, 1.0);
 
         lut.createLUT();
         return lut;
@@ -370,10 +372,12 @@ public class ShotController {
         //TODO Tune after calibration — set each point ~200 RPM above the minimum
         // RPM needed at that distance so the hood has downward headroom.
         // Solver Preview sheet will tell you the minimum needed per distance.
+        lut.add(0, 1900);
         lut.add(35,  2400.0);
         lut.add(80,  2400.0);
-        lut.add(120, 2900.0);
-        lut.add(160, 2900.0);
+        lut.add(120, 2600);
+        lut.add(160, 2800);
+        lut.add(200, 3000);
 
         lut.createLUT();
         return lut;
