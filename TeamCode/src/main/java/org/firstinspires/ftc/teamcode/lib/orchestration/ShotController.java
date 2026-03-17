@@ -54,12 +54,17 @@ public class ShotController {
     // If far shots land short   → increase the entry for that distance above 1.0
     private final InterpLUT v0CorrectionLUT;
 
+    private final InterpLUT v0SlopeLUT;
+    private final InterpLUT v0InterceptLUT;
+
     public ShotController(NovaPyraRobot robot, Telemetry telemetry) {
         this.robot    = robot;
         this.telemetry = telemetry;
 
         this.v0CorrectionLUT = setupV0CorrectionLUT();
         this.baselineRPMLUT  = setupBaselineRPMLUT();
+        this.v0SlopeLUT = setupv0SlopeLut();
+        this.v0InterceptLUT = setupv0InterceptLUT();
     }
 
     public void setState(ShotCycleState newState) {
@@ -316,13 +321,13 @@ public class ShotController {
      * from real-world performance across the distance range.
      * All LUT values start at 1.0 — tune empirically after calibration.
      */
+
     private double rpmToV0(double rpm, double distanceIn) {
-        double v0 = ShooterConstants.Solver.v0Slope * rpm
-                + ShooterConstants.Solver.v0Intercept;
-        double correction = v0CorrectionLUT.get(
-                MathUtils.clamp(distanceIn,
-                        ShooterConstants.Solver.minDistanceIn,
-                        ShooterConstants.Solver.maxDistanceIn));
+        double launchAngle = robot.hood.getCurrentLaunchAngle();
+        double slope       = v0SlopeLUT.get(launchAngle);
+        double intercept   = v0InterceptLUT.get(launchAngle);
+        double v0          = slope * rpm + intercept;
+        double correction  = v0CorrectionLUT.get(distanceIn);
         return v0 * correction;
     }
 
@@ -372,16 +377,45 @@ public class ShotController {
         //TODO Tune after calibration — set each point ~200 RPM above the minimum
         // RPM needed at that distance so the hood has downward headroom.
         // Solver Preview sheet will tell you the minimum needed per distance.
-        lut.add(0, 1900);
-        lut.add(35,  2400.0);
-        lut.add(80,  2400.0);
-        lut.add(120, 2600);
-        lut.add(160, 2800);
-        lut.add(200, 3000);
+        lut.add(0,   1650);
+        lut.add(35,  1700);  // min ~1630
+        lut.add(80,  2050);  // min ~2026
+        lut.add(120, 2450);  // min ~2406
+        lut.add(160, 2800);  // min ~2746
+        lut.add(200, 2800);
 
         lut.createLUT();
         return lut;
     }
+
+    private InterpLUT setupv0SlopeLut() {
+        InterpLUT lut = new InterpLUT();
+
+        // v0SlopeLUT
+        lut.add(56.0,  0.0934);
+        lut.add(59.7,  0.0726);
+        lut.add(64.0,  0.0787);
+        lut.add(68.4,  0.0888);
+        lut.add(72.8,  0.0560);
+
+        lut.createLUT();
+        return lut;
+    }
+
+    private InterpLUT setupv0InterceptLUT() {
+        InterpLUT lut = new InterpLUT();
+
+        // v0InterceptLUT
+        lut.add(56.0,  16.7);
+        lut.add(59.7,  63.0);
+        lut.add(64.0,  48.4);
+        lut.add(68.4,  16.3);
+        lut.add(72.8,  91.0);
+
+        lut.createLUT();
+        return lut;
+    }
+
 
     // --------------------------
     // Distance to target

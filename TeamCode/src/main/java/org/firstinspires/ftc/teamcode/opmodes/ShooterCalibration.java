@@ -14,6 +14,7 @@ import org.firstinspires.ftc.teamcode.constants.HoodConstants;
 import org.firstinspires.ftc.teamcode.constants.ShooterConstants;
 import org.firstinspires.ftc.teamcode.constants.ShooterFeedConstants;
 import org.firstinspires.ftc.teamcode.lib.triggers.TriggerAxis;
+import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Kicker;
 import org.firstinspires.ftc.teamcode.subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.ShooterFeed;
@@ -74,7 +75,7 @@ public class ShooterCalibration extends CommandOpMode {
     private static final double RPM_MIN             = 1500.0;
     private static final double RPM_MAX             = 3500.0;
     private static final double RPM_FINE            = 50.0;
-    private static final double RPM_COARSE          = 200.0;
+    private static final double RPM_COARSE          = 100.0;
     private static final double HOOD_FINE           = 1.0;
     private static final double HOOD_COARSE         = 5.0;
     private static final double STICK_DEADBAND      = 0.4;
@@ -153,45 +154,45 @@ public class ShooterCalibration extends CommandOpMode {
                 shotCount++;
                 robot.shooterFeed.setFeedPower(FEED_POWER);
                 robot.shooterFeed.setState(ShooterFeed.FeedState.Feeding);
+                robot.intake.setState(Intake.IntakeState.Intake);
             }
         }));
-        c1RightTrigger.whenInactive(new InstantCommand(() ->
-                robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped)
-        ));
+        c1RightTrigger.whenInactive(new InstantCommand(() -> {
+            robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
+            robot.intake.setState(Intake.IntakeState.Stopped);
+        }));
 
         // Start: emergency stop
         c1Start.whenActive(new InstantCommand(this::stopAll));
 
-        // ── Controller 2 ─────────────────────────────────────────────────────
-
-        GamepadButton c2DPadUp    = new GamepadButton(controller2, GamepadKeys.Button.DPAD_UP);
-        GamepadButton c2DPadDown  = new GamepadButton(controller2, GamepadKeys.Button.DPAD_DOWN);
-        GamepadButton c2DPadLeft  = new GamepadButton(controller2, GamepadKeys.Button.DPAD_LEFT);
-        GamepadButton c2DPadRight = new GamepadButton(controller2, GamepadKeys.Button.DPAD_RIGHT);
-        GamepadButton c2Y         = new GamepadButton(controller2, GamepadKeys.Button.Y);
-        GamepadButton c2B         = new GamepadButton(controller2, GamepadKeys.Button.B);
+        GamepadButton c1DPadUp    = new GamepadButton(controller1, GamepadKeys.Button.DPAD_UP);
+        GamepadButton c1DPadDown  = new GamepadButton(controller1, GamepadKeys.Button.DPAD_DOWN);
+        GamepadButton c1DPadLeft  = new GamepadButton(controller1, GamepadKeys.Button.DPAD_LEFT);
+        GamepadButton c1DPadRight = new GamepadButton(controller1, GamepadKeys.Button.DPAD_RIGHT);
+        GamepadButton c1Y         = new GamepadButton(controller1, GamepadKeys.Button.Y);
+        GamepadButton c1B         = new GamepadButton(controller1, GamepadKeys.Button.B);
 
         // Coarse RPM adjustment
-        c2DPadUp.whenActive(new InstantCommand(() ->
+        c1DPadUp.whenActive(new InstantCommand(() ->
                 targetRPM = MathUtils.clamp(targetRPM + RPM_COARSE, RPM_MIN, RPM_MAX)));
-        c2DPadDown.whenActive(new InstantCommand(() ->
+        c1DPadDown.whenActive(new InstantCommand(() ->
                 targetRPM = MathUtils.clamp(targetRPM - RPM_COARSE, RPM_MIN, RPM_MAX)));
 
         // Coarse hood adjustment
-        c2DPadRight.whenActive(new InstantCommand(() ->
+        c1DPadRight.whenActive(new InstantCommand(() ->
                 targetHoodDeg = MathUtils.clamp(targetHoodDeg + HOOD_COARSE, HOOD_MIN_DEG, HOOD_MAX_DEG)));
-        c2DPadLeft.whenActive(new InstantCommand(() ->
+        c1DPadLeft.whenActive(new InstantCommand(() ->
                 targetHoodDeg = MathUtils.clamp(targetHoodDeg - HOOD_COARSE, HOOD_MIN_DEG, HOOD_MAX_DEG)));
 
         // Y: snapshot current settings to log
-        c2Y.whenActive(new InstantCommand(() ->
+        c1Y.whenActive(new InstantCommand(() ->
                 lastLogLine = String.format(
                         "SNAP | RPM tgt=%.0f act=%.0f | Hood=%.1f deg",
                         targetRPM, robot.shooter.getFlywheelRPM(), targetHoodDeg)
         ));
 
         // B: log last shot
-        c2B.whenActive(new InstantCommand(() ->
+        c1B.whenActive(new InstantCommand(() ->
                 lastLogLine = String.format(
                         "SHOT #%d | RPM at fire=%.0f | Hood=%.1f deg | Measure range now!",
                         shotCount, rpmAtLastFire, hoodAtLastFire)
@@ -207,18 +208,18 @@ public class ShooterCalibration extends CommandOpMode {
         super.run();
 
         // Fine RPM adjustment — right stick Y
-        double c2RightY = controller2.getRightY();
-        if (Math.abs(c2RightY) > STICK_DEADBAND) {
+        double c1RightY = controller1.getRightY();
+        if (Math.abs(c1RightY) > STICK_DEADBAND) {
             targetRPM = MathUtils.clamp(
-                    targetRPM + Math.signum(c2RightY) * RPM_FINE,
+                    targetRPM + Math.signum(c1RightY) * RPM_FINE,
                     RPM_MIN, RPM_MAX);
         }
 
         // Fine hood adjustment — left stick Y
-        double c2LeftY = controller2.getLeftY();
-        if (Math.abs(c2LeftY) > STICK_DEADBAND) {
+        double c1LeftY = controller1.getLeftY();
+        if (Math.abs(c1LeftY) > STICK_DEADBAND) {
             targetHoodDeg = MathUtils.clamp(
-                    targetHoodDeg + Math.signum(c2LeftY) * HOOD_FINE,
+                    targetHoodDeg + Math.signum(c1LeftY) * HOOD_FINE,
                     HOOD_MIN_DEG, HOOD_MAX_DEG);
         }
 
@@ -245,6 +246,7 @@ public class ShooterCalibration extends CommandOpMode {
         telemetry.addData("RPM  Status",    atRPM ? "✓ AT SPEED" : "... spinning up");
         telemetry.addLine("");
         telemetry.addData("Hood Target",    String.format("%.1f deg", targetHoodDeg));
+        telemetry.addData("Launch Angle", String.format("%.1f deg", robot.hood.getCurrentLaunchAngle()));
         telemetry.addLine("");
         telemetry.addData("Shot Count",     shotCount);
         telemetry.addData("Last Fire RPM",  String.format("%.0f", rpmAtLastFire));

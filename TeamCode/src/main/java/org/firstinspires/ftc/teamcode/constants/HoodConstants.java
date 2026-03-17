@@ -21,8 +21,8 @@ public class HoodConstants {
         // Servo 28.5  → Mech 34° → Launch 56.0° (hood up, flattest, far shots)
         // Servo 275.0 → Mech 15° → Launch 72.8° (hood down, steepest, close shots)
 
-        public static double hoodHardStopMin = 28.5;   // servo pos at mech MAX (34°)
-        public static double hoodHardStopMax = 275.0;  // servo pos at mech MIN (15°)
+        public static double hoodHardStopMin = 4.0;   // servo pos at mech MAX (34°)
+        public static double hoodHardStopMax = 251.0;  // servo pos at mech MIN (15°)
 
         // ── Mechanical degrees ────────────────────────────────────────────────
         public static double hoodMechMin = 15.0;  // hood down — steepest — close shots
@@ -30,8 +30,8 @@ public class HoodConstants {
 
         // Slope for mechanical → servo conversion
         // Servo Position = servoSlope * (mechDeg - hoodMechMax) + hoodHardStopMin
-        // = -12.97 * (mechDeg - 34) + 28.5
-        public static double servoSlope = -12.97;
+        // = -13.0 * (mechDeg - 34) + 4.0
+        public static double servoSlope = -13.0;
 
         // ── Launch angles (measured from horizontal) ──────────────────────────
         // These are the actual ball exit angles measured physically on the robot.

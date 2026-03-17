@@ -57,13 +57,5 @@ public class ShooterConstants {
         // ── Distance bounds ───────────────────────────────────────────────────
         public static double minDistanceIn = 35.0;   // closest shot (inches)
         public static double maxDistanceIn = 160.0;  // farthest shot (inches)
-
-
-        // ── Empirical v0 curve ────────────────────────────────────────────────
-        // Linear fit from calibration: v0 (in/s) = v0Slope * RPM + v0Intercept
-        // Both values come from the Curve Fit sheet in ShooterCalibration.xlsx.
-        // Leave at 0.0 until calibration is complete.
-        public static double v0Slope     = 0.05;  // in/s per RPM — from calibration
-        public static double v0Intercept = 117;  // in/s          — from calibration
     }
 }
