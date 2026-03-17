@@ -219,7 +219,7 @@ public class ShotController {
 
 
         // Select baseline RPM for this distance from LUT
-        double baseline = baselineRPMLUT.get(distanceIn);
+        double baseline = baselineRPMLUT.get(distanceIn) + ShooterConstants.Solver.baselineOffset;
         setTargetFlywheelRPM(baseline);
 
         // Solve hood angle from ACTUAL RPM (not target — may have dropped)
@@ -324,8 +324,8 @@ public class ShotController {
 
     private double rpmToV0(double rpm, double distanceIn) {
         double launchAngle = robot.hood.getCurrentLaunchAngle();
-        double slope       = v0SlopeLUT.get(launchAngle);
-        double intercept   = v0InterceptLUT.get(launchAngle);
+        double slope       = ShooterConstants.Solver.slope;
+        double intercept   = ShooterConstants.Solver.intercept;
         double v0          = slope * rpm + intercept;
         double correction  = v0CorrectionLUT.get(distanceIn);
         return v0 * correction;
@@ -378,11 +378,11 @@ public class ShotController {
         // RPM needed at that distance so the hood has downward headroom.
         // Solver Preview sheet will tell you the minimum needed per distance.
         lut.add(0,   1650);
-        lut.add(35,  1700);  // min ~1630
-        lut.add(80,  2050);  // min ~2026
-        lut.add(120, 2450);  // min ~2406
-        lut.add(160, 2800);  // min ~2746
-        lut.add(200, 2800);
+        lut.add(35,  1700);
+        lut.add(80,  2050);
+        lut.add(120, 2250);
+        lut.add(160, 2500);
+        lut.add(200, 2500);
 
         lut.createLUT();
         return lut;
@@ -392,11 +392,13 @@ public class ShotController {
         InterpLUT lut = new InterpLUT();
 
         // v0SlopeLUT
-        lut.add(56.0,  0.0934);
+        lut.add(0, 0.0795);
+        lut.add(56.0,  0.0795);
         lut.add(59.7,  0.0726);
         lut.add(64.0,  0.0787);
         lut.add(68.4,  0.0888);
-        lut.add(72.8,  0.0560);
+        lut.add(72.8,  0.0795);
+        lut.add(100.0,0.0795 );
 
         lut.createLUT();
         return lut;
@@ -406,11 +408,13 @@ public class ShotController {
         InterpLUT lut = new InterpLUT();
 
         // v0InterceptLUT
-        lut.add(56.0,  16.7);
+        lut.add(0, 48.7);
+        lut.add(56.0,  53.6);
         lut.add(59.7,  63.0);
         lut.add(64.0,  48.4);
         lut.add(68.4,  16.3);
-        lut.add(72.8,  91.0);
+        lut.add(72.8,  48.7);
+        lut.add(100.0,48.7 );
 
         lut.createLUT();
         return lut;

@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
+import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.InstantCommand;
@@ -13,7 +14,9 @@ import org.firstinspires.ftc.teamcode.constants.Alliance;
 import org.firstinspires.ftc.teamcode.constants.HoodConstants;
 import org.firstinspires.ftc.teamcode.constants.ShooterConstants;
 import org.firstinspires.ftc.teamcode.constants.ShooterFeedConstants;
+import org.firstinspires.ftc.teamcode.constants.VisionConstants;
 import org.firstinspires.ftc.teamcode.lib.triggers.TriggerAxis;
+import org.firstinspires.ftc.teamcode.lib.util.BlackboardHelpers;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Kicker;
 import org.firstinspires.ftc.teamcode.subsystems.Shooter;
@@ -90,6 +93,7 @@ public class ShooterCalibration extends CommandOpMode {
     private GamepadEx     controller1;
     private GamepadEx     controller2;
 
+
     private double  targetRPM      = 2000.0;
     private double  targetHoodDeg  = 25.0;
     private boolean spinUpEnabled  = false;
@@ -106,7 +110,7 @@ public class ShooterCalibration extends CommandOpMode {
     public void initialize() {
         super.reset();
 
-        robot       = new NovaPyraRobot(hardwareMap, telemetry, Alliance.BLUE);
+        robot       = new NovaPyraRobot(hardwareMap, telemetry, Alliance.RED);
         controller1 = new GamepadEx(gamepad1);
         controller2 = new GamepadEx(gamepad2);
 
@@ -117,6 +121,14 @@ public class ShooterCalibration extends CommandOpMode {
         robot.hood.setAngle(targetHoodDeg);
 
         setupButtonBindings();
+
+
+        robot.vision.startVision();
+        robot.vision.setTargetingTag(VisionConstants.AprilTags.RedGoal);
+
+        Pose startingPose = BlackboardHelpers.getAutoEndPoseOrDefault(blackboard,  Alliance.RED);
+        robot.pedroFollower.setPose(startingPose);
+        robot.pedroFollower.startTeleopDrive();
 
         telemetry.addLine("=== SHOOTER CALIBRATION READY ===");
         telemetry.addLine("Hold C1 LB to spin up. Hold C1 RT to feed.");
@@ -236,6 +248,7 @@ public class ShooterCalibration extends CommandOpMode {
         boolean readyToFire = spinUpEnabled && atRPM;
 
         telemetry.addLine("════ SHOOTER CALIBRATION ════");
+        telemetry.addData("Distance", robot.vision.distanceToTarget());
         telemetry.addLine("");
         telemetry.addData("Spin Up",        spinUpEnabled ? "ENABLED (LB held)" : "OFF");
         telemetry.addData("READY TO FIRE",  readyToFire   ? "✓ YES — hold RT"   : "✗ NO");
