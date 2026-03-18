@@ -144,7 +144,7 @@ public class BlueAuto12ScoreFar extends CommandOpMode {
 
                                 // Score preload
                                 // Prepare shot before starting
-                                setupFarWallPresetShot(),
+                                //setupFarWallPresetShot(),
                                 new FollowPathCommand(follower, paths.blueWallToFarZonePrescore, 0.5).beforeStarting(prepareShot()),
                                 new ParallelRaceGroup(
                                         new WaitCommand(TimingConstants.waitBeforeShootingMS),

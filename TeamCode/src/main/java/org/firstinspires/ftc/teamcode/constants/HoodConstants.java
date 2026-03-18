@@ -31,17 +31,17 @@ public class HoodConstants {
         // Slope for mechanical → servo conversion
         // Servo Position = servoSlope * (mechDeg - hoodMechMax) + hoodHardStopMin
         // = -13.0 * (mechDeg - 34) + 4.0
-        public static double servoSlope = -13.0;
+        public static double servoSlope = -10.04;
 
         // ── Launch angles (measured from horizontal) ──────────────────────────
         // These are the actual ball exit angles measured physically on the robot.
         // Launch angle increases (steeper) as mechanical angle decreases.
         //
-        // Mech 34° (hood up,   far shots)   → Launch 56.0° above horizontal
-        // Mech 15° (hood down, close shots) → Launch 72.8° above horizontal
+        // Mech 34° (hood up,   far shots)   → Launch 50.3° above horizontal
+        // Mech 15° (hood down, close shots) → Launch 74.9° above horizontal
 
-        public static double launchAngleAtMechMax = 56.0;  // degrees — flattest launch
-        public static double launchAngleAtMechMin = 72.8;  // degrees — steepest launch
+        public static double launchAngleAtMechMax = 50.3;  // degrees — flattest launch
+        public static double launchAngleAtMechMin = 74.9;  // degrees — steepest launch
 
         // ── Launch heights (measured physically on the robot) ─────────────────
         // Height of the ball exit point above the floor, varies with hood position.

@@ -128,10 +128,17 @@ public class Hood extends SubsystemBase {
      */
     public double getCurrentLaunchAngle() {
         double mechDeg = getCurrentMechanicalAngle();
-        return HoodConstants.Limits.launchAngleAtMechMax
+        double launchAngle = HoodConstants.Limits.launchAngleAtMechMax
                 + (mechDeg - HoodConstants.Limits.hoodMechMax)
                 * (HoodConstants.Limits.launchAngleAtMechMin - HoodConstants.Limits.launchAngleAtMechMax)
                 / (HoodConstants.Limits.hoodMechMin - HoodConstants.Limits.hoodMechMax);
+
+        // Clamp to valid range — prevents LUT out-of-bounds if servo
+        // position is outside expected range at startup or during transition
+        return MathUtils.clamp(
+                launchAngle,
+                HoodConstants.Limits.launchAngleAtMechMax,  // 50.0°
+                HoodConstants.Limits.launchAngleAtMechMin); // 72.8°
     }
 
     // ── Geometry helpers ──────────────────────────────────────────────────────
