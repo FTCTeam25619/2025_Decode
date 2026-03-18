@@ -11,7 +11,7 @@ public class KickerConstants {
     public static double maxRPM = 6000.0;
     public static final double gearRatio = 1.0;
     public static boolean motorInverted = false;
-    public static double flywheelRPMMultiplier = 1.5;
+    public static double flywheelRPMMultiplier = 1.7;
 
     @Configurable
     public static class VelocityPID {
