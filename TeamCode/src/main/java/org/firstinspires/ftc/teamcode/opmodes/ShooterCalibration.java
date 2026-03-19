@@ -77,7 +77,7 @@ public class ShooterCalibration extends CommandOpMode {
     private static final double HOOD_MAX_DEG        = HoodConstants.Limits.hoodHardStopMax;
     private static final double RPM_MIN             = 1500.0;
     private static final double RPM_MAX             = 3500.0;
-    private static final double RPM_FINE            = 50.0;
+    private static final double RPM_FINE            = 10.0;
     private static final double RPM_COARSE          = 100.0;
     private static final double HOOD_FINE           = 1.0;
     private static final double HOOD_COARSE         = 5.0;
@@ -248,7 +248,7 @@ public class ShooterCalibration extends CommandOpMode {
         boolean readyToFire = spinUpEnabled && atRPM;
 
         telemetry.addLine("════ SHOOTER CALIBRATION ════");
-        telemetry.addData("Distance", robot.vision.distanceToTarget());
+        telemetry.addData("Distance", getDistanceToTarget());
         telemetry.addLine("");
         telemetry.addData("Spin Up",        spinUpEnabled ? "ENABLED (LB held)" : "OFF");
         telemetry.addData("READY TO FIRE",  readyToFire   ? "✓ YES — hold RT"   : "✗ NO");
@@ -283,6 +283,21 @@ public class ShooterCalibration extends CommandOpMode {
 
     private boolean isAtTargetRPM() {
         return Math.abs(robot.shooter.getFlywheelRPM() - targetRPM) <= READY_RPM_TOLERANCE;
+    }
+
+    public double getDistanceToTarget() {
+        Pose robotPose  = robot.pedroFollower.getPose();
+        Pose targetPose = robot.vision.getTargetTagPose();
+
+        if (targetPose == null) {
+            return Double.NaN;
+        }
+
+        double dxIn = targetPose.getX() - robotPose.getX();
+        double dyIn = targetPose.getY() - robotPose.getY();
+
+        double distanceIn = Math.hypot(dxIn, dyIn);
+        return distanceIn * 2.54; // inches -> cm
     }
 
     private void stopAll() {
