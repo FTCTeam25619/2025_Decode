@@ -7,19 +7,16 @@ import com.seattlesolvers.solverslib.util.InterpLUT;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.NovaPyraRobot;
-import org.firstinspires.ftc.teamcode.constants.Constants;
 import org.firstinspires.ftc.teamcode.constants.HoodConstants;
 import org.firstinspires.ftc.teamcode.constants.ShooterConstants;
 import org.firstinspires.ftc.teamcode.constants.ShooterFeedConstants;
 import org.firstinspires.ftc.teamcode.constants.VisionConstants;
 import org.firstinspires.ftc.teamcode.lib.triggers.SupplierTrigger;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
-import org.firstinspires.ftc.teamcode.subsystems.Kicker;
 import org.firstinspires.ftc.teamcode.subsystems.Sensors;
 import org.firstinspires.ftc.teamcode.subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.ShooterFeed;
 import com.seattlesolvers.solverslib.util.MathUtils;
-
 
 import java.util.function.Predicate;
 
@@ -33,38 +30,31 @@ public class ShotController {
     private SupplierTrigger _robotAtHeadingTrigger;
 
     private ShotCycleState currentState = ShotCycleState.IDLE;
-    private ShotCycleState priorState = ShotCycleState.IDLE;
+    private ShotCycleState priorState   = ShotCycleState.IDLE;
 
     private boolean stateTransition;
 
     private final NovaPyraRobot robot;
-    private final Telemetry telemetry;
+    private final Telemetry     telemetry;
 
-    private double targetFlywheelRPM = ShooterConstants.Targets.idleRPM;
-    private double targetHoodAngle = HoodConstants.Limits.hoodHardStopMax;
-    private double targetFeedPower = ShooterFeedConstants.Targets.defaultFeedPower;
-    private boolean presetShotMode = false;
+    private double  targetFlywheelRPM = ShooterConstants.Targets.idleRPM;
+    private double  targetHoodAngle   = HoodConstants.Limits.hoodHardStopMin;
+    private double  targetFeedPower   = ShooterFeedConstants.Targets.defaultFeedPower;
+    private boolean presetShotMode    = false;
 
     private final InterpLUT baselineRPMLUT;
-
-    // v0 correction LUT — keyed on distance (inches), value is a scalar multiplier.
-    // All values start at 1.0 (no correction). Tune empirically after calibration
-    // if shots deviate from predicted range at specific distances.
-    // If close shots land long  → decrease the entry for that distance below 1.0
-    // If far shots land short   → increase the entry for that distance above 1.0
     private final InterpLUT v0CorrectionLUT;
-
     private final InterpLUT v0SlopeLUT;
     private final InterpLUT v0InterceptLUT;
 
     public ShotController(NovaPyraRobot robot, Telemetry telemetry) {
-        this.robot    = robot;
+        this.robot     = robot;
         this.telemetry = telemetry;
 
         this.v0CorrectionLUT = setupV0CorrectionLUT();
         this.baselineRPMLUT  = setupBaselineRPMLUT();
-        this.v0SlopeLUT = setupv0SlopeLut();
-        this.v0InterceptLUT = setupv0InterceptLUT();
+        this.v0SlopeLUT      = setupV0SlopeLUT();
+        this.v0InterceptLUT  = setupV0InterceptLUT();
     }
 
     public void setState(ShotCycleState newState) {
@@ -75,49 +65,45 @@ public class ShotController {
         return this.currentState;
     }
 
+    // --------------------------
+    // State machine
+    // --------------------------
+
     public void updateState() {
-        // Flag state transitions
         if (this.priorState != this.currentState) {
             this.stateTransition = true;
         } else if (this.stateTransition) {
             this.stateTransition = false;
         }
 
-
         /*
-        telemetry.addData("ShotController: Prior State", this.priorState.name());
-        telemetry.addData("ShotController: Current State", this.currentState.name());
-        telemetry.addData("ShotController: Transitioning?", this.stateTransition);
-        telemetry.addData("ShotController: RPM Target", this.getTargetFlywheelRPM());
-        telemetry.addData("ShotController: Hood Target", this.getTargetHoodAngle());
+        telemetry.addData("ShotController: Prior State",       this.priorState.name());
+        telemetry.addData("ShotController: Current State",     this.currentState.name());
+        telemetry.addData("ShotController: Transitioning?",    this.stateTransition);
+        telemetry.addData("ShotController: RPM Target",        this.getTargetFlywheelRPM());
+        telemetry.addData("ShotController: Hood Target",       this.getTargetHoodAngle());
         telemetry.addData("ShotController: Feed Power Target", this.getTargetFeedPower());
-        telemetry.addData("ShotController: Preset Mode?", this.presetShotMode);
-
-         */
+        telemetry.addData("ShotController: Preset Mode?",      this.presetShotMode);
+        */
 
         this.priorState = this.currentState;
 
         this.robot.indicatorLights.updatePresetModeWarningLight(this.presetShotMode);
 
-        // State actions that need to happen each cycle
         switch (this.currentState) {
             case OFF:
                 break;
 
             case IDLE:
-                // From idle, if we detect a staged ball, move to STAGED automatically.
                 if (this.staged()) {
                     this.currentState = ShotCycleState.STAGED;
                 }
                 break;
 
             case INTAKE:
-                // Behavior handled mostly by state transition triggers + LT mapping.
-                // Stop feed wheel when feedhigh sensor detects artifact
-                if (robot.sensors.seeingSomeBall(Sensors.SensorLocation.FeedHigh)){
+                if (robot.sensors.seeingSomeBall(Sensors.SensorLocation.FeedHigh)) {
                     this.robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
                 }
-                // Check if intake is stalled and stop it
                 if (this.robot.intake.isStalled()) {
                     this.robot.intake.setState(Intake.IntakeState.Stopped);
                     this.robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
@@ -125,7 +111,6 @@ public class ShotController {
                 break;
 
             case STAGED:
-                // Waiting for driver to start PREPARE_SHOT (via LB).
                 break;
 
             case PREPARE_SHOT:
@@ -136,7 +121,6 @@ public class ShotController {
                 break;
 
             case READY_TO_SHOOT:
-                // Keep everything updated; if we drift off, fall back to PREPARE_SHOT
                 runPrepareShotLogic();
                 if (!this.readyToShoot()) {
                     this.currentState = ShotCycleState.PREPARE_SHOT;
@@ -156,8 +140,7 @@ public class ShotController {
 
             case RECOVERY:
                 runPrepareShotLogic();
-                // Resume SHOOTING once the solver can make the shot again
-                // (RPM has recovered enough for the hood to compensate).
+                // Resume SHOOTING once the solver can make the shot again.
                 if (canMakeShot()) {
                     this.currentState = ShotCycleState.SHOOTING;
                 }
@@ -176,7 +159,6 @@ public class ShotController {
         }
 
         robot.shooter.setTargetRPM(this.getTargetFlywheelRPM());
-        robot.kicker.setTargetRPMFromFlywheel(this.getTargetFlywheelRPM());
         // Hood is commanded inside autoTargetShot() via setLaunchAngle().
         // In preset mode, command hood via legacy servo angle target.
         if (presetShotMode) {
@@ -189,47 +171,42 @@ public class ShotController {
     // --------------------------
 
     /**
-     * Physics Solver - replaces the old LUT-based autoTargetShot().
+     * Main solver entry point — replaces old LUT-based autoTargetShot().
      *
      * Strategy:
-     *   - Commands a fixed baseline RPM per zone (always higher than minimum needed).
-     *   - Reads ACTUAL RPM (which may be less than baseline due to drop between shots).
+     *   - Commands baseline RPM from LUT (always above minimum needed at that distance).
+     *   - Reads ACTUAL RPM (may be less than baseline due to drop between shots).
      *   - Solves for the hood launch angle that puts the ball's descending arc
      *     through the goal center at the current distance, given actual v0.
      *   - Commands that angle via robot.hood.setLaunchAngle().
-     *
-     * This gives the hood automatic per-shot compensation for RPM drop —
-     * the baseline RPM provides headroom and the hood absorbs the variation.
      */
     public void autoTargetShot() {
         this.presetShotMode = false;
 
         double rawDistance = getDistanceToTarget();
 
-        // If we don't have a valid distance (no tag, NaN, etc.), don't touch current targets
         if (Double.isNaN(rawDistance) || Double.isInfinite(rawDistance)) {
             telemetry.addData("Autoshoot", "No valid distance — skipping solver");
             return;
         }
 
         double distanceIn = MathUtils.clamp(
-                rawDistance / 2.54,                          // cm → inches
+                rawDistance / 2.54,
                 ShooterConstants.Solver.minDistanceIn,
                 ShooterConstants.Solver.maxDistanceIn);
 
-
-        // Select baseline RPM for this distance from LUT
+        // Baseline RPM from LUT — tuned to sit above minimum needed at each distance
         double baseline = baselineRPMLUT.get(distanceIn) + ShooterConstants.Solver.baselineOffset;
         setTargetFlywheelRPM(baseline);
 
-        // Solve hood angle from ACTUAL RPM (not target — may have dropped)
+        // Solve hood angle from ACTUAL RPM — may have dropped below baseline
         double actualRPM      = robot.shooter.getFlywheelRPM();
         double launchAngleDeg = solveHoodAngle(distanceIn, actualRPM);
 
         robot.hood.setLaunchAngle(launchAngleDeg);
 
-        telemetry.addData("Autoshoot Distance (in)",    distanceIn);
-        telemetry.addData("Autoshoot Zone Baseline RPM", baseline);
+        telemetry.addData("Autoshoot Distance (in)",     distanceIn);
+        telemetry.addData("Autoshoot Baseline RPM",      baseline);
         telemetry.addData("Autoshoot Actual RPM",        actualRPM);
         telemetry.addData("Autoshoot Launch Angle (°)",  launchAngleDeg);
         telemetry.addData("Autoshoot Can Make Shot",     canMakeShot(distanceIn, actualRPM));
@@ -242,16 +219,12 @@ public class ShotController {
      * Physics:
      *   y = x*tan(α) - [g*x²/(2*v0²*cos²(α))]
      *
-     * Rearranged as quadratic in tan(α):
-     *   Ac*tan²(α) - x*tan(α) + y = 0
+     * Rearranged as quadratic in tan(α), high-arc root:
+     *   tan(α) = (x + sqrt(x² - 4*Ac*y)) / (2*Ac)
      *   where Ac = g*x²/(2*v0²)
      *
-     * High-arc (descending) root:
-     *   tan(α) = (x + sqrt(x² - 4*Ac*y)) / (2*Ac)
-     *
-     * Returns a clamped launch angle — always safe to command even if
-     * the ideal solution is outside the mechanical range.
-     * canMakeShot() will catch out-of-range cases and trigger RECOVERY.
+     * Returns clamped launch angle — always safe to command.
+     * canMakeShot() catches out-of-range cases and triggers RECOVERY.
      */
     private double solveHoodAngle(double distanceIn, double actualRPM) {
         double v0   = rpmToV0(actualRPM, distanceIn);
@@ -264,7 +237,7 @@ public class ShotController {
         if (disc < 0) {
             // v0 too low to reach goal height — return flattest angle.
             // canMakeShot() will catch this and trigger RECOVERY.
-            return HoodConstants.Limits.launchAngleMax;  // 58°
+            return HoodConstants.Limits.launchAngleMin;  // 48.25°
         }
 
         double tanAlpha = (distanceIn + Math.sqrt(disc)) / (2.0 * Ac);
@@ -272,15 +245,13 @@ public class ShotController {
 
         return MathUtils.clamp(
                 alphaDeg,
-                HoodConstants.Limits.launchAngleMin,   // 48° — flattest
-                HoodConstants.Limits.launchAngleMax);  // 58° — steepest
+                HoodConstants.Limits.launchAngleMin,   // 48.25° — flattest
+                HoodConstants.Limits.launchAngleMax);  // 58.0°  — steepest (software clamp)
     }
 
     /**
      * Returns true if the current distance + actual RPM produce a valid
-     * launch angle within the mechanical range [56°, 72.8°].
-     *
-     * Used by the state machine to decide whether to trigger RECOVERY.
+     * launch angle within the software range [48.25°, 58.0°].
      * Public overload uses live distance + live RPM readings.
      */
     public boolean canMakeShot() {
@@ -307,33 +278,32 @@ public class ShotController {
         double tanAlpha = (distanceIn + Math.sqrt(disc)) / (2.0 * Ac);
         double alphaDeg = Math.toDegrees(Math.atan(tanAlpha));
 
-        return alphaDeg >= HoodConstants.Limits.launchAngleMin   // >= 48°
-                && alphaDeg <= HoodConstants.Limits.launchAngleMax;  // <= 58°
+        return alphaDeg >= HoodConstants.Limits.launchAngleMin   // >= 48.25°
+                && alphaDeg <= HoodConstants.Limits.launchAngleMax;  // <= 58.0°
     }
 
     /**
      * Converts flywheel RPM to estimated launch velocity v0 (in/s).
      *
-     * v0 = (slope * RPM + intercept) * correctionMultiplier(distance)
+     * v0 = (slope(launchAngle) * RPM + intercept(launchAngle)) * correction(distance)
      *
-     * The correction LUT absorbs systematic deviation of the empirical curve
-     * from real-world performance across the distance range.
-     * All LUT values start at 1.0 — tune empirically after calibration.
+     * slope/intercept come from per-angle calibration LUTs.
+     * correction is a distance-keyed multiplier — tune empirically after goal shots.
+     * All correction values start at 1.0 (no correction).
      */
-
     private double rpmToV0(double rpm, double distanceIn) {
         double launchAngle = robot.hood.getCurrentLaunchAngle();
-        double slope       = v0SlopeLUT.get(launchAngle) + ShooterConstants.Solver.slope;
-        double intercept   = v0InterceptLUT.get(launchAngle) + ShooterConstants.Solver.intercept;
+        double slope       = v0SlopeLUT.get(launchAngle);
+        double intercept   = v0InterceptLUT.get(launchAngle);
         double v0          = slope * rpm + intercept;
-        double correction = v0CorrectionLUT.get(distanceIn) + ShooterConstants.Solver.correction;
-        return v0 * correction;
+        double correction  = v0CorrectionLUT.get(distanceIn);
+        return v0 * (correction + ShooterConstants.Solver.correction);
     }
 
     /**
      * Returns y — vertical distance from launch point to goal center (inches).
-     * Goal center height = 41.25 in (38.75 lip + 2.5 ball radius).
-     * Launch height interpolated from current mechanical hood angle.
+     * Goal center = 41.25 in (38.75 lip + 2.5 ball radius).
+     * Launch height is fixed average (15.39 in) — variation is negligible.
      */
     private double launchHeightToGoal() {
         return ShooterConstants.Solver.goalCenterHeight
@@ -341,100 +311,125 @@ public class ShotController {
     }
 
     // --------------------------
-    // v0 Correction LUT
+    // LUT setup
     // --------------------------
 
     /**
-     * Distance-keyed multiplier on v0 to correct for systematic deviation
-     * of the empirical curve from real goal shots.
-     *
-     * All values start at 1.0 (no correction).
-     * Add more distance points if deviation is non-uniform across the range.
+     * v0 correction LUT — distance-keyed scalar multiplier on v0.
+     * Corrects for real-world deviation from the empirical calibration curve.
      *
      * Tuning guide:
-     *   Shot lands SHORT of target → increase multiplier at that distance
-     *   Shot lands LONG  of target → decrease multiplier at that distance
+     *   Shot lands SHORT → increase multiplier at that distance
+     *   Shot lands LONG  → decrease multiplier at that distance
      */
     private InterpLUT setupV0CorrectionLUT() {
         InterpLUT lut = new InterpLUT();
 
-        //TODO Tune after calibration
-        lut.add(0, 0.88);
-        lut.add(35,  0.88);
-        lut.add(80,  0.88);
-        lut.add(100, 0.88);
-        lut.add(120, 0.9);
-        lut.add(140, 0.9);
-        lut.add(160, 0.9);
-        lut.add(200, 0.9);
+        //TODO Tune after goal shots
+        lut.add(0,   1.0);
+        lut.add(35,  1.0);
+        lut.add(80,  1.0);
+        lut.add(100, 1.0);
+        lut.add(120, 0.8);
+        lut.add(140, 0.8);
+        lut.add(160, 0.8);
+        lut.add(200, 0.8);
 
         lut.createLUT();
         return lut;
     }
 
+    /**
+     * Baseline RPM LUT — distance-keyed.
+     * Set above the minimum RPM needed at each distance so the hood has
+     * headroom to flatten when RPM drops between shots.
+     *
+     * Tuning guide: If hood angle is too steep → raise baseline at that distance.
+     *               If spin-up takes too long  → lower baseline at that distance.
+     */
     private InterpLUT setupBaselineRPMLUT() {
         InterpLUT lut = new InterpLUT();
-
-        //TODO Tune after calibration — set each point ~200 RPM above the minimum
-        // RPM needed at that distance so the hood has downward headroom.
-        // Solver Preview sheet will tell you the minimum needed per distance.
-        lut.add(0,   1600);
-        lut.add(35,  1600);
-        lut.add(80,  2020);
-        lut.add(100,2195);
-        lut.add(120, 2400);
-        lut.add(140, 2500);
-        lut.add(160, 2750);
-        lut.add(200, 2750);
-
+        lut.add(0,   2400);
+        lut.add(35,  2400);  // min ~2385
+        lut.add(50,  2280);  // min ~2239
+        lut.add(80,  2520);  // min ~2494
+        lut.add(100, 2730);  // min ~2708
+        lut.add(120, 2900);
+        lut.add(140, 3100);
+        lut.add(160, 3290);
+        lut.add(200, 3290);
         lut.createLUT();
         return lut;
     }
 
-    private InterpLUT setupv0SlopeLut() {
+    /**
+     * v0 slope LUT — launch angle keyed (degrees).
+     * Captures how RPM→v0 sensitivity changes with hood position
+     * due to varying ball wrap around the flywheel.
+     *
+     * Entries cover the full software range (48.25°–58.0°).
+     * TODO: Replace placeholder values with real calibration data
+     *       from ShooterCalibration.xlsx Curve Fit sheet.
+     */
+    private InterpLUT setupV0SlopeLUT() {
         InterpLUT lut = new InterpLUT();
 
-        // v0SlopeLUT
-        lut.add(0, 0.0934);
-        lut.add(56.0,  0.0934);
-        lut.add(59.7,  0.0726);
-        lut.add(64.0,  0.0787);
-        lut.add(68.4,  0.0888);
-        lut.add(72.8,  0.0686);
-        lut.add(100.0,0.0686);
+        // Bounds — clamp protection outside operating range
+        lut.add(0,     0.0934);
+        // Operating range 48.25°–58.0°
+        // TODO: Fill with real per-angle calibration data
+        lut.add(48.25, 0.0735);  // placeholder — use 56° calibration as starting point
+        lut.add(50.5,  0.0776);  // placeholder
+        lut.add(53.0,  0.0768);  // placeholder
+        lut.add(55.5,  0.0724);  // placeholder
+        lut.add(58.0,  0.0748);  // placeholder
+        // Upper bound clamp
+        lut.add(100.0, 0.0768);
 
         lut.createLUT();
         return lut;
     }
 
-    private InterpLUT setupv0InterceptLUT() {
+    /**
+     * v0 intercept LUT — launch angle keyed (degrees).
+     * See setupV0SlopeLUT() for context.
+     *
+     * TODO: Replace placeholder values with real calibration data
+     *       from ShooterCalibration.xlsx Curve Fit sheet.
+     */
+    private InterpLUT setupV0InterceptLUT() {
         InterpLUT lut = new InterpLUT();
 
-        // v0InterceptLUT
-        lut.add(0, 16.7);
-        lut.add(56.0,  16.7);
-        lut.add(59.7,  63.0);
-        lut.add(64.0,  48.4);
-        lut.add(68.4,  16.3);
-        lut.add(72.8,  56.8);
-        lut.add(100.0,56.8);
+        // Bounds — clamp protection outside operating range
+        lut.add(0,     16.7);
+        // Operating range 48.25°–58.0°
+        // TODO: Fill with real per-angle calibration data
+        lut.add(48.25, 26.0);  // placeholder — use 56° calibration as starting point
+        lut.add(50.5,  15.5);  // placeholder
+        lut.add(53.0,  15.5);  // placeholder
+        lut.add(55.5,  26.6);  // placeholder
+        lut.add(58.0,  14.6);  // placeholder
+        // Upper bound clamp
+        lut.add(100.0, 14.6);
 
         lut.createLUT();
         return lut;
     }
-
 
     // --------------------------
     // Distance to target
     // --------------------------
 
     /**
-     * Hybrid distance:
-     * - If Limelight sees tag, use LL distance (Vision.distanceToTarget()).
-     * - Otherwise, use odometry distance to a known goal point on the field.
-     * Returns distance in CM.
+     * Returns distance to goal in CM.
+     * Uses odometry/Pedro as primary source.
+     * Limelight direct distance commented out — enable when vision tuned.
      */
     public double getDistanceToTarget() {
+        //if (robot.vision.isSeeingTarget()) {
+        //    return robot.vision.distanceToTarget();
+        //}
+
         Pose robotPose  = robot.pedroFollower.getPose();
         Pose targetPose = robot.vision.getTargetTagPose();
 
@@ -445,8 +440,7 @@ public class ShotController {
         double dxIn = targetPose.getX() - robotPose.getX();
         double dyIn = targetPose.getY() - robotPose.getY();
 
-        double distanceIn = Math.hypot(dxIn, dyIn);
-        return distanceIn * 2.54; // inches -> cm
+        return Math.hypot(dxIn, dyIn) * 2.54;  // inches → cm
     }
 
     // --------------------------
@@ -464,29 +458,13 @@ public class ShotController {
     // Targets getters/setters
     // --------------------------
 
-    public void setTargetFlywheelRPM(double newTarget) {
-        this.targetFlywheelRPM = newTarget;
-    }
+    public void setTargetFlywheelRPM(double newTarget) { this.targetFlywheelRPM = newTarget; }
+    public void setTargetHoodAngle(double newTarget)   { this.targetHoodAngle   = newTarget; }
+    public void setTargetFeedPower(double newTarget)   { this.targetFeedPower   = newTarget; }
 
-    public void setTargetHoodAngle(double newTarget) {
-        this.targetHoodAngle = newTarget;
-    }
-
-    public void setTargetFeedPower(double newTarget) {
-        this.targetFeedPower = newTarget;
-    }
-
-    public double getTargetFlywheelRPM() {
-        return this.targetFlywheelRPM;
-    }
-
-    public double getTargetHoodAngle() {
-        return this.targetHoodAngle;
-    }
-
-    public double getTargetFeedPower() {
-        return this.targetFeedPower;
-    }
+    public double getTargetFlywheelRPM() { return this.targetFlywheelRPM; }
+    public double getTargetHoodAngle()   { return this.targetHoodAngle;   }
+    public double getTargetFeedPower()   { return this.targetFeedPower;   }
 
     // --------------------------
     // Conditions and helpers
@@ -497,7 +475,7 @@ public class ShotController {
     }
 
     private boolean atRPM() {
-        return this.robot.shooter.atRPM() && this.robot.kicker.atRPM();
+        return this.robot.shooter.atRPM();
     }
 
     private boolean atTargetAngle() {
@@ -505,27 +483,21 @@ public class ShotController {
     }
 
     private boolean atTargetHeading() {
-        // Use odometry-based alignment check from Exploration
-        // This matches the auto-aim control logic
         Pose currentPose = robot.pedroFollower.getPose();
-        Pose targetPose = robot.vision.getTargetTagPose();
+        Pose targetPose  = robot.vision.getTargetTagPose();
 
-        // Calculate vector from robot to target
-        double dx = targetPose.getX() - currentPose.getX();
-        double dy = targetPose.getY() - currentPose.getY();
+        double dx            = targetPose.getX() - currentPose.getX();
+        double dy            = targetPose.getY() - currentPose.getY();
         double targetHeading = Math.atan2(dy, dx);
 
-        // Calculate heading error
-        double headingError = normalizeAngle(targetHeading - currentPose.getHeading());
+        double headingError    = normalizeAngle(targetHeading - currentPose.getHeading());
         double headingErrorDeg = Math.toDegrees(Math.abs(headingError));
 
-        // Check if within tolerance
         return headingErrorDeg <= VisionConstants.headingAngleThresholdDeg;
     }
 
-    // Add helper method
     private double normalizeAngle(double angleRad) {
-        while (angleRad > Math.PI) angleRad -= 2.0 * Math.PI;
+        while (angleRad > Math.PI)   angleRad -= 2.0 * Math.PI;
         while (angleRad <= -Math.PI) angleRad += 2.0 * Math.PI;
         return angleRad;
     }
@@ -534,7 +506,7 @@ public class ShotController {
         return this.atRPM() && this.atTargetAngle() && this.atTargetHeading();
     }
 
-    // isRPMatTarget() retained for any external callers — delegates to canMakeShot()
+    // Retained for any external callers — delegates to canMakeShot()
     public boolean isRPMatTarget() {
         return canMakeShot();
     }
@@ -562,44 +534,38 @@ public class ShotController {
     // --------------------------
 
     public Trigger shotStagedTrigger() {
-        if (this._shotStagedTrigger == null) {
+        if (this._shotStagedTrigger == null)
             this._shotStagedTrigger = new SupplierTrigger(this::staged);
-        }
         return this._shotStagedTrigger;
     }
 
     public Trigger readyToShootTrigger() {
-        if (this._readyToShootTrigger == null) {
+        if (this._readyToShootTrigger == null)
             this._readyToShootTrigger = new SupplierTrigger(this::readyToShoot);
-        }
         return this._readyToShootTrigger;
     }
 
     public Trigger isShootingTrigger() {
-        if (this._isShootingTrigger == null) {
+        if (this._isShootingTrigger == null)
             this._isShootingTrigger = new SupplierTrigger(this::isShooting);
-        }
         return this._isShootingTrigger;
     }
 
     public Trigger shooterAtRPM() {
-        if (this._shooterAtRPMTrigger == null) {
+        if (this._shooterAtRPMTrigger == null)
             this._shooterAtRPMTrigger = new SupplierTrigger(this::atRPM);
-        }
         return this._shooterAtRPMTrigger;
     }
 
     public Trigger hoodAtAngle() {
-        if (this._hoodAtAngleTrigger == null) {
+        if (this._hoodAtAngleTrigger == null)
             this._hoodAtAngleTrigger = new SupplierTrigger(this::atTargetAngle);
-        }
         return this._hoodAtAngleTrigger;
     }
 
     public Trigger robotAtHeading() {
-        if (this._robotAtHeadingTrigger == null) {
+        if (this._robotAtHeadingTrigger == null)
             this._robotAtHeadingTrigger = new SupplierTrigger(this::atTargetHeading);
-        }
         return this._robotAtHeadingTrigger;
     }
 
@@ -608,8 +574,8 @@ public class ShotController {
     }
 
     public static class StateTransitionToTrigger extends Trigger {
-        ShotCycleState             checkState;
-        Predicate<ShotCycleState>  getFn;
+        ShotCycleState            checkState;
+        Predicate<ShotCycleState> getFn;
 
         public StateTransitionToTrigger(Predicate<ShotCycleState> shotCycleStateSupplier,
                                         ShotCycleState state) {
@@ -626,109 +592,76 @@ public class ShotController {
     // --------------------------
 
     public void setupStateTransitionTriggers() {
+
         stateTransitionTrigger(ShotCycleState.OFF).whenActive(new InstantCommand(() -> {
-            // Transitioning back to OFF state
             this.robot.intake.setState(Intake.IntakeState.Stopped);
             this.robot.feedStop.engage();
             this.robot.shooter.setState(Shooter.ShooterState.Stopped);
-            this.robot.kicker.setState(Kicker.KickerState.Stopped);
             this.robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
             this.robot.hood.setAngle(HoodConstants.Limits.hoodHardStopMin);
         }));
 
         stateTransitionTrigger(ShotCycleState.IDLE).whenActive(new InstantCommand(() -> {
-            // Transitioning back to IDLE state
-            // NOTE: This will not trigger at start because initial state is IDLE
             this.robot.intake.setState(Intake.IntakeState.Stopped);
             this.robot.feedStop.engage();
             this.robot.shooter.setState(Shooter.ShooterState.Shooting);
             this.robot.shooter.setTargetRPM(ShooterConstants.Targets.idleRPM);
-            this.robot.kicker.setState(Kicker.KickerState.Spinning);
-            this.robot.kicker.setTargetRPMFromFlywheel(ShooterConstants.Targets.idleRPM);
             this.robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
             this.robot.hood.setAngle(HoodConstants.Limits.hoodHardStopMin);
         }));
 
-        // INTAKE state: left trigger held
         stateTransitionTrigger(ShotCycleState.INTAKE).whenActive(new InstantCommand(() -> {
-            // Transitioning to INTAKE state
             this.robot.intake.setState(Intake.IntakeState.Intake);
             this.robot.feedStop.engage();
-            // Same as prior state IDLE
             this.robot.shooter.setState(Shooter.ShooterState.Shooting);
             this.robot.shooter.setTargetRPM(ShooterConstants.Targets.idleRPM);
-            this.robot.kicker.setState(Kicker.KickerState.Spinning);
-            this.robot.kicker.setTargetRPMFromFlywheel(ShooterConstants.Targets.idleRPM);
-            // Feed wheel turned on during transition to move game pieces up closer to shooter and within alignment of color sensors.
-            // When feedhigh sensor detects gamepiece the feedwheel will be set to stopped in the UpdateState loop
             this.robot.shooterFeed.setFeedPower(this.getTargetFeedPower());
             this.robot.shooterFeed.setState(ShooterFeed.FeedState.Feeding);
             this.robot.hood.setAngle(HoodConstants.Limits.hoodHardStopMin);
         }));
 
-        // STAGED: ball is staged but not yet preparing to shoot
         stateTransitionTrigger(ShotCycleState.STAGED).whenActive(new InstantCommand(() -> {
-            // Transitioning to STAGED state
             this.robot.intake.setState(Intake.IntakeState.Stopped);
-            // Same as prior state INTAKE
             this.robot.feedStop.engage();
             this.robot.shooter.setState(Shooter.ShooterState.Shooting);
             this.robot.shooter.setTargetRPM(ShooterConstants.Targets.idleRPM);
-            this.robot.kicker.setState(Kicker.KickerState.Spinning);
-            this.robot.kicker.setTargetRPMFromFlywheel(ShooterConstants.Targets.idleRPM);
             this.robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
             this.robot.hood.setAngle(HoodConstants.Limits.hoodHardStopMin);
         }));
 
-        // PREPARE_SHOT: spin up, aim hood, keep feedStop engaged
         stateTransitionTrigger(ShotCycleState.PREPARE_SHOT).whenActive(new InstantCommand(() -> {
-            // Transitioning to PREPARE_SHOT state
             this.robot.feedStop.engage();
             this.robot.shooter.setState(Shooter.ShooterState.Shooting);
-            this.robot.kicker.setState(Kicker.KickerState.Spinning);
-            this.robot.hood.setAngle(this.getTargetHoodAngle());
             this.robot.intake.setState(Intake.IntakeState.Stopped);
-            // Same as prior state STAGED
             this.robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
-            // Hood angle set each loop by runPrepareShotLogic() → autoTargetShot()
+            // Hood commanded each loop by runPrepareShotLogic() → autoTargetShot()
         }));
 
-        // READY_TO_SHOOT: same hardware as PREPARE_SHOT, just logically "ready"
         stateTransitionTrigger(ShotCycleState.READY_TO_SHOOT).whenActive(new InstantCommand(() -> {
-            // Transitioning to READY_TO_SHOOT state
-            // Same as prior state PREPARE_SHOT
             this.robot.feedStop.engage();
             this.robot.shooter.setState(Shooter.ShooterState.Shooting);
-            this.robot.kicker.setState(Kicker.KickerState.Spinning);
-            this.robot.hood.setAngle(this.getTargetHoodAngle());
             this.robot.intake.setState(Intake.IntakeState.Stopped);
             this.robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
+            // Hood commanded each loop by runPrepareShotLogic() → autoTargetShot()
         }));
 
-        // SHOOTING: open feedStop + run feed & intake while keeping shooter/hood targets
         stateTransitionTrigger(ShotCycleState.SHOOTING).whenActive(new InstantCommand(() -> {
             this.robot.feedStop.disengage();
             this.robot.shooter.setState(Shooter.ShooterState.Shooting);
-            this.robot.kicker.setState(Kicker.KickerState.Spinning);
             this.robot.shooterFeed.setFeedPower(this.getTargetFeedPower());
             this.robot.shooterFeed.setState(ShooterFeed.FeedState.Feeding);
             this.robot.intake.setState(Intake.IntakeState.Intake);
-            // Hood angle set each loop by runPrepareShotLogic() → autoTargetShot()
+            // Hood commanded each loop by runPrepareShotLogic() → autoTargetShot()
         }));
 
         stateTransitionTrigger(ShotCycleState.RECOVERY).whenActive(new InstantCommand(() -> {
-            // Entering RECOVERY:
-            //  - Keep gate open (feedStop DISENGAGED)
-            //  - Stop feed wheel so we aren’t pushing balls
-            //  - Keep shooter + hood at their current targets
-
-            this.robot.feedStop.disengage();  // do NOT re-engage, avoids jamming
+            // Keep gate open — re-engaging risks jamming
+            // Stop feed while RPM recovers
+            this.robot.feedStop.disengage();
             this.robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
             this.robot.intake.setState(Intake.IntakeState.Stopped);
-
             this.robot.shooter.setState(Shooter.ShooterState.Shooting);
-            this.robot.kicker.setState(Kicker.KickerState.Spinning);
-            // Hood angle set each loop by runPrepareShotLogic() → autoTargetShot()
+            // Hood commanded each loop by runPrepareShotLogic() → autoTargetShot()
         }));
     }
 }

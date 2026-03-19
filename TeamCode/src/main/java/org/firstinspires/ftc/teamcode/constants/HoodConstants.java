@@ -45,8 +45,8 @@ public class HoodConstants {
         // Servo 249.0 → Launch 74.3°  (true mechanical max)
         // Servo ~94.4 → Launch 58.0°  (software clamp position)
 
-        public static double hoodHardStopMin = 2.0;    // servo pos at launch MIN (48.25°)
-        public static double hoodHardStopMax = 249.0;  // servo pos at launch MECH MAX (74.3°)
+        public static double hoodHardStopMin = 0.0;    // servo pos at launch MIN (48.25°)
+        public static double hoodHardStopMax = 355.0;  // servo pos at launch MECH MAX (74.3°)
 
         // ── Mechanical degrees (internal use only — do not use outside Hood.java) ──
         // mech 34° corresponds to launch 48.25° (flattest)
@@ -56,13 +56,13 @@ public class HoodConstants {
         public static double hoodMechMax = 34.0;   // hood up   — flattest
 
         // Servo = servoSlope * (mechDeg - hoodMechMax) + hoodHardStopMin
-        //       = -13.0 * (mechDeg - 34) + 2.0
-        public static double servoSlope = -13.0;
+        //       = -18.68 * (mechDeg - 34) + 0.0
+        public static double servoSlope = -18.68;
     }
 
     @Configurable
     public static class Control {
-        public static double incrementSize = 1.0;  // degrees — launch angle increment
+        public static double incrementSize = 5.0;  // degrees — launch angle increment
     }
 
     @Configurable
