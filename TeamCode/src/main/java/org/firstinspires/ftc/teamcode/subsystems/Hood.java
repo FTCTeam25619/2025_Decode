@@ -13,8 +13,8 @@ public class Hood extends SubsystemBase {
     private final ServoEx hoodServo;
     private final Telemetry telemetry;
 
-    // currentAngle is always in SERVO degrees (28.5 – 275.0).
-    // Start at servo midpoint which corresponds to mech ~24.75° / launch ~64.4°.
+    // currentAngle is always in SERVO degrees (2.0 – 249.0).
+    // Start at servo midpoint → launch ~61°, clamped to 58° on first setLaunchAngle() call.
     private double currentAngle = (HoodConstants.Limits.hoodHardStopMin +
             HoodConstants.Limits.hoodHardStopMax) / 2.0;
 
@@ -29,46 +29,33 @@ public class Hood extends SubsystemBase {
     public void periodic() {
         hoodServo.set(currentAngle);
 
-        //telemetry.addData("Hood: Servo Angle", currentAngle);
-        //telemetry.addData("Hood: Mech Angle",  getCurrentMechanicalAngle());
+        //telemetry.addData("Hood: Servo Angle",  currentAngle);
         //telemetry.addData("Hood: Launch Angle", getCurrentLaunchAngle());
     }
 
-    // ── Low-level: servo degrees ──────────────────────────────────────────────
+    // ── Low-level: servo degrees (internal use only) ──────────────────────────
 
     /**
-     * Sets the hood directly by servo position (28.5 – 275.0 degrees).
-     * Prefer setMechanicalAngle() or setLaunchAngle() over calling this directly.
+     * Sets the hood by raw servo position (2.0 – 249.0 degrees).
+     * Use setLaunchAngle() instead — this is for internal conversions only.
      */
     public void setAngle(double degrees) {
         currentAngle = MathUtils.clamp(degrees,
-                HoodConstants.Limits.hoodHardStopMin,
-                HoodConstants.Limits.hoodHardStopMax);
+                HoodConstants.Limits.hoodHardStopMin,   // 2.0
+                HoodConstants.Limits.hoodHardStopMax);  // 249.0
     }
 
-    /**
-     * Moves the hood by a delta in servo degrees.
-     */
-    public void moveBy(double degrees) {
-        setAngle(currentAngle + degrees);
-    }
-
-    // ── Mid-level: mechanical degrees (15° – 34°) ─────────────────────────────
+    // ── Mid-level: mechanical degrees (internal use only) ─────────────────────
 
     /**
-     * Sets the hood by mechanical angle (15° – 34°).
+     * Sets the hood by mechanical arm angle (15° – 34°).
+     *   34° = hood up,   flattest → launch 48.25°
+     *   15° = hood down, steepest → launch 74.3° (mechanical max)
      *
-     * Mechanical angle is the physical arm angle:
-     *   15° = hood down, steepest, close shots
-     *   34° = hood up,   flattest, far shots
-     *
-     * Conversion:
-     *   Servo = servoSlope * (mechDeg - hoodMechMax) + hoodHardStopMin
-     *         = -12.97 * (mechDeg - 34) + 28.5
-     *
-     * NOTE: Relationship is inverted — higher mech angle = lower servo value.
+     * Servo = -13.0 * (mechDeg - 34) + 2.0
+     * NOTE: Inverted — higher mech angle = lower servo value.
      */
-    public void setMechanicalAngle(double mechanicalDegrees) {
+    private void setMechanicalAngle(double mechanicalDegrees) {
         double clampedMech = MathUtils.clamp(
                 mechanicalDegrees,
                 HoodConstants.Limits.hoodMechMin,   // 15.0
@@ -76,89 +63,88 @@ public class Hood extends SubsystemBase {
 
         double servoPos = HoodConstants.Limits.servoSlope
                 * (clampedMech - HoodConstants.Limits.hoodMechMax)
-                + HoodConstants.Limits.hoodHardStopMin;  // 28.5
+                + HoodConstants.Limits.hoodHardStopMin;
 
         setAngle(servoPos);
     }
 
     /**
-     * Back-calculates the current mechanical angle from the servo position.
-     * Inverse of the setMechanicalAngle() conversion.
-     *
-     * mechDeg = (servoPos - hoodHardStopMin) / servoSlope + hoodMechMax
+     * Back-calculates mechanical angle from current servo position.
+     * Clamped to valid mechanical range.
      */
-    public double getCurrentMechanicalAngle() {
-        return (currentAngle - HoodConstants.Limits.hoodHardStopMin)
+    private double getCurrentMechanicalAngle() {
+        double mech = (currentAngle - HoodConstants.Limits.hoodHardStopMin)
                 / HoodConstants.Limits.servoSlope
                 + HoodConstants.Limits.hoodMechMax;
+
+        return MathUtils.clamp(
+                mech,
+                HoodConstants.Limits.hoodMechMin,   // 15.0
+                HoodConstants.Limits.hoodMechMax);  // 34.0
     }
 
-    // ── High-level: launch angle (56.0° – 72.8° from horizontal) ─────────────
+    // ── High-level: launch angle — PRIMARY public interface ───────────────────
 
     /**
      * Sets the hood by launch angle (degrees above horizontal).
      *
-     * Launch angle is the actual ball exit angle measured from horizontal:
-     *   56.0° = flattest launch — mech 34° — far shots
-     *   72.8° = steepest launch — mech 15° — close shots
+     * SOFTWARE clamp: 48.25° – 58.0°
+     * (True mechanical max is 74.3° but shots above 58° bounce out of goal)
      *
-     * This is the method the physics solver calls.
+     * Interpolation uses the full mechanical range (48.25°–74.3°) so servo
+     * positions are physically correct across the entire travel.
      *
-     * Conversion: launch → mech → servo (two-step via setMechanicalAngle)
+     * This is the only method external callers should use.
      */
     public void setLaunchAngle(double launchDegrees) {
+        // Software clamp — limits to 58° max even though mechanism goes to 74.3°
         double clampedLaunch = MathUtils.clamp(
                 launchDegrees,
-                HoodConstants.Limits.launchAngleAtMechMax,  // 56.0° — flattest
-                HoodConstants.Limits.launchAngleAtMechMin); // 72.8° — steepest
+                HoodConstants.Limits.launchAngleMin,   // 48.25°
+                HoodConstants.Limits.launchAngleMax);  // 58.0°
 
-        // Linear interpolation: launch → mechanical
-        // launch 56.0° → mech 34°,  launch 72.8° → mech 15°
+        // Interpolate across full mechanical range for correct servo positions
+        // 48.25° → mech 34°,  74.3° → mech 15°
         double mechDegrees = HoodConstants.Limits.hoodMechMax
-                + (clampedLaunch - HoodConstants.Limits.launchAngleAtMechMax)
+                + (clampedLaunch - HoodConstants.Limits.launchAngleMin)
                 * (HoodConstants.Limits.hoodMechMin - HoodConstants.Limits.hoodMechMax)
-                / (HoodConstants.Limits.launchAngleAtMechMin - HoodConstants.Limits.launchAngleAtMechMax);
+                / (HoodConstants.Limits.launchAngleMechMax - HoodConstants.Limits.launchAngleMin);
 
         setMechanicalAngle(mechDegrees);
     }
 
     /**
-     * Returns the current launch angle in degrees above horizontal,
-     * derived from the current servo position.
+     * Returns current launch angle (degrees above horizontal).
+     *
+     * Uses full mechanical range for the back-calculation, then clamps
+     * to software range to prevent LUT out-of-bounds exceptions.
      */
     public double getCurrentLaunchAngle() {
         double mechDeg = getCurrentMechanicalAngle();
-        double launchAngle = HoodConstants.Limits.launchAngleAtMechMax
+
+        // Back-calculate using full mechanical range
+        double launchAngle = HoodConstants.Limits.launchAngleMin
                 + (mechDeg - HoodConstants.Limits.hoodMechMax)
-                * (HoodConstants.Limits.launchAngleAtMechMin - HoodConstants.Limits.launchAngleAtMechMax)
+                * (HoodConstants.Limits.launchAngleMechMax - HoodConstants.Limits.launchAngleMin)
                 / (HoodConstants.Limits.hoodMechMin - HoodConstants.Limits.hoodMechMax);
 
-        // Clamp to valid range — prevents LUT out-of-bounds if servo
-        // position is outside expected range at startup or during transition
+        // Clamp to software range — prevents LUT out-of-bounds
         return MathUtils.clamp(
                 launchAngle,
-                HoodConstants.Limits.launchAngleAtMechMax,  // 50.0°
-                HoodConstants.Limits.launchAngleAtMechMin); // 72.8°
+                HoodConstants.Limits.launchAngleMin,   // 48.25°
+                HoodConstants.Limits.launchAngleMax);  // 58.0°
     }
 
     // ── Geometry helpers ──────────────────────────────────────────────────────
 
     /**
-     * Returns the interpolated launch height (inches above floor) based on
-     * the current mechanical angle.
-     *
-     * Measured values:
-     *   Mech 34° → 15.85 in above floor
-     *   Mech 15° → 14.56 in above floor
-     *
-     * Used by ShotController.launchHeightToGoal() in the physics solver.
+     * Returns the launch height above floor (inches).
+     * Variation across hood travel is small (0.59 in) so a fixed
+     * average is used rather than interpolating.
+     * Used by ShotController.launchHeightToGoal().
      */
     public double interpolateLaunchHeight() {
-        double mechDeg = getCurrentMechanicalAngle();
-        return HoodConstants.Limits.launchHtAtMechMin
-                + (mechDeg - HoodConstants.Limits.hoodMechMin)
-                * (HoodConstants.Limits.launchHtAtMechMax - HoodConstants.Limits.launchHtAtMechMin)
-                / (HoodConstants.Limits.hoodMechMax - HoodConstants.Limits.hoodMechMin);
+        return HoodConstants.Limits.launchHeightAvg;  // 15.39 in
     }
 
     // ── Status ────────────────────────────────────────────────────────────────

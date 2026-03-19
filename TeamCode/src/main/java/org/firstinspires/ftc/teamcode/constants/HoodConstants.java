@@ -14,58 +14,64 @@ public class HoodConstants {
 
     @Configurable
     public static class Limits {
-        // ── Servo units ───────────────────────────────────────────────────────
-        // NOTE: Servo and mechanical angles are INVERTED.
-        // A lower servo position produces a higher mechanical (and launch) angle.
+        // ── Launch angles — PRIMARY public interface ──────────────────────────
+        // Actual ball exit angles measured from horizontal.
+        // Use setLaunchAngle() / getCurrentLaunchAngle() everywhere outside Hood.java.
         //
-        // Servo 28.5  → Mech 34° → Launch 56.0° (hood up, flattest, far shots)
-        // Servo 275.0 → Mech 15° → Launch 72.8° (hood down, steepest, close shots)
-
-        public static double hoodHardStopMin = 2.0;   // servo pos at mech MAX (34°)
-        public static double hoodHardStopMax = 249.0;  // servo pos at mech MIN (15°)
-
-        // ── Mechanical degrees ────────────────────────────────────────────────
-        public static double hoodMechMin = 15.0;  // hood down — steepest — close shots
-        public static double hoodMechMax = 34.0;  // hood up   — flattest — far shots
-
-        // Slope for mechanical → servo conversion
-        // Servo Position = servoSlope * (mechDeg - hoodMechMax) + hoodHardStopMin
-        // = -13.0 * (mechDeg - 34) + 4.0
-        public static double servoSlope = -10.04;
-
-        // ── Launch angles (measured from horizontal) ──────────────────────────
-        // These are the actual ball exit angles measured physically on the robot.
-        // Launch angle increases (steeper) as mechanical angle decreases.
+        // True mechanical range: 48.25° to 74.3°
+        // Software clamp:        48.25° to 58.0°
         //
-        // Mech 34° (hood up,   far shots)   → Launch 50.3° above horizontal
-        // Mech 15° (hood down, close shots) → Launch 74.9° above horizontal
+        // Shots steeper than 58° produce excessive arc and bounce out of the goal.
+        // The servo hard stops reflect the TRUE mechanical range (48.25°–74.3°).
+        // setLaunchAngle() clamps to launchAngleMax (58°) before commanding the servo.
 
-        public static double launchAngleAtMechMax = 50.3;  // degrees — flattest launch
-        public static double launchAngleAtMechMin = 74.9;  // degrees — steepest launch
+        public static double launchAngleMin     = 48.25;  // flattest  — hard stop
+        public static double launchAngleMax     = 58.0;   // steepest  — SOFTWARE clamp
+        public static double launchAngleMechMax = 74.3;   // true mechanical limit — not used by solver
 
-        // ── Launch heights (measured physically on the robot) ─────────────────
-        // Height of the ball exit point above the floor, varies with hood position.
+        // ── Launch height ─────────────────────────────────────────────────────
+        // Ball exit height above floor. Variation across hood travel is small
+        // so a fixed average is used in the physics solver.
         //
-        // Mech 34° (hood up)   → ball exits at 15.85 inches above floor
-        // Mech 15° (hood down) → ball exits at 14.56 inches above floor
+        // Hood at 48.25° → 15.69 in above floor
+        // Hood at 58.0°  → 15.10 in above floor
+        // Average: 15.39 in
 
-        public static double launchHtAtMechMax = 15.85;  // inches — hood up
-        public static double launchHtAtMechMin = 14.56;  // inches — hood down
+        public static double launchHeightAvg = 15.39;  // inches — fixed average
+
+        // ── Servo units (internal use only — do not use outside Hood.java) ────
+        // Hard stops reflect the TRUE mechanical range (48.25° to 74.3°).
+        // Servo 2.0   → Launch 48.25° (flattest)
+        // Servo 249.0 → Launch 74.3°  (true mechanical max)
+        // Servo ~94.4 → Launch 58.0°  (software clamp position)
+
+        public static double hoodHardStopMin = 2.0;    // servo pos at launch MIN (48.25°)
+        public static double hoodHardStopMax = 249.0;  // servo pos at launch MECH MAX (74.3°)
+
+        // ── Mechanical degrees (internal use only — do not use outside Hood.java) ──
+        // mech 34° corresponds to launch 48.25° (flattest)
+        // mech 15° corresponds to launch 74.3°  (true mechanical max)
+
+        public static double hoodMechMin = 15.0;   // hood down — steepest (true mech max)
+        public static double hoodMechMax = 34.0;   // hood up   — flattest
+
+        // Servo = servoSlope * (mechDeg - hoodMechMax) + hoodHardStopMin
+        //       = -13.0 * (mechDeg - 34) + 2.0
+        public static double servoSlope = -13.0;
     }
 
     @Configurable
     public static class Control {
-        public static double incrementSize = 10.0;
+        public static double incrementSize = 1.0;  // degrees — launch angle increment
     }
 
     @Configurable
     public static class Targets {
-        // Preset shot targets expressed in SERVO degrees.
-        // Use robot.hood.setMechanicalAngle() or setLaunchAngle() for
-        // physics-solver driven shots instead of these raw servo values.
-        public static double atGoalShot     = Limits.hoodHardStopMax;  // servo 275 → mech 15° → launch 72.8°
-        public static double nearZoneMidShot = Limits.hoodHardStopMin; // servo 28.5 → mech 34° → launch 56°
-        public static double nearZoneEndShot = Limits.hoodHardStopMin;
-        public static double farWallShot     = Limits.hoodHardStopMin;
+        // Preset shot targets in LAUNCH ANGLE degrees.
+        // Pass to robot.hood.setLaunchAngle().
+        public static double atGoalShot      = Limits.launchAngleMax;  // 58.0° — close, steep
+        public static double nearZoneMidShot = 53.0;                   // mid range
+        public static double nearZoneEndShot = 53.0;
+        public static double farWallShot     = Limits.launchAngleMin;  // 48.25° — far, flat
     }
 }

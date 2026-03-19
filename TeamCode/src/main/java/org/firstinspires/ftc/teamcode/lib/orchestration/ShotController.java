@@ -232,7 +232,6 @@ public class ShotController {
         telemetry.addData("Autoshoot Zone Baseline RPM", baseline);
         telemetry.addData("Autoshoot Actual RPM",        actualRPM);
         telemetry.addData("Autoshoot Launch Angle (°)",  launchAngleDeg);
-        telemetry.addData("Autoshoot Mech Angle (°)",    robot.hood.getCurrentMechanicalAngle());
         telemetry.addData("Autoshoot Can Make Shot",     canMakeShot(distanceIn, actualRPM));
     }
 
@@ -265,7 +264,7 @@ public class ShotController {
         if (disc < 0) {
             // v0 too low to reach goal height — return flattest angle.
             // canMakeShot() will catch this and trigger RECOVERY.
-            return HoodConstants.Limits.launchAngleAtMechMax;  // 56°
+            return HoodConstants.Limits.launchAngleMax;  // 58°
         }
 
         double tanAlpha = (distanceIn + Math.sqrt(disc)) / (2.0 * Ac);
@@ -273,8 +272,8 @@ public class ShotController {
 
         return MathUtils.clamp(
                 alphaDeg,
-                HoodConstants.Limits.launchAngleAtMechMax,   // 56° — flattest
-                HoodConstants.Limits.launchAngleAtMechMin);  // 72.8° — steepest
+                HoodConstants.Limits.launchAngleMin,   // 48° — flattest
+                HoodConstants.Limits.launchAngleMax);  // 58° — steepest
     }
 
     /**
@@ -308,8 +307,8 @@ public class ShotController {
         double tanAlpha = (distanceIn + Math.sqrt(disc)) / (2.0 * Ac);
         double alphaDeg = Math.toDegrees(Math.atan(tanAlpha));
 
-        return alphaDeg >= HoodConstants.Limits.launchAngleAtMechMax   // >= 56°
-                && alphaDeg <= HoodConstants.Limits.launchAngleAtMechMin;  // <= 72.8°
+        return alphaDeg >= HoodConstants.Limits.launchAngleMin   // >= 48°
+                && alphaDeg <= HoodConstants.Limits.launchAngleMax;  // <= 58°
     }
 
     /**
