@@ -295,9 +295,10 @@ public class ShotController {
         double launchAngle = robot.hood.getCurrentLaunchAngle();
         double slope       = v0SlopeLUT.get(launchAngle);
         double intercept   = v0InterceptLUT.get(launchAngle);
-        double v0          = slope * rpm + intercept;
+        double v0          = (slope * rpm + intercept)
+                * ShooterConstants.Solver.correction;
         double correction  = v0CorrectionLUT.get(distanceIn);
-        return v0 * (correction + ShooterConstants.Solver.correction);
+        return v0 * correction;
     }
 
     /**
@@ -330,10 +331,10 @@ public class ShotController {
         lut.add(35,  1.0);
         lut.add(80,  1.0);
         lut.add(100, 1.0);
-        lut.add(120, 0.8);
-        lut.add(140, 0.8);
-        lut.add(160, 0.8);
-        lut.add(200, 0.8);
+        lut.add(120, 1.0);
+        lut.add(140, 1.0);
+        lut.add(160, 1.0);
+        lut.add(200, 1.0);
 
         lut.createLUT();
         return lut;
@@ -347,13 +348,15 @@ public class ShotController {
      * Tuning guide: If hood angle is too steep → raise baseline at that distance.
      *               If spin-up takes too long  → lower baseline at that distance.
      */
+
+
     private InterpLUT setupBaselineRPMLUT() {
         InterpLUT lut = new InterpLUT();
         lut.add(0,   2400);
-        lut.add(35,  2400);  // min ~2385
-        lut.add(50,  2280);  // min ~2239
-        lut.add(80,  2520);  // min ~2494
-        lut.add(100, 2730);  // min ~2708
+        lut.add(35,  2400);
+        lut.add(50,  2280);
+        lut.add(80,  2520);
+        lut.add(100, 2730);
         lut.add(120, 2900);
         lut.add(140, 3100);
         lut.add(160, 3290);
@@ -375,7 +378,7 @@ public class ShotController {
         InterpLUT lut = new InterpLUT();
 
         // Bounds — clamp protection outside operating range
-        lut.add(0,     0.0934);
+        lut.add(0,     0.0735);
         // Operating range 48.25°–58.0°
         // TODO: Fill with real per-angle calibration data
         lut.add(48.25, 0.0735);  // placeholder — use 56° calibration as starting point
