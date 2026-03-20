@@ -220,44 +220,48 @@ public class ShotController {
      * Returns a clamped angle — always safe to command.
      */
     private double flatFirstSolveHoodAngle(double distanceIn, double actualRPM) {
-        final double angleMin = HoodConstants.Limits.launchAngleMin;  // 48.25° — flattest
-        final double angleMax = HoodConstants.Limits.launchAngleMax;  // software clamp ceiling
+        final double angleMin = HoodConstants.Limits.launchAngleMin;
+        final double angleMax = maxAngleForDistance(distanceIn);
 
         double hMin = ballHeightAtGoal(angleMin, distanceIn, actualRPM);
         double hMax = ballHeightAtGoal(angleMax, distanceIn, actualRPM);
 
-        // Case 1: flat angle already hits — use it as-is
-        if (hMin > 0 && Math.abs(hMin - ShooterConstants.Solver.goalCenterHeight) <= ShooterConstants.Solver.hitTolerance) {
+        // Case 1: flat angle already hits descending — use it as-is
+        if (!Double.isNaN(hMin) && hMin > 0
+                && Math.abs(hMin - ShooterConstants.Solver.goalCenterHeight)
+                <= ShooterConstants.Solver.hitTolerance) {
             return angleMin;
         }
 
-        double errMin = hMin - ShooterConstants.Solver.goalCenterHeight;
-        double errMax = hMax - ShooterConstants.Solver.goalCenterHeight;
-
-        // Case 2: no crossing in range — return closest boundary
-        if (Math.signum(errMin) == Math.signum(errMax) || hMin <= 0) {
-            return (Math.abs(errMin) <= Math.abs(errMax)) ? angleMin : angleMax;
+        // Case 2: even max angle can't produce a descending valid shot — return max and let
+        // canMakeShot() trigger RECOVERY. Nothing safe to do here.
+        if (Double.isNaN(hMax) || hMax <= 0) {
+            return angleMax;
         }
 
-        // Case 3: bisect to find crossing angle
+        // Case 3: bisect. NaN means ascending (not steep enough) — treat as lo side.
         double lo = angleMin, hi = angleMax;
         double mid = angleMin;
         for (int i = 0; i < 40; i++) {
             mid = (lo + hi) / 2.0;
             double hMid = ballHeightAtGoal(mid, distanceIn, actualRPM);
-            if (Math.abs(hMid - ShooterConstants.Solver.goalCenterHeight) < 0.05) break;
-            if (Math.signum(hMid - ShooterConstants.Solver.goalCenterHeight) == Math.signum(errMin)) {
+            if (!Double.isNaN(hMid)
+                    && Math.abs(hMid - ShooterConstants.Solver.goalCenterHeight) < 0.05) break;
+            // NaN = ascending = not steep enough → push lo up toward steeper angles
+            if (Double.isNaN(hMid) || hMid > ShooterConstants.Solver.goalCenterHeight) {
                 lo = mid;
             } else {
                 hi = mid;
             }
         }
 
-        // Step back toward angleMin — find flattest angle still within tolerance
+        // Step back toward angleMin — flattest angle still producing descending valid shot
         double bestAngle = mid;
         for (double a = mid - 0.1; a >= angleMin; a -= 0.1) {
             double h = ballHeightAtGoal(a, distanceIn, actualRPM);
-            if (h > 0 && Math.abs(h - ShooterConstants.Solver.goalCenterHeight) <= ShooterConstants.Solver.hitTolerance) {
+            if (!Double.isNaN(h) && h > 0
+                    && Math.abs(h - ShooterConstants.Solver.goalCenterHeight)
+                    <= ShooterConstants.Solver.hitTolerance) {
                 bestAngle = a;
             } else {
                 break;
@@ -279,14 +283,17 @@ public class ShotController {
      * reaching goal x (used by canMakeShot() to detect short shots).
      */
     private double ballHeightAtGoal(double angleDeg, double distanceIn, double actualRPM) {
-        double v0       = rpmToV0(actualRPM, angleDeg);
+        double v0       = rpmToV0(actualRPM, angleDeg, distanceIn);
         double angleRad = Math.toRadians(angleDeg);
         double v0x      = v0 * Math.cos(angleRad);
         double v0y      = v0 * Math.sin(angleRad);
         double t        = distanceIn / v0x;
-        return robot.hood.interpolateLaunchHeight()
+        double ballH    = robot.hood.interpolateLaunchHeight()
                 + v0y * t
                 - 0.5 * ShooterConstants.Solver.G * t * t;
+        double vy       = v0y - ShooterConstants.Solver.G * t;
+        // Return NaN if ascending — ascending hits are not valid shots
+        return vy < 0 ? ballH : Double.NaN;
     }
 
     /**
@@ -324,12 +331,12 @@ public class ShotController {
      * slope/intercept are per-angle calibration LUTs.
      * correction is a distance-keyed multiplier — tune empirically after goal shots.
      */
-    private double rpmToV0(double rpm, double angleDeg) {
+    private double rpmToV0(double rpm, double angleDeg, double distanceIn) {
         double slope      = v0SlopeLUT.get(angleDeg);
         double intercept  = v0InterceptLUT.get(angleDeg);
         double v0         = (slope * rpm + intercept) * ShooterConstants.Solver.correctionMultiplier;
         double correction = v0CorrectionLUT.get(
-                MathUtils.clamp(getDistanceToTarget() / 2.54,
+                MathUtils.clamp(distanceIn,
                         ShooterConstants.Solver.minDistanceIn,
                         ShooterConstants.Solver.maxDistanceIn));
         return v0 * correction;
@@ -345,6 +352,16 @@ public class ShotController {
                 - robot.hood.interpolateLaunchHeight();
     }
 
+    /**
+     * Returns the max hood angle allowed at a given distance.
+     * Close shots need a steeper ceiling to get a descending arc into the goal.
+     * Far shots are fine at 58° — they already have a large descending window.
+     */
+    private double maxAngleForDistance(double distanceIn) {
+        if (distanceIn <= 40)  return 65.0;   // 35" zone: needs steep to arc over and drop in
+        if (distanceIn <= 60)  return 60.0;   // 50" zone: small buffer above 58
+        return HoodConstants.Limits.launchAngleMax;  // 58° for everything else
+    }
     // --------------------------
     // LUT setup
     // --------------------------
@@ -384,8 +401,8 @@ public class ShotController {
      */
     private InterpLUT setupBaselineRPMLUT() {
         InterpLUT lut = new InterpLUT();
-        lut.add(0,   2400);
-        lut.add(35,  2490);
+        lut.add(0,   2080);
+        lut.add(35,  2080);
         lut.add(50,  2280);
         lut.add(80,  2510);
         lut.add(100, 2710);
@@ -407,15 +424,15 @@ public class ShotController {
      */
     private InterpLUT setupV0SlopeLUT() {
         InterpLUT lut = new InterpLUT();
-
         lut.add(0,     0.0735);
-        lut.add(48.25, 0.0735);  // placeholder
-        lut.add(50.5,  0.0776);  // placeholder
-        lut.add(53.0,  0.0768);  // placeholder
-        lut.add(55.5,  0.0724);  // placeholder
-        lut.add(58.0,  0.0748);  // placeholder
+        lut.add(48.25, 0.0735);
+        lut.add(50.5,  0.0776);
+        lut.add(53.0,  0.0768);
+        lut.add(55.5,  0.0724);
+        lut.add(58.0,  0.0748);
+        lut.add(62.0,  0.0748);  // placeholder — copy 58° until calibrated
+        lut.add(65.0,  0.0748);  // placeholder — copy 58° until calibrated
         lut.add(100.0, 0.0768);
-
         lut.createLUT();
         return lut;
     }
@@ -429,15 +446,15 @@ public class ShotController {
      */
     private InterpLUT setupV0InterceptLUT() {
         InterpLUT lut = new InterpLUT();
-
         lut.add(0,     16.7);
-        lut.add(48.25, 26.0);  // placeholder
-        lut.add(50.5,  15.5);  // placeholder
-        lut.add(53.0,  15.5);  // placeholder
-        lut.add(55.5,  26.6);  // placeholder
-        lut.add(58.0,  14.6);  // placeholder
+        lut.add(48.25, 26.0);
+        lut.add(50.5,  15.5);
+        lut.add(53.0,  15.5);
+        lut.add(55.5,  26.6);
+        lut.add(58.0,  14.6);
+        lut.add(62.0,  14.6);  // placeholder — copy 58° until calibrated
+        lut.add(65.0,  14.6);  // placeholder — copy 58° until calibrated
         lut.add(100.0, 14.6);
-
         lut.createLUT();
         return lut;
     }
@@ -511,6 +528,8 @@ public class ShotController {
     private boolean atTargetHeading() {
         Pose currentPose = robot.pedroFollower.getPose();
         Pose targetPose  = robot.vision.getTargetTagPose();
+
+        if (targetPose == null) return false;
 
         double dx            = targetPose.getX() - currentPose.getX();
         double dy            = targetPose.getY() - currentPose.getY();
