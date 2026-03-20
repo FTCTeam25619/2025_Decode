@@ -57,11 +57,8 @@ public class ShooterConstants {
         // ── Distance bounds ───────────────────────────────────────────────────
         public static double minDistanceIn = 35.0;   // closest shot (inches)
         public static double maxDistanceIn = 190.0;  // farthest shot (inches)
-
-        public static double slope = 0.0;
-        public static double intercept = 0.0;
-        public static double correction = 0.0;
-
+        public static double correctionMultiplier = 0.0;
         public static double baselineOffset = 0;
+        public static double hitTolerance = 2.5;
     }
 }

@@ -129,10 +129,6 @@ public class ShotController {
 
             case SHOOTING:
                 runPrepareShotLogic();
-                // Trigger RECOVERY only when the physics solver cannot produce
-                // a valid hood angle for the current distance + actual RPM.
-                // Normal RPM drop between shots is handled by hood compensation
-                // and does NOT trigger recovery.
                 if (!canMakeShot()) {
                     this.currentState = ShotCycleState.RECOVERY;
                 }
@@ -140,7 +136,6 @@ public class ShotController {
 
             case RECOVERY:
                 runPrepareShotLogic();
-                // Resume SHOOTING once the solver can make the shot again.
                 if (canMakeShot()) {
                     this.currentState = ShotCycleState.SHOOTING;
                 }
@@ -151,7 +146,6 @@ public class ShotController {
     /**
      * Shared logic for PREPARE_SHOT, READY_TO_SHOOT, SHOOTING, and RECOVERY.
      * Calls autoTargetShot() every loop unless in preset mode.
-     * autoTargetShot() sets targetFlywheelRPM and commands the hood directly.
      */
     private void runPrepareShotLogic() {
         if (!presetShotMode) {
@@ -159,8 +153,6 @@ public class ShotController {
         }
 
         robot.shooter.setTargetRPM(this.getTargetFlywheelRPM());
-        // Hood is commanded inside autoTargetShot() via setLaunchAngle().
-        // In preset mode, command hood via legacy servo angle target.
         if (presetShotMode) {
             robot.hood.setAngle(this.getTargetHoodAngle());
         }
@@ -171,13 +163,14 @@ public class ShotController {
     // --------------------------
 
     /**
-     * Main solver entry point — replaces old LUT-based autoTargetShot().
+     * Main solver entry point.
      *
      * Strategy:
-     *   - Commands baseline RPM from LUT (always above minimum needed at that distance).
+     *   - Commands baseline RPM from LUT.
      *   - Reads ACTUAL RPM (may be less than baseline due to drop between shots).
-     *   - Solves for the hood launch angle that puts the ball's descending arc
-     *     through the goal center at the current distance, given actual v0.
+     *   - Uses flatFirstSolveHoodAngle() to find the shallowest launch angle that
+     *     puts the ball's arc through the goal center at the current distance,
+     *     given actual v0. Prefers launchAngleMin, steepens only as needed.
      *   - Commands that angle via robot.hood.setLaunchAngle().
      */
     public void autoTargetShot() {
@@ -195,63 +188,112 @@ public class ShotController {
                 ShooterConstants.Solver.minDistanceIn,
                 ShooterConstants.Solver.maxDistanceIn);
 
-        // Baseline RPM from LUT — tuned to sit above minimum needed at each distance
         double baseline = baselineRPMLUT.get(distanceIn) + ShooterConstants.Solver.baselineOffset;
         setTargetFlywheelRPM(baseline);
 
-        // Solve hood angle from ACTUAL RPM — may have dropped below baseline
         double actualRPM      = robot.shooter.getFlywheelRPM();
-        double launchAngleDeg = solveHoodAngle(distanceIn, actualRPM);
+        double launchAngleDeg = flatFirstSolveHoodAngle(distanceIn, actualRPM);
 
         robot.hood.setLaunchAngle(launchAngleDeg);
 
-        telemetry.addData("Autoshoot Distance (in)",     distanceIn);
-        telemetry.addData("Autoshoot Baseline RPM",      baseline);
-        telemetry.addData("Autoshoot Actual RPM",        actualRPM);
-        telemetry.addData("Autoshoot Launch Angle (°)",  launchAngleDeg);
-        telemetry.addData("Autoshoot Can Make Shot",     canMakeShot(distanceIn, actualRPM));
+        telemetry.addData("Autoshoot Distance (in)",    distanceIn);
+        telemetry.addData("Autoshoot Baseline RPM",     baseline);
+        telemetry.addData("Autoshoot Actual RPM",       actualRPM);
+        telemetry.addData("Autoshoot Launch Angle (°)", launchAngleDeg);
+        telemetry.addData("Autoshoot Can Make Shot",    canMakeShot(distanceIn, actualRPM));
     }
 
     /**
-     * Solves for the launch angle (degrees above horizontal) that puts the
-     * ball's DESCENDING arc through the goal center at the given distance.
+     * Flat-first hood angle solver.
      *
-     * Physics:
-     *   y = x*tan(α) - [g*x²/(2*v0²*cos²(α))]
+     * Finds the shallowest launch angle within [launchAngleMin, launchAngleMax]
+     * whose arc passes through the goal center at the given distance and RPM.
      *
-     * Rearranged as quadratic in tan(α), high-arc root:
-     *   tan(α) = (x + sqrt(x² - 4*Ac*y)) / (2*Ac)
-     *   where Ac = g*x²/(2*v0²)
+     * Algorithm:
+     *   1. Evaluate ball height at angleMin and angleMax.
+     *   2. If angleMin already hits within HIT_TOLERANCE → return angleMin (flattest possible).
+     *   3. If heights straddle goalCenterHeight → bisect to find the crossing angle,
+     *      then step back toward angleMin to find the flattest angle still within tolerance.
+     *   4. If no crossing exists → return whichever boundary is closest.
+     *      canMakeShot() will catch misses and trigger RECOVERY.
      *
-     * Returns clamped launch angle — always safe to command.
-     * canMakeShot() catches out-of-range cases and triggers RECOVERY.
+     * Returns a clamped angle — always safe to command.
      */
-    private double solveHoodAngle(double distanceIn, double actualRPM) {
-        double v0   = rpmToV0(actualRPM, distanceIn);
-        double y    = launchHeightToGoal();
+    private double flatFirstSolveHoodAngle(double distanceIn, double actualRPM) {
+        final double angleMin = HoodConstants.Limits.launchAngleMin;  // 48.25° — flattest
+        final double angleMax = HoodConstants.Limits.launchAngleMax;  // software clamp ceiling
 
-        double Ac   = ShooterConstants.Solver.G * distanceIn * distanceIn
-                / (2.0 * v0 * v0);
-        double disc = distanceIn * distanceIn - 4.0 * Ac * y;
+        double hMin = ballHeightAtGoal(angleMin, distanceIn, actualRPM);
+        double hMax = ballHeightAtGoal(angleMax, distanceIn, actualRPM);
 
-        if (disc < 0) {
-            // v0 too low to reach goal height — return flattest angle.
-            // canMakeShot() will catch this and trigger RECOVERY.
-            return HoodConstants.Limits.launchAngleMin;  // 48.25°
+        // Case 1: flat angle already hits — use it as-is
+        if (hMin > 0 && Math.abs(hMin - ShooterConstants.Solver.goalCenterHeight) <= ShooterConstants.Solver.hitTolerance) {
+            return angleMin;
         }
 
-        double tanAlpha = (distanceIn + Math.sqrt(disc)) / (2.0 * Ac);
-        double alphaDeg = Math.toDegrees(Math.atan(tanAlpha));
+        double errMin = hMin - ShooterConstants.Solver.goalCenterHeight;
+        double errMax = hMax - ShooterConstants.Solver.goalCenterHeight;
 
-        return MathUtils.clamp(
-                alphaDeg,
-                HoodConstants.Limits.launchAngleMin,   // 48.25° — flattest
-                HoodConstants.Limits.launchAngleMax);  // 58.0°  — steepest (software clamp)
+        // Case 2: no crossing in range — return closest boundary
+        if (Math.signum(errMin) == Math.signum(errMax) || hMin <= 0) {
+            return (Math.abs(errMin) <= Math.abs(errMax)) ? angleMin : angleMax;
+        }
+
+        // Case 3: bisect to find crossing angle
+        double lo = angleMin, hi = angleMax;
+        double mid = angleMin;
+        for (int i = 0; i < 40; i++) {
+            mid = (lo + hi) / 2.0;
+            double hMid = ballHeightAtGoal(mid, distanceIn, actualRPM);
+            if (Math.abs(hMid - ShooterConstants.Solver.goalCenterHeight) < 0.05) break;
+            if (Math.signum(hMid - ShooterConstants.Solver.goalCenterHeight) == Math.signum(errMin)) {
+                lo = mid;
+            } else {
+                hi = mid;
+            }
+        }
+
+        // Step back toward angleMin — find flattest angle still within tolerance
+        double bestAngle = mid;
+        for (double a = mid - 0.1; a >= angleMin; a -= 0.1) {
+            double h = ballHeightAtGoal(a, distanceIn, actualRPM);
+            if (h > 0 && Math.abs(h - ShooterConstants.Solver.goalCenterHeight) <= ShooterConstants.Solver.hitTolerance) {
+                bestAngle = a;
+            } else {
+                break;
+            }
+        }
+
+        return MathUtils.clamp(bestAngle, angleMin, angleMax);
     }
 
     /**
-     * Returns true if the current distance + actual RPM produce a valid
-     * launch angle within the software range [48.25°, 58.0°].
+     * Returns the ball's height (inches) when it reaches goal x distance,
+     * given launch angle (degrees) and actual flywheel RPM.
+     *
+     * Uses projectile kinematics from the launch point:
+     *   y(t) = launchHeight + v0y*t - 0.5*G*t²
+     *   x(t) = v0x*t  →  t = distanceIn / v0x
+     *
+     * Returns a negative value if the ball has already hit the ground before
+     * reaching goal x (used by canMakeShot() to detect short shots).
+     */
+    private double ballHeightAtGoal(double angleDeg, double distanceIn, double actualRPM) {
+        double v0       = rpmToV0(actualRPM, angleDeg);
+        double angleRad = Math.toRadians(angleDeg);
+        double v0x      = v0 * Math.cos(angleRad);
+        double v0y      = v0 * Math.sin(angleRad);
+        double t        = distanceIn / v0x;
+        return robot.hood.interpolateLaunchHeight()
+                + v0y * t
+                - 0.5 * ShooterConstants.Solver.G * t * t;
+    }
+
+    /**
+     * Returns true if the current distance + actual RPM produce a valid shot —
+     * meaning the ball physically arrives within HIT_TOLERANCE of the goal center
+     * at the commanded launch angle.
+     *
      * Public overload uses live distance + live RPM readings.
      */
     public boolean canMakeShot() {
@@ -267,19 +309,11 @@ public class ShotController {
     }
 
     private boolean canMakeShot(double distanceIn, double actualRPM) {
-        double v0   = rpmToV0(actualRPM, distanceIn);
-        double y    = launchHeightToGoal();
-        double Ac   = ShooterConstants.Solver.G * distanceIn * distanceIn
-                / (2.0 * v0 * v0);
-        double disc = distanceIn * distanceIn - 4.0 * Ac * y;
-
-        if (disc < 0) return false;
-
-        double tanAlpha = (distanceIn + Math.sqrt(disc)) / (2.0 * Ac);
-        double alphaDeg = Math.toDegrees(Math.atan(tanAlpha));
-
-        return alphaDeg >= HoodConstants.Limits.launchAngleMin   // >= 48.25°
-                && alphaDeg <= HoodConstants.Limits.launchAngleMax;  // <= 58.0°
+        double currentAngleDeg = robot.hood.getCurrentLaunchAngle();
+        double ballH           = ballHeightAtGoal(currentAngleDeg, distanceIn, actualRPM);
+        return ballH > 0
+                && Math.abs(ballH - ShooterConstants.Solver.goalCenterHeight)
+                <= ShooterConstants.Solver.hitTolerance;
     }
 
     /**
@@ -287,24 +321,24 @@ public class ShotController {
      *
      * v0 = (slope(launchAngle) * RPM + intercept(launchAngle)) * correction(distance)
      *
-     * slope/intercept come from per-angle calibration LUTs.
+     * slope/intercept are per-angle calibration LUTs.
      * correction is a distance-keyed multiplier — tune empirically after goal shots.
-     * All correction values start at 1.0 (no correction).
      */
-    private double rpmToV0(double rpm, double distanceIn) {
-        double launchAngle = robot.hood.getCurrentLaunchAngle();
-        double slope       = v0SlopeLUT.get(launchAngle);
-        double intercept   = v0InterceptLUT.get(launchAngle);
-        double v0          = (slope * rpm + intercept)
-                * ShooterConstants.Solver.correction;
-        double correction  = v0CorrectionLUT.get(distanceIn);
+    private double rpmToV0(double rpm, double angleDeg) {
+        double slope      = v0SlopeLUT.get(angleDeg);
+        double intercept  = v0InterceptLUT.get(angleDeg);
+        double v0         = (slope * rpm + intercept) * ShooterConstants.Solver.correctionMultiplier;
+        double correction = v0CorrectionLUT.get(
+                MathUtils.clamp(getDistanceToTarget() / 2.54,
+                        ShooterConstants.Solver.minDistanceIn,
+                        ShooterConstants.Solver.maxDistanceIn));
         return v0 * correction;
     }
 
     /**
      * Returns y — vertical distance from launch point to goal center (inches).
-     * Goal center = 41.25 in (38.75 lip + 2.5 ball radius).
-     * Launch height is fixed average (15.39 in) — variation is negligible.
+     * Not used directly by flatFirstSolveHoodAngle (which calls ballHeightAtGoal
+     * directly), but retained for any external callers that need the target height.
      */
     private double launchHeightToGoal() {
         return ShooterConstants.Solver.goalCenterHeight
@@ -342,25 +376,23 @@ public class ShotController {
 
     /**
      * Baseline RPM LUT — distance-keyed.
-     * Set above the minimum RPM needed at each distance so the hood has
+     * Set above the minimum RPM needed at each distance so the solver has
      * headroom to flatten when RPM drops between shots.
      *
      * Tuning guide: If hood angle is too steep → raise baseline at that distance.
      *               If spin-up takes too long  → lower baseline at that distance.
      */
-
-
     private InterpLUT setupBaselineRPMLUT() {
         InterpLUT lut = new InterpLUT();
         lut.add(0,   2400);
-        lut.add(35,  2400);
+        lut.add(35,  2490);
         lut.add(50,  2280);
-        lut.add(80,  2520);
-        lut.add(100, 2730);
-        lut.add(120, 2900);
-        lut.add(140, 3100);
-        lut.add(160, 3290);
-        lut.add(200, 3290);
+        lut.add(80,  2510);
+        lut.add(100, 2710);
+        lut.add(120, 2930);
+        lut.add(140, 3130);
+        lut.add(160, 3330);
+        lut.add(200, 3330);
         lut.createLUT();
         return lut;
     }
@@ -370,23 +402,18 @@ public class ShotController {
      * Captures how RPM→v0 sensitivity changes with hood position
      * due to varying ball wrap around the flywheel.
      *
-     * Entries cover the full software range (48.25°–58.0°).
      * TODO: Replace placeholder values with real calibration data
      *       from ShooterCalibration.xlsx Curve Fit sheet.
      */
     private InterpLUT setupV0SlopeLUT() {
         InterpLUT lut = new InterpLUT();
 
-        // Bounds — clamp protection outside operating range
         lut.add(0,     0.0735);
-        // Operating range 48.25°–58.0°
-        // TODO: Fill with real per-angle calibration data
-        lut.add(48.25, 0.0735);  // placeholder — use 56° calibration as starting point
+        lut.add(48.25, 0.0735);  // placeholder
         lut.add(50.5,  0.0776);  // placeholder
         lut.add(53.0,  0.0768);  // placeholder
         lut.add(55.5,  0.0724);  // placeholder
         lut.add(58.0,  0.0748);  // placeholder
-        // Upper bound clamp
         lut.add(100.0, 0.0768);
 
         lut.createLUT();
@@ -403,16 +430,12 @@ public class ShotController {
     private InterpLUT setupV0InterceptLUT() {
         InterpLUT lut = new InterpLUT();
 
-        // Bounds — clamp protection outside operating range
         lut.add(0,     16.7);
-        // Operating range 48.25°–58.0°
-        // TODO: Fill with real per-angle calibration data
-        lut.add(48.25, 26.0);  // placeholder — use 56° calibration as starting point
+        lut.add(48.25, 26.0);  // placeholder
         lut.add(50.5,  15.5);  // placeholder
         lut.add(53.0,  15.5);  // placeholder
         lut.add(55.5,  26.6);  // placeholder
         lut.add(58.0,  14.6);  // placeholder
-        // Upper bound clamp
         lut.add(100.0, 14.6);
 
         lut.createLUT();
