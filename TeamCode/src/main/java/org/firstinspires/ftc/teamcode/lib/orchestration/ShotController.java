@@ -365,9 +365,9 @@ public class ShotController {
         lut.add(80,  1.0717);  // confirmed: 2300 RPM @ 80"
         lut.add(100, 1.0716);  // confirmed: 2500 RPM @ 100"
         lut.add(127, 1.0495);  // confirmed: 2830 RPM @ 127"
-        lut.add(133, 1.0425);  // confirmed: 2910 RPM @ 133"
-        lut.add(140, 1.0416);  // confirmed: 2980 RPM @ 140"
-        lut.add(200, 1.0416);
+        lut.add(133, 1.0495);  // confirmed: 2910 RPM @ 133"
+        lut.add(140, 1.0495);  // confirmed: 2980 RPM @ 140"
+        lut.add(200, 1.0495);
         lut.createLUT();
         return lut;
     }
