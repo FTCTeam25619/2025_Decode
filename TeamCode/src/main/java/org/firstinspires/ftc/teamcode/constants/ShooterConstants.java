@@ -19,7 +19,7 @@ public class ShooterConstants {
 
     @Configurable
     public static class Targets {
-        public static double idleRPM = 2350;
+        public static double idleRPM = 2800;
         public static double atGoalShot = 1850.0;
         public static double nearZoneMidShot = 2275.0;
         public static double nearZoneEndShot = 2550.0;
@@ -57,7 +57,7 @@ public class ShooterConstants {
         // ── Distance bounds ───────────────────────────────────────────────────
         public static double minDistanceIn = 35.0;   // closest shot (inches)
         public static double maxDistanceIn = 190.0;  // farthest shot (inches)
-        public static double correctionMultiplier = 0.0;
+        public static double correctionMultiplier = 1.0;
         public static double baselineOffset = 0;
         public static double hitTolerance = 2.5;
     }

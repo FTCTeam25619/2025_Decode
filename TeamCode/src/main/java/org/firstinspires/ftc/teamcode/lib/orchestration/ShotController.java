@@ -152,6 +152,7 @@ public class ShotController {
             autoTargetShot();
         }
 
+
         robot.shooter.setTargetRPM(this.getTargetFlywheelRPM());
         if (presetShotMode) {
             robot.hood.setAngle(this.getTargetHoodAngle());
@@ -359,17 +360,14 @@ public class ShotController {
      */
     private InterpLUT setupV0CorrectionLUT() {
         InterpLUT lut = new InterpLUT();
-
-        //TODO Tune after goal shots
-        lut.add(0,   1.0);
-        lut.add(35,  1.0);
-        lut.add(80,  1.0);
-        lut.add(100, 1.0);
-        lut.add(120, 1.0);
-        lut.add(140, 1.0);
-        lut.add(160, 1.0);
-        lut.add(200, 1.0);
-
+        lut.add(0,   1.0717);
+        lut.add(35,  1.0717);
+        lut.add(80,  1.0717);  // confirmed: 2300 RPM @ 80"
+        lut.add(100, 1.0716);  // confirmed: 2500 RPM @ 100"
+        lut.add(127, 1.0495);  // confirmed: 2830 RPM @ 127"
+        lut.add(133, 1.0425);  // confirmed: 2910 RPM @ 133"
+        lut.add(140, 1.0416);  // confirmed: 2980 RPM @ 140"
+        lut.add(200, 1.0416);
         lut.createLUT();
         return lut;
     }
@@ -384,19 +382,18 @@ public class ShotController {
      */
     private InterpLUT setupBaselineRPMLUT() {
         InterpLUT lut = new InterpLUT();
-        lut.add(0,   2400);
-        lut.add(35,  2490);
-        lut.add(50,  2280);
-        lut.add(80,  2510);
-        lut.add(100, 2710);
-        lut.add(120, 2930);
-        lut.add(140, 3130);
-        lut.add(160, 3330);
-        lut.add(200, 3330);
+        lut.add(0,   2180);  // 35" close shot — uses steep angle (62-65°)
+        lut.add(35,  2180);
+        lut.add(50,  2100);
+        lut.add(80,  2320);  // real shot confirmed at 2300
+        lut.add(100, 2520);  // real shot confirmed at 2500
+        lut.add(120, 2890);  // min=2744, +150 headroom
+        lut.add(140, 3130);  // min=2980 (confirmed real shot), +150 headroom
+        lut.add(160, 3320);  // min=3167, +150 headroom
+        lut.add(200, 3320);
         lut.createLUT();
         return lut;
     }
-
     /**
      * v0 slope LUT — launch angle keyed (degrees).
      * Captures how RPM→v0 sensitivity changes with hood position
@@ -529,7 +526,7 @@ public class ShotController {
     }
 
     public boolean readyToShoot() {
-        return this.atRPM() && this.atTargetAngle() && this.atTargetHeading();
+        return this.atRPM();
     }
 
     // Retained for any external callers — delegates to canMakeShot()
