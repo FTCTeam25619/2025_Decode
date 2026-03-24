@@ -91,6 +91,9 @@ public class DemoOpMode extends CommandOpMode {
         // ── RPM ───────────────────────────────────────────────────────────────
         demoTriggers.updateRPM();
 
+        // ── Shoot delay — starts feed/intake 100 ms after gate opens ──────────
+        demoTriggers.updateShootDelay();
+
         // ── ShotController — intake only ──────────────────────────────────────
         // updateState() only ever sees IDLE or INTAKE in demo mode,
         // so none of the shooting/recovery logic runs.

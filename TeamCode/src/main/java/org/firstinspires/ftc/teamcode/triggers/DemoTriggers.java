@@ -40,11 +40,11 @@ import org.firstinspires.ftc.teamcode.subsystems.ShooterFeed;
  */
 public class DemoTriggers implements ControllerTriggers {
 
-    private static final double HOOD_DEG_PER_SEC      = 300;
+    private static final double HOOD_DEG_PER_SEC      = 500.0;
     private static final double HOOD_TRIGGER_DEADBAND = 0.08;
     // Low-pass smoothing factor (0.0–1.0). Higher = faster response but more jitter.
     // Lower = smoother but slightly laggy. 0.15 is a good starting point.
-    private static final double SMOOTH_FACTOR         = 0.5;
+    private static final double SMOOTH_FACTOR         = 0.15;
 
     private static final double RPM_FAR   = 2900.0;
     private static final double RPM_MID   = 2300.0;
@@ -54,10 +54,16 @@ public class DemoTriggers implements ControllerTriggers {
     private final GamepadEx     controller1;
     private final GamepadEx     controller2;
 
-    private double selectedRPM     = RPM_MID;
+    private double selectedRPM    = RPM_MID;
     private double hoodTargetDeg  = 20.0;  // where the trigger is commanding
     private double hoodCurrentDeg = 20.0;  // smoothed value actually sent to servo
-    private long   lastHoodNanos   = 0;
+    private long   lastHoodNanos  = 0;
+
+    // Feed gate delay: gate opens immediately on RT press,
+    // feed wheel and intake held off for 100 ms to let the gate clear.
+    private static final long FEED_DELAY_NS     = 100_000_000L; // 100 ms
+    private boolean           shootPending         = false;
+    private long              shootGateOpenedNanos = 0;
 
     public DemoTriggers(NovaPyraRobot robot, GamepadEx controller1, GamepadEx controller2) {
         this.robot       = robot;
@@ -81,21 +87,23 @@ public class DemoTriggers implements ControllerTriggers {
         GamepadButton c1Start        = new GamepadButton(controller1, GamepadKeys.Button.START);
 
         // LEFT TRIGGER: Intake via ShotController
-        c1LeftTrigger.whenActive(new InstantCommand(() ->
-                robot.shotController.setState(ShotCycleState.INTAKE)));
+        c1LeftTrigger.whenActive(new InstantCommand(() -> {
+            robot.feedStop.engage();
+            robot.shotController.setState(ShotCycleState.INTAKE);
+        }));
         c1LeftTrigger.whenInactive(new InstantCommand(() ->
                 robot.shotController.setState(ShotCycleState.IDLE)));
 
-        // RIGHT TRIGGER: manual shoot — feed gate, feed wheel, intake only.
-        // Flywheel RPM is untouched — it is set by C2 presets via updateRPM() every loop.
+        // RIGHT TRIGGER: gate opens immediately on press; feed wheel and intake
+        // are held off until 100 ms has elapsed (see updateShootDelay()).
         c1RightTrigger.whenActive(new InstantCommand(() -> {
             robot.feedStop.disengage();
-            robot.shooterFeed.setFeedPower(ShooterFeedConstants.Targets.defaultFeedPower);
-            robot.shooterFeed.setState(ShooterFeed.FeedState.Feeding);
-            robot.intake.setState(Intake.IntakeState.Intake);
+            shootPending         = true;
+            shootGateOpenedNanos = System.nanoTime();
         }));
         c1RightTrigger.whenInactive(new InstantCommand(() -> {
-            robot.feedStop.engage();
+            shootPending = false;
+            //robot.feedStop.engage();
             robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
             robot.intake.setState(Intake.IntakeState.Stopped);
         }));
@@ -129,6 +137,20 @@ public class DemoTriggers implements ControllerTriggers {
     public void updateRPM() {
         robot.shooter.setState(Shooter.ShooterState.Shooting);
         robot.shooter.setTargetRPM(selectedRPM);
+    }
+
+    /**
+     * Call every loop. Once 100 ms has elapsed since the feed gate was opened,
+     * starts the feed wheel and intake. Safe to call even when not shooting.
+     */
+    public void updateShootDelay() {
+        if (!shootPending) return;
+        if (System.nanoTime() - shootGateOpenedNanos >= FEED_DELAY_NS) {
+            robot.shooterFeed.setFeedPower(ShooterFeedConstants.Targets.defaultFeedPower);
+            robot.shooterFeed.setState(ShooterFeed.FeedState.Feeding);
+            robot.intake.setState(Intake.IntakeState.Intake);
+            shootPending = false; // only need to trigger this once
+        }
     }
 
     /** Moves hood based on C2 trigger depth × elapsed time. */

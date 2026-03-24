@@ -59,6 +59,6 @@ public class ShooterConstants {
         public static double maxDistanceIn = 190.0;  // farthest shot (inches)
         public static double correctionMultiplier = 1.0;
         public static double baselineOffset = 0;
-        public static double hitTolerance = 2.5;
+        public static double hitTolerance = 5.0;
     }
 }
