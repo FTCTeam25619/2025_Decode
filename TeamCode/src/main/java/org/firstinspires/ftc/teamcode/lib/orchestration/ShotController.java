@@ -188,7 +188,7 @@ public class ShotController {
         // Clamp to valid LUT range to avoid tiny floating point out-of-bounds
         double distance = MathUtils.clamp(rawDistance, MIN_LUT_DISTANCE_CM, MAX_LUT_DISTANCE_CM);
 
-        setTargetFlywheelRPM(shooterRPMInterpolator.get(distance));
+        setTargetFlywheelRPM(shooterRPMInterpolator.get(distance) + ShooterConstants.baselineRPM);
         setTargetHoodAngle(hoodAngleInterpolator.get(distance));
 
         telemetry.addData("Autoshoot Raw Distance (cm)", rawDistance);
@@ -397,6 +397,7 @@ public class ShotController {
         stateTransitionTrigger(ShotCycleState.SHOOTING).whenActive(new InstantCommand(() -> {
             this.robot.feedStop.disengage();
             this.robot.shooter.setState(Shooter.ShooterState.Shooting);
+            //this.robot.shooterFeed.setFeedPower(ShooterFeedConstants.Targets.defaultFeedPower);
             this.robot.shooterFeed.setFeedPower(this.getTargetFeedPower());
             this.robot.shooterFeed.setState(ShooterFeed.FeedState.Feeding);
             this.robot.intake.setState(Intake.IntakeState.Intake);
@@ -515,12 +516,12 @@ public class ShotController {
         table.add(245, 2550);
         table.add(260, 2550);
         // Small Triangle / Far Shots
-        table.add(325, 2860);
-        table.add(338, 2900);
-        table.add(347, 2960);
-        table.add(355, 3000);
-        table.add(380, 3100);
-        table.add(392, 3140);
+        table.add(325, 2910); // +50 added to tested rpm shots
+        table.add(338, 2950); // +50 added to tested rpm shots
+        table.add(347, 3110); // +50 added to tested rpm shots
+        table.add(355, 3050); // +50 added to tested rpm shots
+        table.add(380, 3150); // +50 added to tested rpm shots
+        table.add(392, 3190); // +50 added to tested rpm shots
 
 
         table.add(600, 3200);
