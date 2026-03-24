@@ -27,7 +27,7 @@ public class RedNearGoalConstants {
 
     public Pose redGateOpenPose = new Pose(128.5, 61);
     public Pose redGateOpenPoseCP = new Pose(103, 64.25);
-    public Pose redGateIntakePose = new Pose(132.5, 50.0);
+    public Pose redGateIntakePose = new Pose(131.5, 50.0);
     public Pose redGateIntakePoseCP = new Pose(127.4, 55.0);
     public Pose redNearWallShootClose = new Pose(94.899, 117.769);
 

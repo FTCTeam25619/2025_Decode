@@ -173,9 +173,9 @@ public class BlueAuto12ScoreNear extends CommandOpMode {
                                  **/
 
                                 new FollowPathCommand(follower, paths.blueScoreToOpenGate,false).beforeStarting(idleState()),
-                                new FollowPathCommand(follower, paths.blueOpenGateToIntakeGate).beforeStarting(intake()),
+                                new FollowPathCommand(follower, paths.blueOpenGateToIntakeGate, false).beforeStarting(intake()),
 
-                                new WaitCommand(TimingConstants.waitForIntakeByGateMS),
+                                //new WaitCommand(TimingConstants.waitForIntakeByGateMS),
 
                                 // Score -- preparing shot after 30% of path complete. Begin shooting after 90% of path complete
                                 new FollowPathCommand(follower, paths.blueMidWallIntakeToNearScore),
