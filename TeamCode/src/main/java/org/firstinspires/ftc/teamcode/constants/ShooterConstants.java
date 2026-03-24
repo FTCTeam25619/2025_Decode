@@ -4,10 +4,11 @@ import com.bylazar.configurables.annotations.Configurable;
 
 @Configurable
 public class ShooterConstants {
-    public static double flywheelRPMTolerance = 160.0;
+    public static double flywheelRPMTolerance = 500.0;
     public static double minFlywheelRPM = 0.0;
     public static double maxFlywheelRPM = 8000.0;
     public static double gearRatio = 1.0;
+    public static double baselineRPM = 0.0;
 
     @Configurable
     public static class VelocityPID {
