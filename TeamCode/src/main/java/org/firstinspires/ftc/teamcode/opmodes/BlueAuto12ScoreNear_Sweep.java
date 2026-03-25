@@ -32,7 +32,7 @@ import org.firstinspires.ftc.teamcode.triggers.RobotTriggers;
 
 @Autonomous(name = "Blue Near 12 Sweep", group = "Autonomous")
 @Configurable // Panels
-public class BlueAuto12ScoreNear extends CommandOpMode {
+public class BlueAuto12ScoreNear_Sweep extends CommandOpMode {
     private NovaPyraRobot robot;
     private RobotTriggers robotTriggers;
     private Follower follower;
