@@ -352,7 +352,7 @@ public class ShotController {
             this.robot.shooter.setTargetRPM(ShooterConstants.Targets.idleRPM);
             // Feed wheel turned on during transition to move game pieces up closer to shooter and within alignment of color sensors.
             // When feedhigh sensor detects gamepiece the feedwheel will be set to stopped in the UpdateState loop
-            this.robot.shooterFeed.setFeedPower(this.getTargetFeedPower());
+            this.robot.shooterFeed.setFeedPower(ShooterFeedConstants.Targets.intakeFeedPower);
             this.robot.shooterFeed.setState(ShooterFeed.FeedState.Feeding);
             this.robot.hood.setAngle(HoodConstants.Limits.hoodHardStopMin);
         }));
