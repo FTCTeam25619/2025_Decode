@@ -154,6 +154,10 @@ public class BlueAuto12ScoreFar extends CommandOpMode {
                                         new WaitCommand(TimingConstants.waitBeforeShootingMS),
                                         new WaitUntilCommand(() -> robot.shotController.readyToShoot())
                                 ),
+                                new ParallelRaceGroup(
+                                        new WaitCommand(TimingConstants.waitForShootingMS),
+                                        turnToGoal()
+                                ),
                                 shoot(),
                                 new ParallelRaceGroup(
                                         new WaitCommand(TimingConstants.waitForShootingMS),
@@ -168,8 +172,12 @@ public class BlueAuto12ScoreFar extends CommandOpMode {
                                 new FollowPathCommand(follower, paths.blueFarZonePrescoreToFarIntake, false),
 
                                 // Score -- preparing shot after 50% of path complete. Begin shooting after path complete
-                                new FollowPathCommand(follower, paths.blueFarWallIntakeToFarScore)
-                                        .andThen(shoot()),
+                                new FollowPathCommand(follower, paths.blueFarWallIntakeToFarScore),
+                                new ParallelRaceGroup(
+                                        new WaitCommand(TimingConstants.waitForShootingMS),
+                                        turnToGoal()
+                                ),
+                                shoot(),
                                 new ParallelRaceGroup(
                                         new WaitCommand(TimingConstants.waitForShootingMS),
                                         turnToGoal()
@@ -183,8 +191,12 @@ public class BlueAuto12ScoreFar extends CommandOpMode {
                                 new FollowPathCommand(follower, paths.blueFarZoneScoreToMidIntake, false),
 
                                 // Score -- preparing shot after 50% of path complete. Begin shooting after path complete
-                                new FollowPathCommand(follower, paths.blueMidWallIntakeToFarScore)
-                                        .andThen(shoot()),
+                                new FollowPathCommand(follower, paths.blueMidWallIntakeToFarScore),
+                                new ParallelRaceGroup(
+                                        new WaitCommand(TimingConstants.waitForShootingMS),
+                                        turnToGoal()
+                                ),
+                                shoot(),
                                 new ParallelRaceGroup(
                                         new WaitCommand(TimingConstants.waitForShootingMS),
                                         turnToGoal()
@@ -199,8 +211,12 @@ public class BlueAuto12ScoreFar extends CommandOpMode {
                                 new WaitCommand(TimingConstants.waitForIntakeLoadingStationMS),
 
                                 // Score -- preparing shot after 30% of path complete. Begin shooting after path complete
-                                new FollowPathCommand(follower, paths.blueFarLoadingStationToFarScore)
-                                        .andThen(shoot()),
+                                new FollowPathCommand(follower, paths.blueFarLoadingStationToFarScore),
+                                new ParallelRaceGroup(
+                                        new WaitCommand(TimingConstants.waitForShootingMS),
+                                        turnToGoal()
+                                ),
+                                shoot(),
                                 new ParallelRaceGroup(
                                         new WaitCommand(TimingConstants.waitForShootingMS),
                                         turnToGoal()
