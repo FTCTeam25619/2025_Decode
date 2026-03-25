@@ -35,27 +35,25 @@ import org.firstinspires.ftc.teamcode.subsystems.ShooterFeed;
  *   Y Button         : Far preset   — 2900 RPM
  *   X Button         : Mid preset   — 2300 RPM
  *   A Button         : Close preset — 1900 RPM
- *   Right Trigger    : Hood UP   (while held, rate-based)
- *   Left Trigger     : Hood DOWN (while held, rate-based)
+ *   Right Trigger    : Shoot (same as C1 right trigger)
  */
 public class DemoTriggers implements ControllerTriggers {
 
-    private static final double HOOD_DEG_PER_SEC      = 120.0;
-    private static final double HOOD_TRIGGER_DEADBAND = 0.08;
+    private static final double HOOD_DEG_PER_SEC = 500.0;
     // Low-pass smoothing factor (0.0–1.0). Higher = faster response but more jitter.
     // Lower = smoother but slightly laggy. 0.15 is a good starting point.
-    private static final double SMOOTH_FACTOR         = 0.15;
+    private static final double SMOOTH_FACTOR    = 0.15;
 
     private static final double RPM_FAR   = 2900.0;
     private static final double RPM_MID   = 2300.0;
-    private static final double RPM_CLOSE = 1900.0;
+    private static final double RPM_CLOSE = 1800.0;
 
     private final NovaPyraRobot robot;
     private final GamepadEx     controller1;
     private final GamepadEx     controller2;
 
     private double selectedRPM    = RPM_MID;
-    private double hoodTargetDeg  = 20.0;  // where the trigger is commanding
+    private double hoodTargetDeg  = 20.0;  // where dpad is commanding
     private double hoodCurrentDeg = 20.0;  // smoothed value actually sent to servo
     private long   lastHoodNanos  = 0;
 
@@ -84,24 +82,27 @@ public class DemoTriggers implements ControllerTriggers {
     private void setupController1ButtonMappings() {
         TriggerAxis   c1LeftTrigger  = new TriggerAxis(controller1, GamepadKeys.Trigger.LEFT_TRIGGER,  DEFAULT_AXIS_THRESHOLD);
         TriggerAxis   c1RightTrigger = new TriggerAxis(controller1, GamepadKeys.Trigger.RIGHT_TRIGGER, DEFAULT_AXIS_THRESHOLD);
+        TriggerAxis   c2RightTrigger = new TriggerAxis(controller2, GamepadKeys.Trigger.RIGHT_TRIGGER, DEFAULT_AXIS_THRESHOLD);
         GamepadButton c1Start        = new GamepadButton(controller1, GamepadKeys.Button.START);
 
         // LEFT TRIGGER: Intake via ShotController
-        c1LeftTrigger.whenActive(new InstantCommand(() ->
-                robot.shotController.setState(ShotCycleState.INTAKE)));
+        c1LeftTrigger.whenActive(new InstantCommand(() -> {
+            robot.feedStop.engage();
+            robot.shotController.setState(ShotCycleState.INTAKE);
+        }));
         c1LeftTrigger.whenInactive(new InstantCommand(() ->
                 robot.shotController.setState(ShotCycleState.IDLE)));
 
-        // RIGHT TRIGGER: gate opens immediately on press; feed wheel and intake
-        // are held off until 100 ms has elapsed (see updateShootDelay()).
-        c1RightTrigger.whenActive(new InstantCommand(() -> {
+        // RIGHT TRIGGER (C1 or C2): gate opens immediately on press;
+        // feed wheel and intake held off until 100 ms has elapsed (see updateShootDelay()).
+        c1RightTrigger.or(c2RightTrigger).whenActive(new InstantCommand(() -> {
             robot.feedStop.disengage();
             shootPending         = true;
             shootGateOpenedNanos = System.nanoTime();
         }));
         c1RightTrigger.whenInactive(new InstantCommand(() -> {
             shootPending = false;
-            robot.feedStop.engage();
+            //robot.feedStop.engage();
             robot.shooterFeed.setState(ShooterFeed.FeedState.Stopped);
             robot.intake.setState(Intake.IntakeState.Stopped);
         }));
@@ -118,13 +119,13 @@ public class DemoTriggers implements ControllerTriggers {
     // -------------------------------------------------------------------------
 
     private void setupController2ButtonMappings() {
-        GamepadButton c2Y = new GamepadButton(controller2, GamepadKeys.Button.Y);
-        GamepadButton c2X = new GamepadButton(controller2, GamepadKeys.Button.X);
-        GamepadButton c2A = new GamepadButton(controller2, GamepadKeys.Button.A);
+        GamepadButton c1Y = new GamepadButton(controller1, GamepadKeys.Button.Y);
+        GamepadButton c1X = new GamepadButton(controller1, GamepadKeys.Button.X);
+        GamepadButton c1A = new GamepadButton(controller1, GamepadKeys.Button.A);
 
-        c2Y.whenActive(new InstantCommand(() -> selectedRPM = RPM_FAR));
-        c2X.whenActive(new InstantCommand(() -> selectedRPM = RPM_MID));
-        c2A.whenActive(new InstantCommand(() -> selectedRPM = RPM_CLOSE));
+        c1Y.whenActive(new InstantCommand(() -> selectedRPM = RPM_FAR));
+        c1X.whenActive(new InstantCommand(() -> selectedRPM = RPM_MID));
+        c1A.whenActive(new InstantCommand(() -> selectedRPM = RPM_CLOSE));
     }
 
     // -------------------------------------------------------------------------
@@ -151,23 +152,27 @@ public class DemoTriggers implements ControllerTriggers {
         }
     }
 
-    /** Moves hood based on C2 trigger depth × elapsed time. */
+    /**
+     * Moves hood based on C1 dpad up/down — held moves at fixed rate.
+     * Call every loop.
+     */
     public void updateHood() {
         long   now = System.nanoTime();
         double dt  = (lastHoodNanos == 0) ? 0.0 : Math.min((now - lastHoodNanos) * 1e-9, 0.1);
         lastHoodNanos = now;
 
-        double up   = applyDeadband(controller2.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER), HOOD_TRIGGER_DEADBAND);
-        double down = applyDeadband(controller2.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER),  HOOD_TRIGGER_DEADBAND);
+        boolean up   = controller1.getButton(GamepadKeys.Button.DPAD_UP);
+        boolean down = controller1.getButton(GamepadKeys.Button.DPAD_DOWN);
 
-        // Move the target at full speed based on trigger input
-        hoodTargetDeg += (up - down) * HOOD_DEG_PER_SEC * dt;
-        hoodTargetDeg  = MathUtils.clamp(hoodTargetDeg,
+        if (up)   hoodTargetDeg += HOOD_DEG_PER_SEC * dt;
+        if (down) hoodTargetDeg -= HOOD_DEG_PER_SEC * dt;
+
+        hoodTargetDeg = MathUtils.clamp(hoodTargetDeg,
                 HoodConstants.Limits.hoodHardStopMin,
                 HoodConstants.Limits.hoodHardStopMax);
 
         // Low-pass filter: smoothly interpolate current toward target each loop.
-        // Eliminates jitter from noisy trigger analog values without sacrificing speed.
+        // Eliminates jitter without sacrificing responsiveness.
         hoodCurrentDeg = hoodCurrentDeg + SMOOTH_FACTOR * (hoodTargetDeg - hoodCurrentDeg);
 
         robot.hood.setAngle(hoodCurrentDeg);
@@ -176,9 +181,4 @@ public class DemoTriggers implements ControllerTriggers {
     public double getHoodTargetDeg()  { return hoodTargetDeg;  }
     public double getHoodCurrentDeg() { return hoodCurrentDeg; }
     public double getSelectedRPM()    { return selectedRPM;    }
-
-    private static double applyDeadband(double value, double deadband) {
-        if (Math.abs(value) <= deadband) return 0.0;
-        return Math.signum(value) * (Math.abs(value) - deadband) / (1.0 - deadband);
-    }
 }
