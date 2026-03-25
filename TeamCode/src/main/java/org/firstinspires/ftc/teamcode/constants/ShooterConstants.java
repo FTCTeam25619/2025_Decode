@@ -12,10 +12,10 @@ public class ShooterConstants {
 
     @Configurable
     public static class VelocityPID {
-        public static double kP = 630.0;
+        public static double kP = 400; // old value with htd 5mm belt 630.0;
         public static double kI = 0.0;
-        public static double kD = 5.0;
-        public static double kF = 21.0;
+        public static double kD = 1.0; // old value with htd 5mm belt 5.0;
+        public static double kF = 13.5; // old value with htd 5mm belt 21.0;
     }
 
     @Configurable

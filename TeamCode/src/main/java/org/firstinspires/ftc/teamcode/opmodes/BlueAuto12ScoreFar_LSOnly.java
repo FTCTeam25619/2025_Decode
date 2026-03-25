@@ -87,10 +87,14 @@ public class BlueAuto12ScoreFar_LSOnly extends CommandOpMode {
                 new InstantCommand(() -> {
                     double dx = paths.goalTargetX - follower.getPose().getX();
                     double dy = paths.goalTargetY - follower.getPose().getY();
+                    follower.constants.holdPointHeadingScaling = 0.85; // full power for turnTo
                     follower.turnTo(Math.atan2(dy, dx));
                 }),
                 new WaitUntilCommand(() -> !follower.isBusy()),
-                new RunCommand(() -> {}) // never completes - keeps race alive until WaitCommand wins
+                new InstantCommand(() -> {
+                    follower.constants.holdPointHeadingScaling = 0.35; // restore for normal hold
+                }),
+                new RunCommand(() -> {})
         );
     }
 

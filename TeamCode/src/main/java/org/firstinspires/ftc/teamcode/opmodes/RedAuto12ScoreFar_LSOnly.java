@@ -87,7 +87,7 @@ public class RedAuto12ScoreFar_LSOnly extends CommandOpMode {
                 new InstantCommand(() -> {
                     double dx = paths.goalTargetX - follower.getPose().getX();
                     double dy = paths.goalTargetY - follower.getPose().getY();
-                    follower.constants.holdPointHeadingScaling = 1.0; // full power for turnTo
+                    follower.constants.holdPointHeadingScaling = 0.85; // full power for turnTo
                     follower.turnTo(Math.atan2(dy, dx));
                 }),
                 new WaitUntilCommand(() -> !follower.isBusy()),
