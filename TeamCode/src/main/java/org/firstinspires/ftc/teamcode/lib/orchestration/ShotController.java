@@ -372,7 +372,7 @@ public class ShotController {
         // PREPARE_SHOT: spin up, aim hood, keep feedStop engaged
         stateTransitionTrigger(ShotCycleState.PREPARE_SHOT).whenActive(new InstantCommand(() -> {
             // Transitioning to PREPARE_SHOT state
-            this.robot.feedStop.engage();
+            this.robot.feedStop.disengage();
             this.robot.shooter.setState(Shooter.ShooterState.Shooting);
             this.robot.shooter.setTargetRPM(this.getTargetFlywheelRPM());
             this.robot.hood.setAngle(this.getTargetHoodAngle());

@@ -33,12 +33,16 @@ public class BlueNearGoalConstants {
     public Pose blueNearWallShootClose = new Pose(49.101, 117.769);
 
 
+    public Pose blueGateOpenIntakePose = new Pose(14.0, 62.0);
+
     public Pose blueSweepIntakePoseCP1 = new Pose(25.22, 34.22);
     public Pose blueSweepIntakePoseCP2 = new Pose(5.9, 98.8);
 
     public Pose blueSweepEndPose = new Pose(13.0, 9.0);
 
     public double blueNearWallShootCloseHeading = 145.0;
+
+    public double blueGateOpenIntakeHeading = 332.7;
 
     public double blueGateOpenHeading = 330;
     public double blueGateIntakeHeading = 320;
@@ -67,6 +71,8 @@ public class BlueNearGoalConstants {
     public PathChain blueNearWallToPark;
     public PathChain blueNearShootToSweep;
     public PathChain blueSweepToPark;
+
+    public PathChain blueOpenAndIntakeGate;
 
     public NovaPyraRobot robot;
     public BlueNearGoalConstants(Follower follower, NovaPyraRobot robot) {
@@ -265,6 +271,22 @@ public class BlueNearGoalConstants {
                         Math.toRadians(blueGateIntakeHeading),
                         0.5)
                 .build();
+
+        blueOpenAndIntakeGate = follower
+                .pathBuilder()
+                .addPath(
+                        new BezierCurve(
+                                blueNearWallShoot,
+                                blueGateOpenPoseCP,
+                                blueGateOpenIntakePose
+                        )
+                )
+                .setLinearHeadingInterpolation(
+                        Math.toRadians(blueNearWallShootHeading),
+                        Math.toRadians(blueGateOpenIntakeHeading),
+                        0.5)
+                .build();
+
 
         blueNearShootToIntakeFromGate = follower
                 .pathBuilder()

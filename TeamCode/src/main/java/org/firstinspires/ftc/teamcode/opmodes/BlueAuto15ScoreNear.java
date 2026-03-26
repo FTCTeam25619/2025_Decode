@@ -167,8 +167,9 @@ public class BlueAuto15ScoreNear extends CommandOpMode {
                                  THIRD CYCLE - Gate Open and Intake
                                  **/
 
+                                //new FollowPathCommand(follower, paths.blueOpenAndIntakeGate, false).beforeStarting(intake()),
                                 new FollowPathCommand(follower, paths.blueScoreToOpenGate,false).beforeStarting(idleState()),
-                                new FollowPathCommand(follower, paths.blueOpenGateToIntakeGate,false).beforeStarting(intake()),
+                                new FollowPathCommand(follower, paths.blueOpenGateToIntakeGate).beforeStarting(intake()),
 
                                 //new WaitCommand(TimingConstants.waitForIntakeByGateMS),
 
@@ -183,8 +184,9 @@ public class BlueAuto15ScoreNear extends CommandOpMode {
                                  FOURTH CYCLE - Gate Open and Intake
                                  **/
 
+                                //new FollowPathCommand(follower, paths.blueOpenAndIntakeGate, false).beforeStarting(intake()),
                                 new FollowPathCommand(follower, paths.blueScoreToOpenGate,false).beforeStarting(idleState()),
-                                new FollowPathCommand(follower, paths.blueOpenGateToIntakeGate,false).beforeStarting(intake()),
+                                new FollowPathCommand(follower, paths.blueOpenGateToIntakeGate).beforeStarting(intake()),
 
                                 //new WaitCommand(TimingConstants.waitForIntakeByGateMS),
 
