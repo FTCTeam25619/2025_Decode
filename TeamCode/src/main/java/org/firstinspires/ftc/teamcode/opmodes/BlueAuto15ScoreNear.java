@@ -91,7 +91,7 @@ public class BlueAuto15ScoreNear extends CommandOpMode {
                 new InstantCommand(() -> {
                     double dx = paths.goalTargetX - follower.getPose().getX();
                     double dy = paths.goalTargetY - follower.getPose().getY();
-                    follower.constants.holdPointHeadingScaling = 1.0; // full power for turnTo
+                    follower.constants.holdPointHeadingScaling = .60; // full power for turnTo
                     follower.turnTo(Math.atan2(dy, dx));
                 }),
                 new WaitUntilCommand(() -> !follower.isBusy()),
@@ -144,15 +144,9 @@ public class BlueAuto15ScoreNear extends CommandOpMode {
                                  FIRST CYCLE - Preload
                                  **/
 
-                                // Prepare shot before starting - Begin shooting after 95% of path complete
-                                setupNearMidPresetShot(),
-                                new FollowPathCommand(follower, paths.blueWallToNearZonePrescore).beforeStarting(prepareShot()),
-                                shoot(),
-                                new ParallelRaceGroup(
-                                        new WaitCommand(TimingConstants.waitForShootingNearMS)
-                                        //turnToGoal()
-                                ).andThen(idleState()),
-
+                                // Prepare shot before starting - Begin shooting after 25% of path complete
+                                new FollowPathCommand(follower, paths.blueWallToNearZonePrescore, false).beforeStarting(prepareShot()),
+                                idleState(),
 
                                 /**
                                  SECOND CYCLE - MID row
@@ -162,6 +156,7 @@ public class BlueAuto15ScoreNear extends CommandOpMode {
                                 new FollowPathCommand(follower, paths.blueNearZoneScoreToMidIntake, false),
 
                                 // Score -- preparing shot after 30% of path complete. Begin shooting after 90% of path complete
+                                setupNearMidPresetShot(),
                                 new FollowPathCommand(follower, paths.blueMidWallIntakeToNearScore),
                                 new ParallelRaceGroup(
                                         new WaitCommand(TimingConstants.waitForShootingNearMS)

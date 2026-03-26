@@ -6,6 +6,8 @@ import com.bylazar.telemetry.PanelsTelemetry;
 import com.pedropathing.follower.Follower;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
+import com.seattlesolvers.solverslib.command.InstantCommand;
+import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.util.TelemetryData;
 
@@ -13,8 +15,11 @@ import org.firstinspires.ftc.teamcode.NovaPyraRobot;
 import org.firstinspires.ftc.teamcode.autos.AutoPositionTunerConstants;
 import org.firstinspires.ftc.teamcode.constants.Alliance;
 import org.firstinspires.ftc.teamcode.constants.Constants;
+import org.firstinspires.ftc.teamcode.constants.ShooterConstants;
 import org.firstinspires.ftc.teamcode.constants.VisionConstants;
+import org.firstinspires.ftc.teamcode.lib.orchestration.ShotCycleState;
 import org.firstinspires.ftc.teamcode.lib.util.BlackboardHelpers;
+import org.firstinspires.ftc.teamcode.subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.triggers.RobotTriggers;
 
 @Autonomous(name = "Position Tuner", group = "Autonomous")
@@ -27,6 +32,12 @@ public class AutoPositionTuner extends CommandOpMode {
 
     protected TelemetryData telemetryData;
     private Alliance alliance;
+
+    private InstantCommand spinDown() {
+        return new InstantCommand(() -> {
+            robot.shotController.setState(ShotCycleState.OFF);
+        });
+    }
 
     @Override
     public void initialize() {
@@ -60,8 +71,13 @@ public class AutoPositionTuner extends CommandOpMode {
         follower.setStartingPose(paths.startPose.withHeading(Math.toRadians(paths.startHeading)));
         BlackboardHelpers.setAutoEndPose(blackboard, follower.getPose());
 
-        // Hold for 5 minutes to allow manual positioning
-        schedule(new WaitCommand(300000));
+
+        schedule(
+                new SequentialCommandGroup(
+                        spinDown(),
+                        // Hold for 5 minutes to allow manual positioning
+                        new WaitCommand(300000))
+        );
 
         telemetry.addData("Robot Status", "Position Tuner Ready — push robot to map points");
         telemetry.update();

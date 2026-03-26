@@ -8,8 +8,8 @@ import org.firstinspires.ftc.teamcode.NovaPyraRobot;
 
 @Configurable
 public class AutoPositionTunerConstants {
-    public Pose startPose = new Pose(15.75, 114.8);
-    public double startHeading = 90.0;
+    public Pose startPose = new Pose(17.144, 123.233);
+    public double startHeading = 143.48;
 
     public NovaPyraRobot robot;
 
