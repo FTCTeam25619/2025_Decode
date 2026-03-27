@@ -4,6 +4,7 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.JoinedTelemetry;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.pedropathing.follower.Follower;
+import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
@@ -102,6 +103,13 @@ public class BlueAuto15ScoreNear extends CommandOpMode {
         );
     }
 
+    private Command followPathOrUntilIntakeFull(PathChain path, boolean holdEnd) {
+        return new ParallelRaceGroup(
+                new FollowPathCommand(follower, path, holdEnd),
+                new WaitUntilCommand(() -> robot.intake.isStalled())
+        );
+    }
+
     @Override
     public void initialize() {
         super.reset();
@@ -153,15 +161,13 @@ public class BlueAuto15ScoreNear extends CommandOpMode {
                                  **/
 
                                 // Intake from from mid row -- intake starts after 25% of path complete
-                                new FollowPathCommand(follower, paths.blueNearZoneScoreToMidIntake, false),
+                                followPathOrUntilIntakeFull(paths.blueNearZoneScoreToMidIntake, false),
 
                                 // Score -- preparing shot after 30% of path complete. Begin shooting after 90% of path complete
                                 setupNearMidPresetShot(),
                                 new FollowPathCommand(follower, paths.blueMidWallIntakeToNearScore),
-                                new ParallelRaceGroup(
-                                        new WaitCommand(TimingConstants.waitForShootingNearMS)
-                                        // turnToGoal()
-                                ).andThen(idleState()),
+                                new WaitCommand(TimingConstants.waitForShootingNearMS).andThen(idleState()),
+
 
                                 /**
                                  THIRD CYCLE - Gate Open and Intake
@@ -169,16 +175,14 @@ public class BlueAuto15ScoreNear extends CommandOpMode {
 
                                 //new FollowPathCommand(follower, paths.blueOpenAndIntakeGate, false).beforeStarting(intake()),
                                 new FollowPathCommand(follower, paths.blueScoreToOpenGate,false).beforeStarting(idleState()),
-                                new FollowPathCommand(follower, paths.blueOpenGateToIntakeGate).beforeStarting(intake()),
+                                followPathOrUntilIntakeFull(paths.blueOpenGateToIntakeGate, true).beforeStarting(intake()),
 
                                 //new WaitCommand(TimingConstants.waitForIntakeByGateMS),
 
                                 // Score -- preparing shot after 30% of path complete. Begin shooting after 90% of path complete
                                 new FollowPathCommand(follower, paths.blueMidWallIntakeToNearScore),
-                                new ParallelRaceGroup(
-                                        new WaitCommand(TimingConstants.waitForShootingNearMS)
-                                        //turnToGoal()
-                                ).andThen(idleState()),
+                                new WaitCommand(TimingConstants.waitForShootingNearMS).andThen(idleState()),
+
 
                                 /**
                                  FOURTH CYCLE - Gate Open and Intake
@@ -186,30 +190,25 @@ public class BlueAuto15ScoreNear extends CommandOpMode {
 
                                 //new FollowPathCommand(follower, paths.blueOpenAndIntakeGate, false).beforeStarting(intake()),
                                 new FollowPathCommand(follower, paths.blueScoreToOpenGate,false).beforeStarting(idleState()),
-                                new FollowPathCommand(follower, paths.blueOpenGateToIntakeGate).beforeStarting(intake()),
+                                followPathOrUntilIntakeFull(paths.blueOpenGateToIntakeGate, true).beforeStarting(intake()),
 
                                 //new WaitCommand(TimingConstants.waitForIntakeByGateMS),
 
                                 // Score -- preparing shot after 30% of path complete. Begin shooting after 90% of path complete
                                 new FollowPathCommand(follower, paths.blueMidWallIntakeToNearScore),
-                                new ParallelRaceGroup(
-                                        new WaitCommand(TimingConstants.waitForShootingNearMS)
-                                        //turnToGoal()
-                                ).andThen(idleState()),
+                                new WaitCommand(TimingConstants.waitForShootingNearMS).andThen(idleState()),
+
 
                                 /**
                                  FIFTH CYCLE - row NEAR goal
                                  **/
 
                                 // Intake from row closest to goal -- intake starts after 10% of path complete
-                                new FollowPathCommand(follower, paths.blueNearZoneToNearIntake, false),
+                                followPathOrUntilIntakeFull(paths.blueNearZoneToNearIntake, false),
 
                                 // Score -- preparing shot after 30% of path complete. Begin shooting after 95% of path complete
                                 new FollowPathCommand(follower, paths.blueNearWallIntakeToNearScore),
-                                new ParallelRaceGroup(
-                                        new WaitCommand(TimingConstants.waitForShootingNearMS)
-                                        //turnToGoal()
-                                ).andThen(intake()),
+                                new WaitCommand(TimingConstants.waitForShootingNearMS).andThen(intake()),
 
                                 /**
                                  PARK
@@ -219,7 +218,6 @@ public class BlueAuto15ScoreNear extends CommandOpMode {
                         )
                 )
         );
-
 
         telemetry.addData("Robot Status", "Initialized Auto 15 Ball Near " + alliance.name());
         telemetry.update();
