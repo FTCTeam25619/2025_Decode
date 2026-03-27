@@ -11,5 +11,5 @@ public class TimingConstants {
 
     public static int waitForIntakeLoadingStationMS = 500;
 
-    public static int waitForIntakeByGateMS = 500;
+    public static int waitForIntakeByGateMS = 0;
 }

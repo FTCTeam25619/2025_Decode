@@ -149,7 +149,8 @@ public class BlueAuto12ScoreFar_LS extends CommandOpMode {
                                 new FollowPathCommand(follower, paths.blueWallToFarZonePrescore, 0.5).beforeStarting(prepareShot()),
                                 new ParallelRaceGroup(
                                         new WaitCommand(TimingConstants.waitBeforeShootingMS), // 0.700 second timeout
-                                        new WaitUntilCommand(() -> robot.shotController.readyToShoot()) // wait until shooter is ready
+                                        new WaitUntilCommand(() -> robot.shotController.readyToShoot()), // wait until shooter is ready
+                                        turnToGoal()
                                 ),
                                 shoot(),
                                 new ParallelRaceGroup(

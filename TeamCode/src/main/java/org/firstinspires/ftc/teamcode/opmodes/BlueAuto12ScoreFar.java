@@ -52,6 +52,11 @@ public class BlueAuto12ScoreFar extends CommandOpMode {
         });
     }
 
+    private InstantCommand setAutoTargetShot() {
+        return new InstantCommand(() -> {
+            robot.shotController.autoTargetShot();
+        });
+    }
     private InstantCommand intake() {
         return new InstantCommand(() -> {
             robot.shotController.setState(ShotCycleState.INTAKE);
@@ -148,11 +153,12 @@ public class BlueAuto12ScoreFar extends CommandOpMode {
 
                                 // Score preload
                                 // Prepare shot before starting
-                                // setupFarWallPresetShot(),
+                                setupFarWallPresetShot(),
                                 new FollowPathCommand(follower, paths.blueWallToFarZonePrescore, 0.5).beforeStarting(prepareShot()),
                                 new ParallelRaceGroup(
                                         new WaitCommand(TimingConstants.waitBeforeShootingMS),
-                                        new WaitUntilCommand(() -> robot.shotController.readyToShoot())
+                                        new WaitUntilCommand(() -> robot.shotController.readyToShoot()),
+                                        turnToGoal()
                                 ),
                                 new ParallelRaceGroup(
                                         new WaitCommand(TimingConstants.waitForShootingMS),
@@ -211,6 +217,7 @@ public class BlueAuto12ScoreFar extends CommandOpMode {
                                 new WaitCommand(TimingConstants.waitForIntakeLoadingStationMS),
 
                                 // Score -- preparing shot after 30% of path complete. Begin shooting after path complete
+                                setAutoTargetShot(),
                                 new FollowPathCommand(follower, paths.blueFarLoadingStationToFarScore),
                                 new ParallelRaceGroup(
                                         new WaitCommand(TimingConstants.waitForShootingMS),
