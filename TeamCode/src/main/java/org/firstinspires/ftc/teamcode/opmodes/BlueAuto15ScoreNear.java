@@ -4,6 +4,7 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.JoinedTelemetry;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.seattlesolvers.solverslib.command.Command;
@@ -17,8 +18,12 @@ import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.command.WaitUntilCommand;
 import com.seattlesolvers.solverslib.command.button.Trigger;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
+import com.seattlesolvers.solverslib.pedroCommand.HoldPointCommand;
+import com.seattlesolvers.solverslib.pedroCommand.TurnCommand;
+import com.seattlesolvers.solverslib.pedroCommand.TurnToCommand;
 import com.seattlesolvers.solverslib.util.TelemetryData;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.NovaPyraRobot;
 import org.firstinspires.ftc.teamcode.autos.BlueNearGoalConstants;
 import org.firstinspires.ftc.teamcode.autos.TimingConstants;
@@ -173,11 +178,11 @@ public class BlueAuto15ScoreNear extends CommandOpMode {
                                  THIRD CYCLE - Gate Open and Intake
                                  **/
 
-                                //new FollowPathCommand(follower, paths.blueOpenAndIntakeGate, false).beforeStarting(intake()),
-                                new FollowPathCommand(follower, paths.blueScoreToOpenGate,false).beforeStarting(idleState()),
-                                followPathOrUntilIntakeFull(paths.blueOpenGateToIntakeGate, true).beforeStarting(intake()),
+                                new FollowPathCommand(follower, paths.blueOpenAndIntakeGate).beforeStarting(intake()),
+                                //new FollowPathCommand(follower, paths.blueScoreToOpenGate,false).beforeStarting(idleState()),
+                                //followPathOrUntilIntakeFull(paths.blueOpenGateToIntakeGate, true).beforeStarting(intake()),
 
-                                //new WaitCommand(TimingConstants.waitForIntakeByGateMS),
+                                new WaitCommand(1000),
 
                                 // Score -- preparing shot after 30% of path complete. Begin shooting after 90% of path complete
                                 new FollowPathCommand(follower, paths.blueMidWallIntakeToNearScore),
@@ -188,11 +193,12 @@ public class BlueAuto15ScoreNear extends CommandOpMode {
                                  FOURTH CYCLE - Gate Open and Intake
                                  **/
 
-                                //new FollowPathCommand(follower, paths.blueOpenAndIntakeGate, false).beforeStarting(intake()),
-                                new FollowPathCommand(follower, paths.blueScoreToOpenGate,false).beforeStarting(idleState()),
-                                followPathOrUntilIntakeFull(paths.blueOpenGateToIntakeGate, true).beforeStarting(intake()),
 
-                                //new WaitCommand(TimingConstants.waitForIntakeByGateMS),
+                                new FollowPathCommand(follower, paths.blueOpenAndIntakeGate).beforeStarting(intake()),
+                                //new FollowPathCommand(follower, paths.blueScoreToOpenGate,false).beforeStarting(idleState()),
+                                //followPathOrUntilIntakeFull(paths.blueOpenGateToIntakeGate, true).beforeStarting(intake()),
+
+                                new WaitCommand(1500),
 
                                 // Score -- preparing shot after 30% of path complete. Begin shooting after 90% of path complete
                                 new FollowPathCommand(follower, paths.blueMidWallIntakeToNearScore),
@@ -202,6 +208,18 @@ public class BlueAuto15ScoreNear extends CommandOpMode {
                                 /**
                                  FIFTH CYCLE - row NEAR goal
                                  **/
+
+                                new ParallelRaceGroup(
+                                        new WaitCommand(500),
+                                        new WaitUntilCommand(() -> Math.abs(
+                                                AngleUnit.normalizeRadians(follower.getPose().getHeading() - Math.toRadians(0))
+                                        ) < Math.toRadians(3)),
+                                        new RunCommand(() -> {
+                                            follower.constants.holdPointHeadingScaling = 0.85;
+                                            follower.turnTo(Math.toRadians(0));
+                                        })
+                                ),
+                                new InstantCommand(() -> follower.constants.holdPointHeadingScaling = 0.35),
 
                                 // Intake from row closest to goal -- intake starts after 10% of path complete
                                 followPathOrUntilIntakeFull(paths.blueNearZoneToNearIntake, false),

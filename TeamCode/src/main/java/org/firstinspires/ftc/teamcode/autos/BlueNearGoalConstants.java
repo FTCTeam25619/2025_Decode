@@ -16,7 +16,7 @@ public class BlueNearGoalConstants {
 
     public Pose blueNearWallStart = new Pose(17.144, 123.233);
     public Pose blueNearWallToShootCP = new Pose(41.5, 112.0);
-    public Pose blueNearFirstShoots = new Pose(54.0, 96.0);
+    public Pose blueNearFirstShoots = new Pose(47, 99.5);
     public Pose blueNearWallShoot = new Pose(54.0, 84.0);
     public Pose blueNearWallShootToNearIntakeCP = new Pose(63.193, 63.615);
     public Pose blueNearWallNearIntake = new Pose(18.0, 86.532);
@@ -33,7 +33,7 @@ public class BlueNearGoalConstants {
     public Pose blueNearWallShootClose = new Pose(49.101, 117.769);
 
 
-    public Pose blueGateOpenIntakePose = new Pose(14.0, 62.0);
+    public Pose blueGateOpenIntakePose = new Pose(14.0, 59.7);
 
     public Pose blueSweepIntakePoseCP1 = new Pose(25.22, 34.22);
     public Pose blueSweepIntakePoseCP2 = new Pose(5.9, 98.8);
@@ -42,13 +42,13 @@ public class BlueNearGoalConstants {
 
     public double blueNearWallShootCloseHeading = 145.0;
 
-    public double blueGateOpenIntakeHeading = 332.7;
+    public double blueGateOpenIntakeHeading = 331.4;
 
     public double blueGateOpenHeading = 330;
     public double blueGateIntakeHeading = 320;
     public double blueNearWallStartHeading = 143.48;
     public double blueNearWallShootHeading = 135.0;
-    public double blueNearWallLastShootHeading = 135.0;
+    public double blueNearWallLastShootHeading = 132.0;
     public double blueNearWallRowIntakeHeading = 0.0;
     public double blueSweepIntakeHeading = 40.0;
     public double blueNearWallMidRowIntakeHeading = 0.0;
@@ -95,6 +95,10 @@ public class BlueNearGoalConstants {
                 .setConstantHeadingInterpolation(
                         Math.toRadians(blueNearWallStartHeading)
                 )
+                //.setVelocityConstraint(10.0)
+                //.setTValueConstraint(0.5)
+                //.setTranslationalConstraint(4.0)
+                //.setHeadingConstraint(5.0)
                 .build();
 
         blueNearZoneToNearIntake = follower
@@ -106,10 +110,8 @@ public class BlueNearGoalConstants {
                                 blueNearWallNearIntake
                         )
                 )
-                .setLinearHeadingInterpolation(
-                        Math.toRadians(blueNearWallShootHeading),
-                        Math.toRadians(blueNearWallRowIntakeHeading),
-                0.1)
+                .setConstantHeadingInterpolation(
+                        Math.toRadians(0.0))
                 .addParametricCallback(.1, () -> {
                     robot.shotController.setState(ShotCycleState.INTAKE);
                 })
@@ -163,7 +165,7 @@ public class BlueNearGoalConstants {
                         )
                 ).setLinearHeadingInterpolation(
                         Math.toRadians(blueNearWallRowIntakeHeading),
-                        Math.toRadians(blueNearWallShootHeading),
+                        Math.toRadians(blueNearWallLastShootHeading),
                         0.4)
                 .addParametricCallback(0.30, () -> {
                     robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
@@ -282,7 +284,7 @@ public class BlueNearGoalConstants {
                         )
                 )
                 .setLinearHeadingInterpolation(
-                        Math.toRadians(blueNearWallShootHeading),
+                        Math.toRadians(180),
                         Math.toRadians(blueGateOpenIntakeHeading),
                         0.5)
                 .build();
