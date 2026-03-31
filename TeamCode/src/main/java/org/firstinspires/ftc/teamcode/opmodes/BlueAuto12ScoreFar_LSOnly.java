@@ -4,6 +4,7 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.JoinedTelemetry;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.pedropathing.follower.Follower;
+import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
@@ -45,6 +46,12 @@ public class BlueAuto12ScoreFar_LSOnly extends CommandOpMode {
     private InstantCommand setupFarWallPresetShot() {
         return new InstantCommand(() -> {
             robot.shotController.setupPresetShot(PresetShot.FarWall);
+        });
+    }
+
+    private InstantCommand setAutoTargetShot() {
+        return new InstantCommand(() -> {
+            robot.shotController.autoTargetShot();
         });
     }
 
@@ -98,6 +105,13 @@ public class BlueAuto12ScoreFar_LSOnly extends CommandOpMode {
         );
     }
 
+    private Command followPathOrUntilIntakeFull(PathChain path, boolean holdEnd) {
+        return new ParallelRaceGroup(
+                new FollowPathCommand(follower, path, holdEnd),
+                new WaitUntilCommand(() -> robot.intake.isStalled())
+        );
+    }
+
     @Override
     public void initialize() {
         super.reset();
@@ -144,11 +158,11 @@ public class BlueAuto12ScoreFar_LSOnly extends CommandOpMode {
 
                                 // Score preload
                                 // Prepare shot before starting
-                                // setupFarWallPresetShot(),
+                                setupFarWallPresetShot(),
                                 new FollowPathCommand(follower, paths.blueWallToFarZonePrescore, 0.5).beforeStarting(prepareShot()),
                                 new ParallelRaceGroup(
-                                        new WaitCommand(TimingConstants.waitBeforeShootingMS), // 0.700 second timeout
-                                        new WaitUntilCommand(() -> robot.shotController.readyToShoot()), // wait until shooter is ready
+                                        new WaitCommand(1200),
+                                        new WaitUntilCommand(() -> robot.shotController.readyToShoot()),
                                         turnToGoal()
                                 ),
                                 shoot(),
@@ -163,44 +177,88 @@ public class BlueAuto12ScoreFar_LSOnly extends CommandOpMode {
                                  **/
 
                                 // Intake from loading station -- intake starts after 25% of path complete
-                                new FollowPathCommand(follower, paths.blueFarWallToIntakeLoadingStation, false),
-                                new WaitCommand(TimingConstants.waitForIntakeLoadingStationMS),
+                                //new FollowPathCommand(follower, paths.blueFarWallToIntakeLoadingStation, false),
+                                followPathOrUntilIntakeFull(paths.blueFarWallToIntakeLoadingStation, false),
+                                //new WaitCommand(TimingConstants.waitForIntakeLoadingStationMS),
 
                                 // Score -- preparing shot after 30% of path complete. Begin shooting after path complete
-                                new FollowPathCommand(follower, paths.blueFarLoadingStationToFarScore)
-                                        .andThen(shoot()),
+                                setAutoTargetShot(),
+                                new FollowPathCommand(follower, paths.blueFarLoadingStationToFarScore),
+                                new ParallelRaceGroup(
+                                        new WaitCommand(TimingConstants.waitForShootingMS),
+                                        new WaitUntilCommand(() -> robot.shotController.readyToShoot()),
+                                        turnToGoal()
+                                ),
+                                shoot(),
                                 new ParallelRaceGroup(
                                         new WaitCommand(TimingConstants.waitForShootingMS),
                                         turnToGoal()
-                                ).andThen(idleState()),
+                                ).andThen(intake()),
 
                                 /**
                                  THIRD CYCLE - intake Loading Station
                                  **/
 
                                 // Intake from loading station -- intake starts after 25% of path complete
-                                new FollowPathCommand(follower, paths.blueFarWallToIntakeLoadingStation, false),
-                                new WaitCommand(TimingConstants.waitForIntakeLoadingStationMS),
+                                //new FollowPathCommand(follower, paths.blueFarWallToIntakeLoadingStation, false),
+                                followPathOrUntilIntakeFull(paths.blueFarWallToIntakeLoadingStation, false),
+                                //new WaitCommand(TimingConstants.waitForIntakeLoadingStationMS),
 
                                 // Score -- preparing shot after 30% of path complete. Begin shooting after path complete
-                                new FollowPathCommand(follower, paths.blueFarLoadingStationToFarScore)
-                                        .andThen(shoot()),
+                                setAutoTargetShot(),
+                                new FollowPathCommand(follower, paths.blueFarLoadingStationToFarScore),
+                                new ParallelRaceGroup(
+                                        new WaitCommand(TimingConstants.waitForShootingMS),
+                                        new WaitUntilCommand(() -> robot.shotController.readyToShoot()),
+                                        turnToGoal()
+                                ),
+                                shoot(),
                                 new ParallelRaceGroup(
                                         new WaitCommand(TimingConstants.waitForShootingMS),
                                         turnToGoal()
-                                ).andThen(idleState()),
+                                ).andThen(intake()),
 
                                 /**
                                  FOURTH CYCLE - intake Loading Station
                                  **/
 
                                 // Intake from loading station -- intake starts after 25% of path complete
-                                new FollowPathCommand(follower, paths.blueFarWallToIntakeLoadingStation, false),
-                                new WaitCommand(TimingConstants.waitForIntakeLoadingStationMS),
+                                //new FollowPathCommand(follower, paths.blueFarWallToIntakeLoadingStation, false),
+                                followPathOrUntilIntakeFull(paths.blueFarWallToIntakeLoadingStation, false),
+                                //new WaitCommand(TimingConstants.waitForIntakeLoadingStationMS),
 
                                 // Score -- preparing shot after 30% of path complete. Begin shooting after path complete
-                                new FollowPathCommand(follower, paths.blueFarLoadingStationToFarScore)
-                                        .andThen(shoot()),
+                                setAutoTargetShot(),
+                                new FollowPathCommand(follower, paths.blueFarLoadingStationToFarScore),
+                                new ParallelRaceGroup(
+                                        new WaitCommand(TimingConstants.waitForShootingMS),
+                                        new WaitUntilCommand(() -> robot.shotController.readyToShoot()),
+                                        turnToGoal()
+                                ),
+                                shoot(),
+                                new ParallelRaceGroup(
+                                        new WaitCommand(TimingConstants.waitForShootingMS),
+                                        turnToGoal()
+                                ).andThen(intake()),
+
+                                /**
+                                 FIFTH CYCLE - intake Loading Station
+                                 **/
+
+                                // Intake from loading station -- intake starts after 25% of path complete
+                                //new FollowPathCommand(follower, paths.blueFarWallToIntakeLoadingStation, false),
+                                followPathOrUntilIntakeFull(paths.blueFarWallToIntakeLoadingStation, false),
+                                //new WaitCommand(TimingConstants.waitForIntakeLoadingStationMS),
+
+                                // Score -- preparing shot after 30% of path complete. Begin shooting after path complete
+                                setAutoTargetShot(),
+                                new FollowPathCommand(follower, paths.blueFarLoadingStationToFarScore),
+                                new ParallelRaceGroup(
+                                        new WaitCommand(TimingConstants.waitForShootingMS),
+                                        new WaitUntilCommand(() -> robot.shotController.readyToShoot()),
+                                        turnToGoal()
+                                ),
+                                shoot(),
                                 new ParallelRaceGroup(
                                         new WaitCommand(TimingConstants.waitForShootingMS),
                                         turnToGoal()
