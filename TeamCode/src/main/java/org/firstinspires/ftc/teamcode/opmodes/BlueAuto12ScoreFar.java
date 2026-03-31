@@ -168,10 +168,6 @@ public class BlueAuto12ScoreFar extends CommandOpMode {
                                         new WaitUntilCommand(() -> robot.shotController.readyToShoot()),
                                         turnToGoal()
                                 ),
-                                //new ParallelRaceGroup(
-                                //        new WaitCommand(TimingConstants.waitForShootingMS),
-                                //        turnToGoal()
-                                //),
                                 shoot(),
                                 new ParallelRaceGroup(
                                         new WaitCommand(TimingConstants.waitForShootingMS),
@@ -222,6 +218,29 @@ public class BlueAuto12ScoreFar extends CommandOpMode {
 
                                 /**
                                  FOURTH CYCLE - intake Loading Station
+                                 **/
+
+                                // Intake from loading station -- intake starts after 25% of path complete
+                                //new FollowPathCommand(follower, paths.blueFarWallToIntakeLoadingStation, false),
+                                followPathOrUntilIntakeFull(paths.blueFarWallToIntakeLoadingStation, false),
+                                //new WaitCommand(TimingConstants.waitForIntakeLoadingStationMS),
+
+                                // Score -- preparing shot after 30% of path complete. Begin shooting after path complete
+                                setAutoTargetShot(),
+                                new FollowPathCommand(follower, paths.blueFarLoadingStationToFarScore),
+                                new ParallelRaceGroup(
+                                        new WaitCommand(TimingConstants.waitForShootingMS),
+                                        new WaitUntilCommand(() -> robot.shotController.readyToShoot()),
+                                        turnToGoal()
+                                ),
+                                shoot(),
+                                new ParallelRaceGroup(
+                                        new WaitCommand(TimingConstants.waitForShootingMS),
+                                        turnToGoal()
+                                ).andThen(intake()),
+
+                                /**
+                                 FIFTH CYCLE - intake Loading Station and Park
                                  **/
 
                                 // Intake from loading station -- intake starts after 25% of path complete

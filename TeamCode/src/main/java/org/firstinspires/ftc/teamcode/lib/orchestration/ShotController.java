@@ -518,8 +518,8 @@ public class ShotController {
         // Small Triangle / Far Shots
         table.add(325, 2860);
         table.add(338, 2900);
-        table.add(347, 3060);
-        table.add(355, 3000);
+        table.add(347, 2950);
+        table.add(355, 2950);
         table.add(380, 3100);
         table.add(392, 3140);
 
