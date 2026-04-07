@@ -4,6 +4,7 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.JoinedTelemetry;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.pedropathing.follower.Follower;
+import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
@@ -32,7 +33,7 @@ import org.firstinspires.ftc.teamcode.lib.triggers.SupplierTrigger;
 import org.firstinspires.ftc.teamcode.lib.util.BlackboardHelpers;
 import org.firstinspires.ftc.teamcode.triggers.RobotTriggers;
 
-@Autonomous(name = "Red Far 12", group = "Autonomous")
+@Autonomous(name = "Red Far 15", group = "Autonomous")
 @Configurable // Panels
 public class RedAuto12ScoreFar extends CommandOpMode {
     private NovaPyraRobot robot;
@@ -42,13 +43,17 @@ public class RedAuto12ScoreFar extends CommandOpMode {
     protected TelemetryData telemetryData;
     private Alliance alliance;
 
-
     private static boolean firstRun = true;
 
-    // Mechanism commands - replace these with your actual subsystem commands
     private InstantCommand setupFarWallPresetShot() {
         return new InstantCommand(() -> {
             robot.shotController.setupPresetShot(PresetShot.FarWall);
+        });
+    }
+
+    private InstantCommand setAutoTargetShot() {
+        return new InstantCommand(() -> {
+            robot.shotController.autoTargetShot();
         });
     }
 
@@ -91,14 +96,21 @@ public class RedAuto12ScoreFar extends CommandOpMode {
                 new InstantCommand(() -> {
                     double dx = paths.goalTargetX - follower.getPose().getX();
                     double dy = paths.goalTargetY - follower.getPose().getY();
-                    follower.constants.holdPointHeadingScaling = 0.85; // full power for turnTo
+                    follower.constants.holdPointHeadingScaling = 0.85;
                     follower.turnTo(Math.atan2(dy, dx));
                 }),
                 new WaitUntilCommand(() -> !follower.isBusy()),
                 new InstantCommand(() -> {
-                    follower.constants.holdPointHeadingScaling = 0.35; // restore for normal hold
+                    follower.constants.holdPointHeadingScaling = 0.35;
                 }),
                 new RunCommand(() -> {})
+        );
+    }
+
+    private Command followPathOrUntilIntakeFull(PathChain path, boolean holdEnd) {
+        return new ParallelRaceGroup(
+                new FollowPathCommand(follower, path, holdEnd),
+                new WaitUntilCommand(() -> robot.intake.isStalled())
         );
     }
 
@@ -108,10 +120,9 @@ public class RedAuto12ScoreFar extends CommandOpMode {
 
         alliance = Alliance.RED;
 
-        telemetry.addData("Robot Status", "Initializing Auto Red 12 Far" + alliance.name());
+        telemetry.addData("Robot Status", "Initializing Auto Red 15 Far + LS " + alliance.name());
         telemetry.update();
 
-        // Setup Dashboard if setup for shop debugging
         if (Constants.DebugModes.ENABLE_PANELS_DASHBOARD) {
             telemetry = new JoinedTelemetry(PanelsTelemetry.INSTANCE.getFtcTelemetry(), telemetry);
             this.telemetryData = new TelemetryData(telemetry);
@@ -146,13 +157,12 @@ public class RedAuto12ScoreFar extends CommandOpMode {
                                  FIRST CYCLE - Preload
                                  **/
 
-                                // Score preload
-                                // Prepare shot before starting
-                                // setupFarWallPresetShot(),
+                                setupFarWallPresetShot(),
                                 new FollowPathCommand(follower, paths.redWallToFarZonePrescore, 0.5).beforeStarting(prepareShot()),
                                 new ParallelRaceGroup(
-                                        new WaitCommand(TimingConstants.waitBeforeShootingMS),
-                                        new WaitUntilCommand(() -> robot.shotController.readyToShoot())
+                                        new WaitCommand(1200),
+                                        new WaitUntilCommand(() -> robot.shotController.readyToShoot()),
+                                        turnToGoal()
                                 ),
                                 shoot(),
                                 new ParallelRaceGroup(
@@ -164,12 +174,15 @@ public class RedAuto12ScoreFar extends CommandOpMode {
                                  SECOND CYCLE - intake FAR
                                  **/
 
-                                // Intake from row closest to far wall from goal -- intake starts after 25% of path complete
-                                new FollowPathCommand(follower, paths.redFarZonePrescoreToFarIntake, false),
+                                followPathOrUntilIntakeFull(paths.redFarZonePrescoreToFarIntake, false),
 
-                                // Score -- preparing shot after 50% of path complete. Begin shooting after path complete
-                                new FollowPathCommand(follower, paths.redFarWallIntakeToFarScore)
-                                        .andThen(shoot()),
+                                new FollowPathCommand(follower, paths.redFarWallIntakeToFarScore),
+                                new ParallelRaceGroup(
+                                        new WaitCommand(TimingConstants.waitForShootingMS),
+                                        new WaitUntilCommand(() -> robot.shotController.readyToShoot()),
+                                        turnToGoal()
+                                ),
+                                shoot(),
                                 new ParallelRaceGroup(
                                         new WaitCommand(TimingConstants.waitForShootingMS),
                                         turnToGoal()
@@ -179,12 +192,15 @@ public class RedAuto12ScoreFar extends CommandOpMode {
                                  THIRD CYCLE - intake MID
                                  **/
 
-                                // Intake from row closest to far wall from goal -- intake starts after 25% of path complete
-                                new FollowPathCommand(follower, paths.redFarZoneScoreToMidIntake, false),
+                                followPathOrUntilIntakeFull(paths.redFarZoneScoreToMidIntake, false),
 
-                                // Score -- preparing shot after 50% of path complete. Begin shooting after path complete
-                                new FollowPathCommand(follower, paths.redMidWallIntakeToFarScore)
-                                        .andThen(shoot()),
+                                new FollowPathCommand(follower, paths.redMidWallIntakeToFarScore),
+                                new ParallelRaceGroup(
+                                        new WaitCommand(TimingConstants.waitForShootingMS),
+                                        new WaitUntilCommand(() -> robot.shotController.readyToShoot()),
+                                        turnToGoal()
+                                ),
+                                shoot(),
                                 new ParallelRaceGroup(
                                         new WaitCommand(TimingConstants.waitForShootingMS),
                                         turnToGoal()
@@ -194,13 +210,35 @@ public class RedAuto12ScoreFar extends CommandOpMode {
                                  FOURTH CYCLE - intake Loading Station
                                  **/
 
-                                // Intake from loading station -- intake starts after 25% of path complete
-                                new FollowPathCommand(follower, paths.redFarWallToIntakeLoadingStation, false),
-                                new WaitCommand(TimingConstants.waitForIntakeLoadingStationMS),
+                                followPathOrUntilIntakeFull(paths.redFarWallToIntakeLoadingStation, false),
 
-                                // Score -- preparing shot after 30% of path complete. Begin shooting after path complete
-                                new FollowPathCommand(follower, paths.redFarLoadingStationToFarScore)
-                                        .andThen(shoot()),
+                                setAutoTargetShot(),
+                                new FollowPathCommand(follower, paths.redFarLoadingStationToFarScore),
+                                new ParallelRaceGroup(
+                                        new WaitCommand(TimingConstants.waitForShootingMS),
+                                        new WaitUntilCommand(() -> robot.shotController.readyToShoot()),
+                                        turnToGoal()
+                                ),
+                                shoot(),
+                                new ParallelRaceGroup(
+                                        new WaitCommand(TimingConstants.waitForShootingMS),
+                                        turnToGoal()
+                                ).andThen(intake()),
+
+                                /**
+                                 FIFTH CYCLE - intake Loading Station and Park
+                                 **/
+
+                                followPathOrUntilIntakeFull(paths.redFarWallToIntakeLoadingStation, false),
+
+                                setAutoTargetShot(),
+                                new FollowPathCommand(follower, paths.redFarLoadingStationToFarScore),
+                                new ParallelRaceGroup(
+                                        new WaitCommand(TimingConstants.waitForShootingMS),
+                                        new WaitUntilCommand(() -> robot.shotController.readyToShoot()),
+                                        turnToGoal()
+                                ),
+                                shoot(),
                                 new ParallelRaceGroup(
                                         new WaitCommand(TimingConstants.waitForShootingMS),
                                         turnToGoal()
@@ -208,18 +246,16 @@ public class RedAuto12ScoreFar extends CommandOpMode {
 
                                 // Park
                                 new FollowPathCommand(follower, paths.redFarScoreToPark, false).andThen(spinDown())
-
                         )
                 )
         );
 
-        telemetry.addData("Robot Status", "Initialized Auto 12 Ball Far " + alliance.name());
+        telemetry.addData("Robot Status", "Initialized Auto 15 Ball Far + LS " + alliance.name());
         telemetry.update();
     }
 
     public void initialize_loop() {
         super.initialize_loop();
-        // Things that need to run while disabled every cycle
         if (Constants.DebugModes.ENABLE_PANELS_DASHBOARD) {
             PanelsUtils.Drawing.drawVisionAndCurrent(robot.vision, robot.pedroFollower);
             drawPaths();
