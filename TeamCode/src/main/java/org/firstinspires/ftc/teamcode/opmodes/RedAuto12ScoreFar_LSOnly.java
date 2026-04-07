@@ -33,7 +33,7 @@ import org.firstinspires.ftc.teamcode.lib.triggers.SupplierTrigger;
 import org.firstinspires.ftc.teamcode.lib.util.BlackboardHelpers;
 import org.firstinspires.ftc.teamcode.triggers.RobotTriggers;
 
-@Autonomous(name = "Red Far 15 Loading Station", group = "Autonomous")
+@Autonomous(name = "Red Far 15 Loading Station Only", group = "Autonomous")
 @Configurable // Panels
 public class RedAuto12ScoreFar_LSOnly extends CommandOpMode {
     private NovaPyraRobot robot;
@@ -118,7 +118,7 @@ public class RedAuto12ScoreFar_LSOnly extends CommandOpMode {
 
         alliance = Alliance.RED;
 
-        telemetry.addData("Robot Status", "Initializing Auto Red 15 Far F-LS-LS-LS " + alliance.name());
+        telemetry.addData("Robot Status", "Initializing Auto Red 15 Far LS-LS-LS-LS " + alliance.name());
         telemetry.update();
 
         if (Constants.DebugModes.ENABLE_PANELS_DASHBOARD) {
@@ -250,7 +250,7 @@ public class RedAuto12ScoreFar_LSOnly extends CommandOpMode {
                 )
         );
 
-        telemetry.addData("Robot Status", "Initialized Auto 15 Ball F-LS-LS-LS " + alliance.name());
+        telemetry.addData("Robot Status", "Initialized Auto 15 Ball LS-LS-LS-LS " + alliance.name());
         telemetry.update();
     }
 
