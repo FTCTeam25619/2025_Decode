@@ -209,7 +209,7 @@ public class BlueAuto12ScoreNear_Sweep extends CommandOpMode {
         );
 
 
-        telemetry.addData("Robot Status", "Initialized Auto 9 Ball Near " + alliance.name());
+        telemetry.addData("Robot Status", "Initialized Auto 12 Ball Near Sweep " + alliance.name());
         telemetry.update();
     }
 

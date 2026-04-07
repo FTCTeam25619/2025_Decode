@@ -108,7 +108,7 @@ public class BlueAuto12ScoreNear_Park extends CommandOpMode {
 
         alliance = Alliance.BLUE;
 
-        telemetry.addData("Robot Status", "Initializing Auto 12 Ball Near " + alliance.name());
+        telemetry.addData("Robot Status", "Initializing Auto 12 Ball Near Park " + alliance.name());
         telemetry.update();
 
         // Setup Dashboard if setup for shop debugging
@@ -208,7 +208,7 @@ public class BlueAuto12ScoreNear_Park extends CommandOpMode {
         );
 
 
-        telemetry.addData("Robot Status", "Initialized Auto 9 Ball Near " + alliance.name());
+        telemetry.addData("Robot Status", "Initialized Auto 12 Ball Near Park " + alliance.name());
         telemetry.update();
     }
 
