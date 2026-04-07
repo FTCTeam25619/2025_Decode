@@ -58,6 +58,12 @@ public class RedAuto15ScoreNear extends CommandOpMode {
         });
     }
 
+    private InstantCommand setAutoTargetShot() {
+        return new InstantCommand(() -> {
+            robot.shotController.autoTargetShot();
+        });
+    }
+
     private InstantCommand intake() {
         return new InstantCommand(() -> {
             robot.shotController.setState(ShotCycleState.INTAKE);
@@ -217,7 +223,7 @@ public class RedAuto15ScoreNear extends CommandOpMode {
                                 /**
                                  SCORE & PARK
                                  **/
-
+                                setAutoTargetShot(),
                                 new FollowPathCommand(follower, paths.redNearWallIntakeToNearScoreAndPark),
                                 new WaitCommand(TimingConstants.waitForShootingNearMS).andThen(spinDown())
                         )

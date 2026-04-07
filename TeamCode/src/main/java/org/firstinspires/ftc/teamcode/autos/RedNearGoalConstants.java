@@ -304,6 +304,7 @@ public class RedNearGoalConstants {
                         Math.toRadians(0.0),           // mirrored from 180°
                         Math.toRadians(redGateOpenIntakeHeading),
                         0.5)
+                .setTValueConstraint(0.9)
                 .build();
 
         redNearShootToIntakeFromGate = follower

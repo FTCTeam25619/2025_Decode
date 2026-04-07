@@ -310,6 +310,7 @@ public class BlueNearGoalConstants {
                         Math.toRadians(180),
                         Math.toRadians(blueGateOpenIntakeHeading),
                         0.5)
+                .setTValueConstraint(0.9)
                 .build();
 
 

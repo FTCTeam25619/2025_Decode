@@ -52,7 +52,11 @@ public class BlueAuto15ScoreNear extends CommandOpMode {
             robot.shotController.setupPresetShot(PresetShot.NearZoneMid);
         });
     }
-
+    private InstantCommand setAutoTargetShot() {
+        return new InstantCommand(() -> {
+            robot.shotController.autoTargetShot();
+        });
+    }
     private InstantCommand setupNearMidPresetShot() {
         return new InstantCommand(() -> {
             robot.shotController.setupPresetShot(PresetShot.NearZoneMid);
@@ -231,6 +235,7 @@ public class BlueAuto15ScoreNear extends CommandOpMode {
                                  **/
 
                                 // Score -- preparing shot after 30% of path complete. Begin shooting after 95% of path complete
+                                setAutoTargetShot(),
                                 new FollowPathCommand(follower, paths.blueNearWallIntakeToNearScoreAndPark),
                                 new WaitCommand(TimingConstants.waitForShootingNearMS).andThen(spinDown())
 
