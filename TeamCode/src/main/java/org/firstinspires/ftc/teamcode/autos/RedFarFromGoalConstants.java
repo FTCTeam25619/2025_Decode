@@ -23,20 +23,18 @@ public class RedFarFromGoalConstants {
     public Pose redFarWallShootToMidIntakeCP = new Pose(78.676, 72.238);
     public Pose redFarWallMidIntake = new Pose(130.75, 55.192);
     public Pose redFarWallIntakeLoadingStationCP = new Pose(93, 25);
-    public Pose redFarWallIntakeLoadingStation = new Pose(132.5, 9.0);
+    public Pose redFarWallIntakeLoadingStation = new Pose(132.5, 8.25);
     public Pose redFarWallParkPose = new Pose(114.00, 46.00);
 
-
     // Target-Poses
-
     public double goalTargetX = VisionConstants.targetOffsets.redGoalXOffset;
     public double goalTargetY = VisionConstants.targetOffsets.redGoalYOffset;
 
     // Gate-specific poses
-
     public Pose redGateOpenCP = new Pose(120.679, 62.764);
     public Pose redGateOpen = new Pose(127.5, 65.000);
     public Pose redWallIntakeGate = new Pose(129.0, 58.0);
+
     // Shared headings
     public double redFarWallStartHeading = 90.0;
     public double redFarWallFirstShotHeading = 70.0;
@@ -63,11 +61,8 @@ public class RedFarFromGoalConstants {
     public PathChain redNearShootToIntakeFar;
 
     // Gate paths
-
     public PathChain redOpenGate;
     public PathChain redParkGate;
-
-
 
     public NovaPyraRobot robot;
 
@@ -75,7 +70,6 @@ public class RedFarFromGoalConstants {
         this.robot = robot;
         buildPaths(follower);
     }
-
 
     private void buildPaths(Follower follower) {
         redWallToFarZonePrescore = follower
@@ -108,7 +102,6 @@ public class RedFarFromGoalConstants {
                     robot.shotController.setState(ShotCycleState.INTAKE);
                 })
                 .build();
-
 
         redFarWallIntakeToFarScore = follower
                 .pathBuilder()
@@ -225,7 +218,6 @@ public class RedFarFromGoalConstants {
 
         // Gate paths
 
-
         redOpenGate = follower
                 .pathBuilder()
                 .addPath(
@@ -240,7 +232,6 @@ public class RedFarFromGoalConstants {
                         Math.toRadians(redGateOpenHeading),
                         0.5)
                 .build();
-
 
         redNearShootToIntakeFar = follower
                 .pathBuilder()
@@ -258,7 +249,5 @@ public class RedFarFromGoalConstants {
                     robot.shotController.setState(ShotCycleState.INTAKE);
                 })
                 .build();
-
-
     }
 }

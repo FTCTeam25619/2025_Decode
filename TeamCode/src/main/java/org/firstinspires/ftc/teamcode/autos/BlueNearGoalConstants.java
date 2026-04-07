@@ -18,6 +18,7 @@ public class BlueNearGoalConstants {
     public Pose blueNearWallToShootCP = new Pose(41.5, 112.0);
     public Pose blueNearFirstShoots = new Pose(47, 99.5);
     public Pose blueNearWallShoot = new Pose(54.0, 84.0);
+    public Pose blueNearWallShootPark = new Pose(54.0, 114.0);
     public Pose blueNearWallShootToNearIntakeCP = new Pose(63.193, 63.615);
     public Pose blueNearWallNearIntake = new Pose(18.0, 86.532);
     public Pose blueNearWallShootToMidIntakeCP = new Pose(54.0, 53.0);
@@ -48,6 +49,7 @@ public class BlueNearGoalConstants {
     public double blueGateIntakeHeading = 320;
     public double blueNearWallStartHeading = 143.48;
     public double blueNearWallShootHeading = 135.0;
+    public double blueNearWallShootParkHeading = 157.0;
     public double blueNearWallLastShootHeading = 132.0;
     public double blueNearWallRowIntakeHeading = 0.0;
     public double blueSweepIntakeHeading = 40.0;
@@ -61,6 +63,7 @@ public class BlueNearGoalConstants {
     public PathChain blueWallToNearZonePrescore;
     public PathChain blueNearZoneToNearIntake;
     public PathChain blueNearWallIntakeToNearScore;
+    public PathChain blueNearWallIntakeToNearScoreAndPark;
     public PathChain blueNearZoneScoreToMidIntake;
     public PathChain blueMidWallIntakeToNearScore;
     public PathChain blueNearShootToIntakeFromGate;
@@ -128,6 +131,26 @@ public class BlueNearGoalConstants {
                 .setLinearHeadingInterpolation(
                         Math.toRadians(blueNearWallRowIntakeHeading),
                         Math.toRadians(blueNearWallShootHeading),
+                        0.5)
+                .addParametricCallback(.30, () -> {
+                    robot.shotController.setState(ShotCycleState.PREPARE_SHOT);
+                })
+                .addParametricCallback(0.95, () -> {
+                    robot.shotController.setState(ShotCycleState.SHOOTING);
+                })
+                .build();
+
+        blueNearWallIntakeToNearScoreAndPark = follower
+                .pathBuilder()
+                .addPath(
+                        new BezierLine(
+                                blueNearWallNearIntake,
+                                blueNearWallShootPark
+                        )
+                )
+                .setLinearHeadingInterpolation(
+                        Math.toRadians(blueNearWallRowIntakeHeading),
+                        Math.toRadians(blueNearWallShootParkHeading),
                         0.5)
                 .addParametricCallback(.30, () -> {
                     robot.shotController.setState(ShotCycleState.PREPARE_SHOT);

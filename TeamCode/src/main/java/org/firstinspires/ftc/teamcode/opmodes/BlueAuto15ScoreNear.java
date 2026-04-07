@@ -209,6 +209,8 @@ public class BlueAuto15ScoreNear extends CommandOpMode {
                                  FIFTH CYCLE - row NEAR goal
                                  **/
 
+                                // turn in place facing intake toward near row artifacts
+                                // this is done to prevent next path colliding with artifacts
                                 new ParallelRaceGroup(
                                         new WaitCommand(500),
                                         new WaitUntilCommand(() -> Math.abs(
@@ -224,15 +226,17 @@ public class BlueAuto15ScoreNear extends CommandOpMode {
                                 // Intake from row closest to goal -- intake starts after 10% of path complete
                                 followPathOrUntilIntakeFull(paths.blueNearZoneToNearIntake, false),
 
-                                // Score -- preparing shot after 30% of path complete. Begin shooting after 95% of path complete
-                                new FollowPathCommand(follower, paths.blueNearWallIntakeToNearScore),
-                                new WaitCommand(TimingConstants.waitForShootingNearMS).andThen(intake()),
-
                                 /**
-                                 PARK
+                                 SCORE & PARK
                                  **/
-                                new FollowPathCommand(follower, paths.blueNearWallToPark, false),
-                                spinDown()
+
+                                // Score -- preparing shot after 30% of path complete. Begin shooting after 95% of path complete
+                                new FollowPathCommand(follower, paths.blueNearWallIntakeToNearScoreAndPark),
+                                new WaitCommand(TimingConstants.waitForShootingNearMS).andThen(spinDown())
+
+
+                                //new FollowPathCommand(follower, paths.blueNearWallToPark, false),
+                                //spinDown()
                         )
                 )
         );
