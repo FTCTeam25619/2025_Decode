@@ -32,7 +32,7 @@ import org.firstinspires.ftc.teamcode.lib.triggers.SupplierTrigger;
 import org.firstinspires.ftc.teamcode.lib.util.BlackboardHelpers;
 import org.firstinspires.ftc.teamcode.triggers.RobotTriggers;
 
-@Autonomous(name = "Red 6 Far", group = "Autonomous")
+//@Autonomous(name = "Red 6 Far", group = "Autonomous")
 @Configurable // Panels
 public class RedAuto6ScoreFar extends CommandOpMode {
     private NovaPyraRobot robot;

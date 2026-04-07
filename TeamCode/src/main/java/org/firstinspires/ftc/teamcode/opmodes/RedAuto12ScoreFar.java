@@ -157,6 +157,8 @@ public class RedAuto12ScoreFar extends CommandOpMode {
                                  FIRST CYCLE - Preload
                                  **/
 
+                                // Score preload
+                                // Prepare shot before starting
                                 setupFarWallPresetShot(),
                                 new FollowPathCommand(follower, paths.redWallToFarZonePrescore, 0.5).beforeStarting(prepareShot()),
                                 new ParallelRaceGroup(
@@ -174,8 +176,10 @@ public class RedAuto12ScoreFar extends CommandOpMode {
                                  SECOND CYCLE - intake FAR
                                  **/
 
+                                // Intake from row closest to far wall from goal -- intake starts after 25% of path complete
                                 followPathOrUntilIntakeFull(paths.redFarZonePrescoreToFarIntake, false),
 
+                                // Score -- preparing shot after 50% of path complete. Begin shooting after path complete
                                 new FollowPathCommand(follower, paths.redFarWallIntakeToFarScore),
                                 new ParallelRaceGroup(
                                         new WaitCommand(TimingConstants.waitForShootingMS),
