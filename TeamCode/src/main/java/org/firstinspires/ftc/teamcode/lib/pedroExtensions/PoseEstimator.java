@@ -133,7 +133,7 @@ public class PoseEstimator extends PoseTracker {
             return;
         }
 
-        if (Math.toDegrees(localizer.getVelocity().getHeading()) >= DriveConstants.PoseEstimator.maxSlewRateDPS) {
+        if (Math.abs(Math.toDegrees(localizer.getVelocity().getHeading())) >= DriveConstants.PoseEstimator.maxSlewRateDPS) {
             // Slew rate is too large
             return;
         }
