@@ -43,6 +43,10 @@ public class PedroConstants {
             .strafeEncoderDirection(OdometryConstants.OdometryPods.xDirection);
 
     public static Drivetrain drivetrain;
+
+    // ============================================================================
+    // AUTO Pedro Constants
+    // ============================================================================
     public static FollowerConstants followerConstants = new FollowerConstants()
             .mass(13.245)
             .forwardZeroPowerAcceleration(-42.378)
@@ -65,6 +69,37 @@ public class PedroConstants {
             .centripetalScaling(0.0012);
 
 
+    // ============================================================================
+    // TELEOP Pedro Constants
+    // ============================================================================
+    public static FollowerConstants teleopFollowerConstants = new FollowerConstants()
+            .mass(13.245)
+            .forwardZeroPowerAcceleration(-42.378)
+            .lateralZeroPowerAcceleration(-66.285)
+            //Translational
+            .useSecondaryTranslationalPIDF(true)
+            .translationalPIDFCoefficients(new PIDFCoefficients(0.12, 0.0, 0.01, 0.028))
+            .secondaryTranslationalPIDFCoefficients(new PIDFCoefficients(0.18, 0.0, 0.01, 0.035))
+            //Heading
+            .useSecondaryHeadingPIDF(true)
+            .headingPIDFCoefficients(new PIDFCoefficients(.45, 0.0, 0.05, 0.025))
+            .secondaryHeadingPIDFCoefficients(new PIDFCoefficients(.90, 0.0, 0.05, 0.055))
+            .headingPIDFSwitch(Math.PI / 30)
+            //Drive
+            .useSecondaryDrivePIDF(true)
+            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.50, 0.0, 0.00005, 0.6, 0.015))
+            .secondaryDrivePIDFCoefficients(new FilteredPIDFCoefficients(0.02, 0.0, 0.00005, 0.6, 0.015))
+            .drivePIDFSwitch(15)
+            //Centripetal
+            .centripetalScaling(0.0012);
+
+    public static PoseEstFollower createTeleopPoseEstFollower(HardwareMap hardwareMap) {
+        return new PoseEstFollowerBuilder(teleopFollowerConstants, hardwareMap)
+                .pathConstraints(pathConstraints)
+                .setDrivetrain(createDrivetrain(hardwareMap))
+                .pinpointLocalizer(localizerConstants)
+                .build();
+    }
     public static PathConstraints pathConstraints = new PathConstraints(
             0.99, 100, 0.05, 1.0);
 

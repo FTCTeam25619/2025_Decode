@@ -75,7 +75,7 @@ public class Exploration extends CommandOpMode {
             Drawing.sendPacket();
         }
 
-        robot = new NovaPyraRobot(hardwareMap, telemetry, alliance);
+        robot = new NovaPyraRobot(hardwareMap, telemetry, alliance, true);
         robotTriggers = new RobotTriggers(robot);
 
         controller1 = new GamepadEx(gamepad1);
@@ -94,12 +94,12 @@ public class Exploration extends CommandOpMode {
         robot.vision.setTargetingTag(alliance == Alliance.BLUE ?
                 VisionConstants.AprilTags.BlueGoal : VisionConstants.AprilTags.RedGoal);
 
+
         Pose startingPose = BlackboardHelpers.getAutoEndPoseOrDefault(blackboard, alliance);
         robot.pedroFollower.setPose(startingPose);
         robot.pedroFollower.startTeleopDrive();
 
-        telemetry.addData("Robot Status", "Initialized Better Exploration " + alliance.name());
-        telemetry.addData("Auto-Aim Mode", "HeadingTuner approach (path following)");
+        telemetry.addData("Robot Status", "Initialized Exploration " + alliance.name());
         telemetry.update();
     }
 
