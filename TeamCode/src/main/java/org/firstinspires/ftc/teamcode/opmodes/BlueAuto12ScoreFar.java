@@ -97,7 +97,7 @@ public class BlueAuto12ScoreFar extends CommandOpMode {
                 new InstantCommand(() -> {
                     double dx = paths.goalTargetX - follower.getPose().getX();
                     double dy = paths.goalTargetY - follower.getPose().getY();
-                    follower.constants.holdPointHeadingScaling = 0.85; // full power for turnTo
+                    follower.constants.holdPointHeadingScaling = 0.75;
                     follower.turnTo(Math.atan2(dy, dx));
                 }),
                 new WaitUntilCommand(() -> !follower.isBusy()),
@@ -161,7 +161,7 @@ public class BlueAuto12ScoreFar extends CommandOpMode {
 
                                 // Score preload
                                 // Prepare shot before starting
-                                setupFarWallPresetShot(),
+                                //setupFarWallPresetShot(),
                                 new FollowPathCommand(follower, paths.blueWallToFarZonePrescore, 0.5).beforeStarting(prepareShot()),
                                 new ParallelRaceGroup(
                                         new WaitCommand(1200),

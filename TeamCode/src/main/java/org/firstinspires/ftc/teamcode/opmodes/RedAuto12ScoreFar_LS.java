@@ -155,7 +155,7 @@ public class RedAuto12ScoreFar_LS extends CommandOpMode {
                                  FIRST CYCLE - Preload
                                  **/
 
-                                setupFarWallPresetShot(),
+                                //setupFarWallPresetShot(),
                                 new FollowPathCommand(follower, paths.redWallToFarZonePrescore, 0.5).beforeStarting(prepareShot()),
                                 new ParallelRaceGroup(
                                         new WaitCommand(1200),
