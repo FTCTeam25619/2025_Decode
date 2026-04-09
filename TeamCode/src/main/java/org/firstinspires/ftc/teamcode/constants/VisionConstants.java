@@ -27,10 +27,10 @@ public class VisionConstants {
     @Configurable
     public static class targetOffsets{
         // Tunable offsets for aiming adjustments
-        public static double blueGoalXOffset = 6.0;      // inches
-        public static double blueGoalYOffset = 141.5;      // inches
-        public static double redGoalXOffset = 138.0;       // inches
-        public static double redGoalYOffset = 141.5;       // inches
+        public static double blueGoalXOffset = 7.0;      // inches
+        public static double blueGoalYOffset = 143.0;      // inches
+        public static double redGoalXOffset = 137.0;       // inches
+        public static double redGoalYOffset = 143.0;       // inches
     }
 
     public enum AprilTags {
