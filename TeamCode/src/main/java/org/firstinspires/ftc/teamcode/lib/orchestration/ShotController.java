@@ -504,7 +504,7 @@ public class ShotController {
     private InterpLUT setupShooterRPMInterpolator() {
         InterpLUT table = new InterpLUT();
 
-        table.add(0, 1850);
+        table.add(0, 1800);
 
         // Big Triangle / Close Shots
         table.add(60, 1800);
@@ -523,7 +523,7 @@ public class ShotController {
         table.add(392, 3140);
 
 
-        table.add(600, 3200);
+        table.add(10000, 3200);
         table.createLUT();
         return table;
     }
@@ -535,8 +535,8 @@ public class ShotController {
 
         // Big Triangle / Close Shots
         table.add(60, 275);
-        table.add(81, 70);
-        table.add(107, 20);
+        table.add(80, 275);
+        table.add(110, 20);
         table.add(140, 10);
         table.add(170, 10);
         table.add(208, 10);
@@ -549,7 +549,7 @@ public class ShotController {
         table.add(330, 10);
         table.add(392, 10);
 
-        table.add(600, 10);
+        table.add(10000, 10);
 
         table.createLUT();
         return table;
