@@ -27,8 +27,6 @@ public class Sensors extends SubsystemBase {
     private final TelemetryManager panelsTelemetry;
 
     public enum SensorLocation {
-        Intake,
-        FeedLow,
         FeedHigh;
 
         public SensorRevColorV3 sensor;
@@ -101,10 +99,6 @@ public class Sensors extends SubsystemBase {
     }
 
     public Sensors(HardwareMap hardwareMap, Telemetry telemetry) {
-        SensorLocation.Intake.setSensor(new SensorRevColorV3(
-                hardwareMap, Devices.Sensors.intakeColorSensor, DistanceUnit.CM));
-        SensorLocation.FeedLow.setSensor(new SensorRevColorV3(
-                hardwareMap, Devices.Sensors.feedColorSensorLow, DistanceUnit.CM));
         SensorLocation.FeedHigh.setSensor(new SensorRevColorV3(
                 hardwareMap, Devices.Sensors.feedColorSensorHigh, DistanceUnit.CM));
 
@@ -114,21 +108,11 @@ public class Sensors extends SubsystemBase {
             // Setup debug telemetry
             lightTelemetryManager = PanelsLights.INSTANCE.getLights();
             panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
-            SensorLocation.Intake.setTelemetry(
-                    new RGBIndicator("Intake Color"),
-                    new RGBIndicator("Intake Ball"));
-            SensorLocation.FeedLow.setTelemetry(
-                    new RGBIndicator("FeedLow Color"),
-                    new RGBIndicator("FeedLow Ball"));
             SensorLocation.FeedHigh.setTelemetry(
                     new RGBIndicator("FeedHigh Color"),
                     new RGBIndicator("FeedHigh Ball"));
             lightTelemetryManager.initLights(
-                    SensorLocation.Intake.colorIndicator,
-                    SensorLocation.FeedLow.colorIndicator,
                     SensorLocation.FeedHigh.colorIndicator,
-                    SensorLocation.Intake.ballIndicator,
-                    SensorLocation.FeedLow.ballIndicator,
                     SensorLocation.FeedHigh.ballIndicator
             );
         } else {
@@ -153,9 +137,7 @@ public class Sensors extends SubsystemBase {
     }
 
     public boolean seeingSomeBall() {
-        return seeingSomeBall(SensorLocation.Intake) ||
-                seeingSomeBall(SensorLocation.FeedLow) ||
-                seeingSomeBall(SensorLocation.FeedHigh);
+        return seeingSomeBall(SensorLocation.FeedHigh);
     }
 
     public boolean seesGreenBall(SensorLocation location) {
@@ -166,14 +148,6 @@ public class Sensors extends SubsystemBase {
         return location.seeingBall() && location.hueIsPurple();
     }
 
-    public SupplierTrigger intakeSeesGreen =
-            new SupplierTrigger(() -> seesGreenBall(SensorLocation.Intake));
-    public SupplierTrigger intakeSeesPurple =
-            new SupplierTrigger(() -> seesPurpleBall(SensorLocation.Intake));
-    public SupplierTrigger feedLowSeesGreen =
-            new SupplierTrigger(() -> seesGreenBall(SensorLocation.FeedLow));
-    public SupplierTrigger feedLowSeesPurple =
-            new SupplierTrigger(() -> seesPurpleBall(SensorLocation.FeedLow));
     public SupplierTrigger feedHighSeesGreen =
             new SupplierTrigger(() -> seesGreenBall(SensorLocation.FeedHigh));
     public SupplierTrigger feedHighSeesPurple =
@@ -181,11 +155,7 @@ public class Sensors extends SubsystemBase {
 
     private void displayTelemetry() {
         if (Constants.DebugModes.Telemetry.DEBUG_SENSORS) {
-            this.telemetry.addData("Sensors Intake Green Ball?", seesGreenBall(SensorLocation.Intake));
-            this.telemetry.addData("Sensors Feed Low Green Ball?", seesGreenBall(SensorLocation.FeedLow));
             this.telemetry.addData("Sensors Feed High Green Ball?", seesGreenBall(SensorLocation.FeedHigh));
-            this.telemetry.addData("Sensors Intake Purple Ball?", seesPurpleBall(SensorLocation.Intake));
-            this.telemetry.addData("Sensors Feed Low Purple Ball?", seesPurpleBall(SensorLocation.FeedLow));
             this.telemetry.addData("Sensors Feed High Purple Ball?", seesPurpleBall(SensorLocation.FeedHigh));
         }
     }
@@ -199,21 +169,11 @@ public class Sensors extends SubsystemBase {
         });
         panelsTelemetry.update();
 
-        this.telemetry.addData("Sensors Intake Dist (cm)", SensorLocation.Intake.distance);
-        this.telemetry.addData("Sensors Feed Low Dist (cm)", SensorLocation.FeedLow.distance);
         this.telemetry.addData("Sensors Feed High Dist (cm)", SensorLocation.FeedHigh.distance);
-        this.telemetry.addData("Sensors Intake Ball?", SensorLocation.Intake.seeingBall());
-        this.telemetry.addData("Sensors Feed Low Ball?", SensorLocation.FeedLow.seeingBall());
         this.telemetry.addData("Sensors Feed High Ball?", SensorLocation.FeedHigh.seeingBall());
 
-        this.telemetry.addData("Sensors Intake Hue", SensorLocation.Intake.hue);
-        this.telemetry.addData("Sensors Feed Low Hue", SensorLocation.FeedLow.hue);
         this.telemetry.addData("Sensors Feed High Hue", SensorLocation.FeedHigh.hue);
-        this.telemetry.addData("Sensors Intake Green", SensorLocation.Intake.hueIsGreen());
-        this.telemetry.addData("Sensors Feed Low Green", SensorLocation.FeedLow.hueIsGreen());
         this.telemetry.addData("Sensors Feed High Green", SensorLocation.FeedHigh.hueIsGreen());
-        this.telemetry.addData("Sensors Intake Purple", SensorLocation.Intake.hueIsPurple());
-        this.telemetry.addData("Sensors Feed Low Purple", SensorLocation.FeedLow.hueIsPurple());
         this.telemetry.addData("Sensors Feed High Purple", SensorLocation.FeedHigh.hueIsPurple());
     }
 }

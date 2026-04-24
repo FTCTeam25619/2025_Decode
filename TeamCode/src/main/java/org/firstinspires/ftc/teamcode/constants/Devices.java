@@ -25,8 +25,8 @@ public class Devices {
     }
 
     public static final class Sensors {
-        public static final String intakeColorSensor = "intake_color_sensor";
-        public static final String feedColorSensorLow = "feed_color_sensor_low";
+        //public static final String intakeColorSensor = "intake_color_sensor";
+        //public static final String feedColorSensorLow = "feed_color_sensor_low";
         public static final String feedColorSensorHigh = "feed_color_sensor_high";
     }
 
