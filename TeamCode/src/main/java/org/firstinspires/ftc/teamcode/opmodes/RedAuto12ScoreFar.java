@@ -96,7 +96,7 @@ public class RedAuto12ScoreFar extends CommandOpMode {
                 new InstantCommand(() -> {
                     double dx = paths.goalTargetX - follower.getPose().getX();
                     double dy = paths.goalTargetY - follower.getPose().getY();
-                    follower.constants.holdPointHeadingScaling = 0.75;
+                    follower.constants.holdPointHeadingScaling = 0.70;
                     follower.turnTo(Math.atan2(dy, dx));
                 }),
                 new WaitUntilCommand(() -> !follower.isBusy()),
