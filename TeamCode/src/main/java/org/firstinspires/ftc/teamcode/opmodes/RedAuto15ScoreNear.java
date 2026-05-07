@@ -182,7 +182,7 @@ public class RedAuto15ScoreNear extends CommandOpMode {
 
                                 new FollowPathCommand(follower, paths.redOpenAndIntakeGate).beforeStarting(intake()),
 
-                                new WaitCommand(1000),
+                                new WaitCommand(1500),
 
                                 new FollowPathCommand(follower, paths.redMidWallIntakeToNearScore),
                                 new WaitCommand(TimingConstants.waitForShootingNearMS).andThen(idleState()),
@@ -194,9 +194,10 @@ public class RedAuto15ScoreNear extends CommandOpMode {
 
                                 new FollowPathCommand(follower, paths.redOpenAndIntakeGate).beforeStarting(intake()),
 
-                                new WaitCommand(1500),
+                                new WaitCommand(2000),
 
                                 new FollowPathCommand(follower, paths.redMidWallIntakeToNearScore),
+                                shoot(),
                                 new WaitCommand(TimingConstants.waitForShootingNearMS).andThen(idleState()),
 
 

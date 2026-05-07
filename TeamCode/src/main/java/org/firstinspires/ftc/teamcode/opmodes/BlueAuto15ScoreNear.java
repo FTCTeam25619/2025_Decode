@@ -186,7 +186,7 @@ public class BlueAuto15ScoreNear extends CommandOpMode {
                                 //new FollowPathCommand(follower, paths.blueScoreToOpenGate,false).beforeStarting(idleState()),
                                 //followPathOrUntilIntakeFull(paths.blueOpenGateToIntakeGate, true).beforeStarting(intake()),
 
-                                new WaitCommand(1000),
+                                new WaitCommand(1500),
 
                                 // Score -- preparing shot after 30% of path complete. Begin shooting after 90% of path complete
                                 new FollowPathCommand(follower, paths.blueMidWallIntakeToNearScore),
@@ -202,7 +202,7 @@ public class BlueAuto15ScoreNear extends CommandOpMode {
                                 //new FollowPathCommand(follower, paths.blueScoreToOpenGate,false).beforeStarting(idleState()),
                                 //followPathOrUntilIntakeFull(paths.blueOpenGateToIntakeGate, true).beforeStarting(intake()),
 
-                                new WaitCommand(1500),
+                                new WaitCommand(2000),
 
                                 // Score -- preparing shot after 30% of path complete. Begin shooting after 90% of path complete
                                 new FollowPathCommand(follower, paths.blueMidWallIntakeToNearScore),
@@ -237,6 +237,7 @@ public class BlueAuto15ScoreNear extends CommandOpMode {
                                 // Score -- preparing shot after 30% of path complete. Begin shooting after 95% of path complete
                                 setAutoTargetShot(),
                                 new FollowPathCommand(follower, paths.blueNearWallIntakeToNearScoreAndPark),
+                                shoot(),
                                 new WaitCommand(TimingConstants.waitForShootingNearMS).andThen(spinDown())
 
 
