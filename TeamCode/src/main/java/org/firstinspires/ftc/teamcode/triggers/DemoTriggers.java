@@ -44,7 +44,7 @@ public class DemoTriggers implements ControllerTriggers {
     // Lower = smoother but slightly laggy. 0.15 is a good starting point.
     private static final double SMOOTH_FACTOR    = 0.15;
 
-    private static final double RPM_FAR   = 2900.0;
+    private static final double RPM_FAR   = 4500.0;
     private static final double RPM_MID   = 2300.0;
     private static final double RPM_CLOSE = 1800.0;
 
